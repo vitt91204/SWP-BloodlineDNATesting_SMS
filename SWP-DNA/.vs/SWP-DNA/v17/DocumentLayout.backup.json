@@ -1,14 +1,18 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "D:\\Projects\\SWP-DNA\\",
+  "WorkspaceRootPath": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\SWP-DNA\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{9AD59CB1-AEA3-4EAD-A012-F9DA303E4AF8}|Repositories\\Repositories.csproj|d:\\projects\\swp-dna\\repositories\\data\\dbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{9AD59CB1-AEA3-4EAD-A012-F9DA303E4AF8}|Repositories\\Repositories.csproj|solutionrelative:repositories\\data\\dbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{E4C1CC8D-42E8-41A6-AB8C-5E8C97A85EA9}|Controller.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\swp-dna\\repositories\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E4C1CC8D-42E8-41A6-AB8C-5E8C97A85EA9}|Controller.csproj|solutionrelative:repositories\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{9AD59CB1-AEA3-4EAD-A012-F9DA303E4AF8}|Repositories\\Repositories.csproj|d:\\projects\\swp-dna\\repositories\\base\\genericrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{9AD59CB1-AEA3-4EAD-A012-F9DA303E4AF8}|Repositories\\Repositories.csproj|solutionrelative:repositories\\base\\genericrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{E4C1CC8D-42E8-41A6-AB8C-5E8C97A85EA9}|Controller.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\swp-dna\\repositories\\base\\genericrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E4C1CC8D-42E8-41A6-AB8C-5E8C97A85EA9}|Controller.csproj|solutionrelative:repositories\\base\\genericrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4C1CC8D-42E8-41A6-AB8C-5E8C97A85EA9}|Controller.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\swp-dna\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{E4C1CC8D-42E8-41A6-AB8C-5E8C97A85EA9}|Controller.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     }
   ],
   "DocumentGroupContainers": [
@@ -23,28 +27,39 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "DbContext.cs",
-              "DocumentMoniker": "D:\\Projects\\SWP-DNA\\Repositories\\Data\\DbContext.cs",
-              "RelativeDocumentMoniker": "Repositories\\Data\\DbContext.cs",
-              "ToolTip": "D:\\Projects\\SWP-DNA\\Repositories\\Data\\DbContext.cs",
-              "RelativeToolTip": "Repositories\\Data\\DbContext.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAAAAAAAAAAAA==",
+              "Title": "AppDBContext.cs",
+              "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\SWP-DNA\\Repositories\\Data\\AppDBContext.cs",
+              "RelativeDocumentMoniker": "Repositories\\Data\\AppDBContext.cs",
+              "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\SWP-DNA\\Repositories\\Data\\AppDBContext.cs",
+              "RelativeToolTip": "Repositories\\Data\\AppDBContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-10T11:47:06.046Z",
+              "WhenOpened": "2025-06-11T05:55:46.386Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
               "Title": "GenericRepository.cs",
-              "DocumentMoniker": "D:\\Projects\\SWP-DNA\\Repositories\\Base\\GenericRepository.cs",
+              "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\SWP-DNA\\Repositories\\Base\\GenericRepository.cs",
               "RelativeDocumentMoniker": "Repositories\\Base\\GenericRepository.cs",
-              "ToolTip": "D:\\Projects\\SWP-DNA\\Repositories\\Base\\GenericRepository.cs",
+              "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\SWP-DNA\\Repositories\\Base\\GenericRepository.cs",
               "RelativeToolTip": "Repositories\\Base\\GenericRepository.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAoAAAAAAAAAA==",
+              "ViewState": "AgIAACsAAAAAAAAAAAAuwAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-10T11:43:19.253Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-11T05:55:05.595Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\SWP-DNA\\appsettings.json",
+              "RelativeDocumentMoniker": "appsettings.json",
+              "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\SWP-DNA\\appsettings.json",
+              "RelativeToolTip": "appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAABtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-06-11T01:14:36.602Z"
             }
           ]
         }

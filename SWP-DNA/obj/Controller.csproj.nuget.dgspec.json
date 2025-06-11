@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Projects\\SWP-DNA\\Controller.csproj": {}
+    "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\SWP-DNA\\Controller.csproj": {}
   },
   "projects": {
-    "D:\\Projects\\SWP-DNA\\Controller.csproj": {
+    "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\SWP-DNA\\Controller.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Projects\\SWP-DNA\\Controller.csproj",
+        "projectUniqueName": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\SWP-DNA\\Controller.csproj",
         "projectName": "Controller",
-        "projectPath": "D:\\Projects\\SWP-DNA\\Controller.csproj",
+        "projectPath": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\SWP-DNA\\Controller.csproj",
         "packagesPath": "C:\\Users\\ASUS\\.nuget\\packages\\",
-        "outputPath": "D:\\Projects\\SWP-DNA\\obj\\",
+        "outputPath": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\SWP-DNA\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
