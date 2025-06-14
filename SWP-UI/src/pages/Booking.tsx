@@ -9,12 +9,25 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, MapPin, Home, Users, TestTube, Clock, CheckCircle, ArrowRight } from "lucide-react";
 
-export default function Booking() {
+export default function Booking() { 
   const [selectedService, setSelectedService] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTimeSlot, setSelectedTimeSlot] = useState("");
   const [step, setStep] = useState(1);
+
+  // Thêm state cho form data
+  const [formData, setFormData] = useState({
+    fullName: "",
+    phone: "",
+    email: "",
+    address: "",
+    numberOfPeople: "",
+    notes: ""
+  });
+
+  // Thêm state để theo dõi khi nào hiển thị validation
+  const [showValidation, setShowValidation] = useState(false);
 
   const services = [
     {
@@ -74,6 +87,35 @@ export default function Booking() {
     { id: "18:00", time: "18:00", label: "18:00 - 19:00", available: true },
     { id: "19:00", time: "19:00", label: "19:00 - 20:00", available: true },
   ];
+
+  // Hàm kiểm tra validation các trường bắt buộc
+  const isStep3Valid = () => {
+    const requiredFields = formData.fullName && formData.phone && formData.numberOfPeople;
+    
+    if (selectedLocation === 'home') {
+      return requiredFields && selectedDate && selectedTimeSlot;
+    }
+    
+    return requiredFields;
+  };
+
+  // Hàm cập nhật form data
+  const updateFormData = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Hàm xử lý khi nhấn "Tiếp tục" ở step 3
+  const handleStep3Continue = () => {
+    if (isStep3Valid()) {
+      setStep(4);
+      setShowValidation(false); // Reset validation state
+    } else {
+      setShowValidation(true); // Hiển thị validation errors
+    }
+  };
 
   const BookingSteps = () => {
     const steps = [
@@ -290,13 +332,29 @@ export default function Booking() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Họ và tên người đặt *
                     </label>
-                    <Input placeholder="Nhập họ và tên" />
+                    <Input 
+                      placeholder="Nhập họ và tên" 
+                      value={formData.fullName}
+                      onChange={(e) => updateFormData('fullName', e.target.value)}
+                      className={showValidation && !formData.fullName ? 'border-red-300 focus:border-red-500' : ''}
+                    />
+                    {showValidation && !formData.fullName && (
+                      <p className="text-red-500 text-xs mt-1">Vui lòng nhập họ và tên</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Số điện thoại *
                     </label>
-                    <Input placeholder="Nhập số điện thoại" />
+                    <Input 
+                      placeholder="Nhập số điện thoại" 
+                      value={formData.phone}
+                      onChange={(e) => updateFormData('phone', e.target.value)}
+                      className={showValidation && !formData.phone ? 'border-red-300 focus:border-red-500' : ''}
+                    />
+                    {showValidation && !formData.phone && (
+                      <p className="text-red-500 text-xs mt-1">Vui lòng nhập số điện thoại</p>
+                    )}
                   </div>
                 </div>
 
@@ -304,27 +362,46 @@ export default function Booking() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Email
                   </label>
-                  <Input type="email" placeholder="Nhập địa chỉ email" />
+                  <Input 
+                    type="email" 
+                    placeholder="Nhập địa chỉ email" 
+                    value={formData.email}
+                    onChange={(e) => updateFormData('email', e.target.value)}
+                  />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Địa chỉ {selectedLocation === 'home' ? 'thu mẫu' : 'liên hệ'}
                   </label>
-                  <Textarea placeholder="Nhập địa chỉ chi tiết..." rows={3} />
+                  <Textarea 
+                    placeholder="Nhập địa chỉ chi tiết..." 
+                    rows={3} 
+                    value={formData.address}
+                    onChange={(e) => updateFormData('address', e.target.value)}
+                  />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Số người tham gia xét nghiệm *
                   </label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                  <select 
+                    className={`w-full px-3 py-2 border rounded-md ${
+                      showValidation && !formData.numberOfPeople ? 'border-red-300 focus:border-red-500' : 'border-gray-300'
+                    }`}
+                    value={formData.numberOfPeople}
+                    onChange={(e) => updateFormData('numberOfPeople', e.target.value)}
+                  >
                     <option value="">Chọn số người</option>
                     <option value="2">2 người</option>
                     <option value="3">3 người</option>
                     <option value="4">4 người</option>
                     <option value="5">5 người trở lên</option>
                   </select>
+                  {showValidation && !formData.numberOfPeople && (
+                    <p className="text-red-500 text-xs mt-1">Vui lòng chọn số người tham gia</p>
+                  )}
                 </div>
 
                 {selectedLocation === 'home' && (
@@ -341,7 +418,11 @@ export default function Booking() {
                           setSelectedTimeSlot(""); // Reset time slot when date changes
                         }}
                         min={new Date().toISOString().split('T')[0]} // Không cho chọn ngày trong quá khứ
+                        className={showValidation && selectedLocation === 'home' && !selectedDate ? 'border-red-300 focus:border-red-500' : ''}
                       />
+                      {showValidation && selectedLocation === 'home' && !selectedDate && (
+                        <p className="text-red-500 text-xs mt-1">Vui lòng chọn ngày mong muốn</p>
+                      )}
                     </div>
                     
                     {selectedDate && (
@@ -386,6 +467,11 @@ export default function Booking() {
                             </div>
                           </div>
                         )}
+                        {showValidation && selectedLocation === 'home' && selectedDate && !selectedTimeSlot && (
+                          <div className="mt-3 p-3 bg-red-50 rounded-lg border border-red-200">
+                            <p className="text-red-500 text-sm">Vui lòng chọn khung giờ</p>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -395,7 +481,12 @@ export default function Booking() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Ghi chú
                   </label>
-                  <Textarea placeholder="Thông tin bổ sung (nếu có)..." rows={3} />
+                  <Textarea 
+                    placeholder="Thông tin bổ sung (nếu có)..." 
+                    rows={3} 
+                    value={formData.notes}
+                    onChange={(e) => updateFormData('notes', e.target.value)}
+                  />
                 </div>
 
                 <div className="flex space-x-4">
@@ -404,8 +495,7 @@ export default function Booking() {
                   </Button>
                   <Button 
                     className="flex-1" 
-                    onClick={() => setStep(4)}
-                    disabled={selectedLocation === 'home' && (!selectedDate || !selectedTimeSlot)}
+                    onClick={handleStep3Continue}
                   >
                     Tiếp tục
                     <ArrowRight className="w-4 h-4 ml-2" />
