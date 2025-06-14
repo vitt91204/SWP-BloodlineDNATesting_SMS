@@ -2,8 +2,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Users, Scale, ChevronRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export const ServicesSection = () => {
+  const navigate = useNavigate();
   const services = [
     {
       id: 1,
@@ -145,7 +147,7 @@ export const ServicesSection = () => {
                   </div>
 
                   {/* CTA */}
-                  <Button className="w-full mt-6" variant="outline">
+                  <Button className="w-full mt-6" variant="outline" onClick={() => navigate("/booking")}>
                     Đặt lịch xét nghiệm
                     <ChevronRight className="w-4 h-4 ml-2" />
                   </Button>

@@ -12,6 +12,8 @@ import { Calendar, MapPin, Home, Users, TestTube, Clock, CheckCircle, ArrowRight
 export default function Booking() {
   const [selectedService, setSelectedService] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState("");
   const [step, setStep] = useState(1);
 
   const services = [
@@ -57,6 +59,20 @@ export default function Booking() {
         "Xử lý nhanh chóng"
       ]
     }
+  ];
+
+  // Thêm time slots cố định
+  const timeSlots = [
+    { id: "08:00", time: "08:00", label: "08:00 - 09:00", available: true },
+    { id: "09:00", time: "09:00", label: "09:00 - 10:00", available: true },
+    { id: "10:00", time: "10:00", label: "10:00 - 11:00", available: false },
+    { id: "11:00", time: "11:00", label: "11:00 - 12:00", available: true },
+    { id: "13:00", time: "13:00", label: "13:00 - 14:00", available: true },
+    { id: "14:00", time: "14:00", label: "14:00 - 15:00", available: true },
+    { id: "15:00", time: "15:00", label: "15:00 - 16:00", available: false },
+    { id: "16:00", time: "16:00", label: "16:00 - 17:00", available: true },
+    { id: "18:00", time: "18:00", label: "18:00 - 19:00", available: true },
+    { id: "19:00", time: "19:00", label: "19:00 - 20:00", available: true },
   ];
 
   const BookingSteps = () => {
@@ -312,19 +328,66 @@ export default function Booking() {
                 </div>
 
                 {selectedLocation === 'home' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Thời gian mong muốn
-                    </label>
-                    <div className="grid grid-cols-2 gap-4">
-                      <Input type="date" />
-                      <select className="px-3 py-2 border border-gray-300 rounded-md">
-                        <option value="">Chọn giờ</option>
-                        <option value="morning">Sáng (8:00 - 12:00)</option>
-                        <option value="afternoon">Chiều (13:00 - 17:00)</option>
-                        <option value="evening">Tối (18:00 - 20:00)</option>
-                      </select>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Chọn ngày mong muốn *
+                      </label>
+                      <Input 
+                        type="date" 
+                        value={selectedDate}
+                        onChange={(e) => {
+                          setSelectedDate(e.target.value);
+                          setSelectedTimeSlot(""); // Reset time slot when date changes
+                        }}
+                        min={new Date().toISOString().split('T')[0]} // Không cho chọn ngày trong quá khứ
+                      />
                     </div>
+                    
+                    {selectedDate && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">
+                          Chọn khung giờ *
+                        </label>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                          {timeSlots.map((slot) => (
+                            <button
+                              key={slot.id}
+                              type="button"
+                              disabled={!slot.available}
+                              onClick={() => setSelectedTimeSlot(slot.id)}
+                              className={`px-4 py-3 text-sm font-medium rounded-lg border-2 transition-all ${
+                                !slot.available
+                                  ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                                  : selectedTimeSlot === slot.id
+                                  ? 'bg-blue-50 text-blue-700 border-blue-500'
+                                  : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                              }`}
+                            >
+                              <div className="flex items-center justify-center">
+                                <Clock className="w-4 h-4 mr-1" />
+                                {slot.label}
+                              </div>
+                              {!slot.available && (
+                                <div className="text-xs text-gray-400 mt-1">
+                                  Đã đặt
+                                </div>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                        {selectedTimeSlot && (
+                          <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                            <div className="flex items-center text-green-700">
+                              <CheckCircle className="w-4 h-4 mr-2" />
+                              <span className="text-sm font-medium">
+                                Đã chọn: {timeSlots.find(slot => slot.id === selectedTimeSlot)?.label} ngày {selectedDate}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -339,7 +402,11 @@ export default function Booking() {
                   <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
                     Quay lại
                   </Button>
-                  <Button className="flex-1" onClick={() => setStep(4)}>
+                  <Button 
+                    className="flex-1" 
+                    onClick={() => setStep(4)}
+                    disabled={selectedLocation === 'home' && (!selectedDate || !selectedTimeSlot)}
+                  >
                     Tiếp tục
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
