@@ -1,25 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Repository.Models
+namespace Repositories.Models;
+
+public partial class TestResult
 {
-    public partial class TestResult
-    {
-        public int resultId { get; set; }
-        public int requestId { get; set; }
+    public int ResultId { get; set; }
 
-        public int sampleId { get; set; }
-        public string? result { get; set; } 
+    public int SampleId { get; set; }
 
-        public int uploadedBy { get; set; }
+    public int? RequestId { get; set; }
 
-        public int approvedBy { get; set; }
+    public string? ResultData { get; set; }
 
-        public DateTime uploadTime { get; set; }
-        public DateTime approvedTime { get; set; }
-        public int staffId { get; set; }
-    }
+    public int? UploadedBy { get; set; }
+
+    public int? ApprovedBy { get; set; }
+
+    public DateTime? UploadedTime { get; set; }
+
+    public DateTime? ApprovedTime { get; set; }
+
+    public int? StaffId { get; set; }
+
+    public virtual User? ApprovedByNavigation { get; set; }
+
+    public virtual TestRequest? Request { get; set; }
+
+    public virtual Sample Sample { get; set; } = null!;
+
+    public virtual User? Staff { get; set; }
+
+    public virtual User? UploadedByNavigation { get; set; }
 }

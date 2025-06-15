@@ -1,33 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Repository.Models
+namespace Repositories.Models;
+
+public partial class User
 {
-    public partial class User
-    {
-        [Key] public int userId { get; set; }
-        public string username { get; set; } = string.Empty;
-        public string email { get; set; } = string.Empty;
-        public string password { get; set; } = string.Empty;
+    public int UserId { get; set; }
 
-        public string phoneNumber { get; set; } = string.Empty;
+    public string Username { get; set; } = null!;
 
-        public string role { get; set; } = "Customer"; // Default role is "Customer"
-        public DateTime createdAt { get; set; } = DateTime.UtcNow;
-        public DateTime? lastLogin { get; set; } = null;
-        public bool isActive { get; set; } = true;
+    public string Password { get; set; } = null!;
 
-        public ICollection<Address> addresses { get; set; } = new List<Address>();
-        public ICollection<BlogPost> blogPosts { get; set; } = new List<BlogPost>();
-        public ICollection<Feedback> feedbacks { get; set; } = new List<Feedback>();
-        public ICollection<TestRequest> requests { get; set; } = new List<TestRequest>();
-        public ICollection<TestResult> results { get; set; } = new List<TestResult>();
+    public string? Email { get; set; }
 
-        public ICollection<Sample> samples { get; set; } = new List<Sample>();
+    public string? Phone { get; set; }
 
-    }
+    public string? Role { get; set; }
+
+    public DateTime? CreatedAt { get; set; }
+
+    public DateTime? UpdatedAt { get; set; }
+
+    public virtual ICollection<Address> Addresses { get; set; } = new List<Address>();
+
+    public virtual ICollection<BlogPost> BlogPosts { get; set; } = new List<BlogPost>();
+
+    public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
+
+    public virtual ICollection<Profile> Profiles { get; set; } = new List<Profile>();
+
+    public virtual ICollection<Sample> Samples { get; set; } = new List<Sample>();
+
+    public virtual ICollection<TestRequest> TestRequestStaffs { get; set; } = new List<TestRequest>();
+
+    public virtual ICollection<TestRequest> TestRequestUsers { get; set; } = new List<TestRequest>();
+
+    public virtual ICollection<TestResult> TestResultApprovedByNavigations { get; set; } = new List<TestResult>();
+
+    public virtual ICollection<TestResult> TestResultStaffs { get; set; } = new List<TestResult>();
+
+    public virtual ICollection<TestResult> TestResultUploadedByNavigations { get; set; } = new List<TestResult>();
 }
