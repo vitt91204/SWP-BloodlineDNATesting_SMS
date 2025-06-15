@@ -1,4 +1,6 @@
 
+using Services;
+
 namespace DNAServicesSystemAPI
 {
     public class Program
@@ -6,6 +8,8 @@ namespace DNAServicesSystemAPI
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.AddScoped<UserService>();
 
             // Add services to the container.
 
