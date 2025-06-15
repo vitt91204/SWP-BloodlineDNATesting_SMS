@@ -1,26 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Repository.Models
+namespace Repositories.Models;
+
+public partial class Address
 {
-    public partial class Address
-    {
-        public int addressId { get; set; }
-        public int userId { get; set; }
-        
-        public string label { get; set; } = string.Empty;
+    public int AddressId { get; set; }
 
-        public string addressLine { get; set; } = string.Empty;
-        public string city { get; set; } = string.Empty;
-        public string province { get; set; } = string.Empty;
-        public string postalCode { get; set; } = string.Empty;
-        public string country { get; set; } = string.Empty;
+    public int UserId { get; set; }
 
-        public bool isPrimary { get; set; }
-        public DateTime createdAt { get; set; }
-        
-    }
+    public string? Label { get; set; }
+
+    public string AddressLine { get; set; } = null!;
+
+    public string? City { get; set; }
+
+    public string? Province { get; set; }
+
+    public string? PostalCode { get; set; }
+
+    public string? Country { get; set; }
+
+    public bool? IsPrimary { get; set; }
+
+    public DateTime? CreatedAt { get; set; }
+
+    public virtual User User { get; set; } = null!;
 }

@@ -1,36 +1,39 @@
-﻿using Microsoft.Extensions.FileSystemGlobbing.Internal;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Repository.Models
+namespace Repositories.Models;
+
+public partial class TestRequest
 {
-    public partial class TestRequest
-    {
-        public int requestId { get; set; }
-        public int userId { get; set; }
-        
-        public string collecttionType { get; set; }
+    public int RequestId { get; set; }
 
-        public string status { get; set; }
+    public int UserId { get; set; }
 
-        public DateOnly appointmentDate { get; set; }
-        public TimeOnly appointmentTime { get; set; }
+    public int ServiceId { get; set; }
 
-        public DateTime createdAt { get; set; }
+    public string? CollectionType { get; set; }
 
-        public DateTime updatedAt { get; set; }
+    public string? Status { get; set; }
 
-        public int staffId { get; set; }
+    public DateOnly? AppointmentDate { get; set; }
 
-        public Payment payment { get; set; } = new Payment();
+    public TimeOnly? SlotTime { get; set; }
 
-        public virtual ICollection<Sample> samples { get; set; } = new List<Sample>();
+    public DateTime? CreatedAt { get; set; }
 
-        public TestService service { get; set; } = new TestService();
-        public TestResult TestResult { get; set; } = new TestResult();
-        public Feedback? feedback { get; set; }
-    }
+    public int? StaffId { get; set; }
+
+    public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
+
+    public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
+
+    public virtual ICollection<Sample> Samples { get; set; } = new List<Sample>();
+
+    public virtual TestService Service { get; set; } = null!;
+
+    public virtual User? Staff { get; set; }
+
+    public virtual ICollection<TestResult> TestResults { get; set; } = new List<TestResult>();
+
+    public virtual User User { get; set; } = null!;
 }

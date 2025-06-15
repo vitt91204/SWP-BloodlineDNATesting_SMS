@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Repository.Models
+namespace Repositories.Models;
+
+public partial class TestKit
 {
-    public partial class TestKit
-    {
-        public int kitId { get; set; }  
-        public string? kitName { get; set; }
-        public string? description { get; set; }
+    public int KitId { get; set; }
 
-        public int? stock { get; set; }
-        public bool? isActive { get; set; }
-    }
+    public string Name { get; set; } = null!;
+
+    public string? Description { get; set; }
+
+    public int? StockQuantity { get; set; }
+
+    public bool? IsActive { get; set; }
+
+    public virtual ICollection<TestService> TestServices { get; set; } = new List<TestService>();
 }

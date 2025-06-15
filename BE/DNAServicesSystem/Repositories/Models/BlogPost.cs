@@ -1,21 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Repository.Models
+namespace Repositories.Models;
+
+public partial class BlogPost
 {
-    public partial class BlogPost
-    {
-        public int postId { get; set; }
-        public int userId { get; set; }
+    public int PostId { get; set; }
 
-        public string title { get; set; } = string.Empty;
-        public string content { get; set; } = string.Empty;
+    public string? Title { get; set; }
 
-        public DateTime createdAt { get; set; }
-        public DateTime? updatedAt { get; set; } = null;
-        public bool isPublished { get; set; } = false;
-    }
+    public string? Content { get; set; }
+
+    public int? AuthorId { get; set; }
+
+    public DateTime? CreatedAt { get; set; }
+
+    public DateTime? UpdatedAt { get; set; }
+
+    public virtual User? Author { get; set; }
 }

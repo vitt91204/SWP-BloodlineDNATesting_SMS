@@ -1,23 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Repository.Models
+namespace Repositories.Models;
+
+public partial class Feedback
 {
-    public partial class Feedback
-    {
-        public int feedbackId { get; set; }
-        public int userId { get; set; }
-        public int requestId { get; set; }
-        public string message { get; set; } = string.Empty;
-        public DateTime createdAt { get; set; }
+    public int FeedbackId { get; set; }
 
-        public int rating { get; set; }
+    public int UserId { get; set; }
 
-        public string? response { get; set; } = string.Empty;
-        public DateTime? responseTime { get; set; } = null;
+    public int RequestId { get; set; }
 
-    }
+    public int? Rating { get; set; }
+
+    public string? Comment { get; set; }
+
+    public string? Response { get; set; }
+
+    public DateTime? CreatedAt { get; set; }
+
+    public DateTime? RespondedAt { get; set; }
+
+    public virtual TestRequest Request { get; set; } = null!;
+
+    public virtual User User { get; set; } = null!;
 }

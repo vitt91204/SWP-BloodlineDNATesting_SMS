@@ -1,25 +1,27 @@
-﻿using Microsoft.Identity.Client;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Repository.Models
+namespace Repositories.Models;
+
+public partial class Sample
 {
-    public partial class Sample
-    {
-        public int sampleId { get; set; }
+    public int SampleId { get; set; }
 
-        public int requestId { get; set; }
+    public int RequestId { get; set; }
 
-        public int collector { get; set; }
+    public int CollectedBy { get; set; }
 
-        public DateTime collectTime { get; set; }
-        public DateTime recievedTime { get; set; }
+    public DateTime? CollectionTime { get; set; }
 
-        public bool isActive { get; set; }
-        // Navigation property
-        public virtual ICollection<SubSample> SubSamples { get; set; } = new List<SubSample>();
-    }
+    public DateTime? ReceivedTime { get; set; }
+
+    public string? Status { get; set; }
+
+    public virtual User CollectedByNavigation { get; set; } = null!;
+
+    public virtual TestRequest Request { get; set; } = null!;
+
+    public virtual ICollection<SubSample> SubSamples { get; set; } = new List<SubSample>();
+
+    public virtual ICollection<TestResult> TestResults { get; set; } = new List<TestResult>();
 }

@@ -1,21 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Repository.Models
+namespace Repositories.Models;
+
+public partial class TestService
 {
-    public partial class TestService
-    {
-        public int serviceId { get; set; }
-        public string? serviceName { get; set; }
+    public int ServiceId { get; set; }
 
-        public string? serviceDescription { get; set; }
+    public string Name { get; set; } = null!;
 
-        public float? price { get; set; }
-        public bool? isActive { get; set; }
+    public string? Description { get; set; }
 
-        public TestKit? testKit { get; set; }
-    }
+    public decimal? Price { get; set; }
+
+    public bool? IsActive { get; set; }
+
+    public int KitId { get; set; }
+
+    public virtual TestKit Kit { get; set; } = null!;
+
+    public virtual ICollection<TestRequest> TestRequests { get; set; } = new List<TestRequest>();
 }
