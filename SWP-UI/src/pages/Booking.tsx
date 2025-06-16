@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, MapPin, Home, Users, TestTube, Clock, CheckCircle, ArrowRight } from "lucide-react";
 
 export default function Booking() { 
+  const navigate = useNavigate();
   const [selectedService, setSelectedService] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
@@ -115,6 +117,24 @@ export default function Booking() {
     } else {
       setShowValidation(true); // Hiển thị validation errors
     }
+  };
+
+  // Hàm xử lý khi nhấn "Xác nhận đặt lịch" - chuyển đến trang thanh toán
+  const handleConfirmBooking = () => {
+    // Có thể lưu thông tin đặt lịch vào localStorage hoặc state management
+    const bookingData = {
+      service: services.find(s => s.id === selectedService),
+      location: locations.find(l => l.id === selectedLocation),
+      date: selectedDate,
+      timeSlot: selectedTimeSlot ? timeSlots.find(slot => slot.id === selectedTimeSlot) : null,
+      formData: formData
+    };
+    
+    // Lưu vào localStorage để trang thanh toán có thể truy cập
+    localStorage.setItem('bookingData', JSON.stringify(bookingData));
+    
+    // Chuyển hướng đến trang thanh toán
+    navigate('/payment');
   };
 
   const BookingSteps = () => {
@@ -568,7 +588,7 @@ export default function Booking() {
                   <Button variant="outline" onClick={() => setStep(3)} className="flex-1">
                     Quay lại
                   </Button>
-                  <Button className="flex-1 bg-gradient-to-r from-blue-600 to-green-600">
+                  <Button className="flex-1 bg-gradient-to-r from-blue-600 to-green-600" onClick={handleConfirmBooking}>
                     Xác nhận đặt lịch
                     <CheckCircle className="w-4 h-4 ml-2" />
                   </Button>
@@ -583,3 +603,4 @@ export default function Booking() {
     </div>
   );
 }
+  
