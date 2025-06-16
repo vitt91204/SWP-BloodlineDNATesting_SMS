@@ -1,0 +1,16 @@
+D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\Services\bin\Release\net8.0\Services.deps.json
+D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\Services\bin\Release\net8.0\Services.dll
+D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\Services\bin\Release\net8.0\Services.pdb
+D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\Services\bin\Release\net8.0\Repositories.dll
+D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\Services\bin\Release\net8.0\Repositories.pdb
+D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\Services\obj\Release\net8.0\Services.csproj.AssemblyReference.cache
+D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\Services\obj\Release\net8.0\Services.GeneratedMSBuildEditorConfig.editorconfig
+D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\Services\obj\Release\net8.0\Services.AssemblyInfoInputs.cache
+D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\Services\obj\Release\net8.0\Services.AssemblyInfo.cs
+D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\Services\obj\Release\net8.0\Services.csproj.CoreCompileInputs.cache
+D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\Services\obj\Release\net8.0\Services.sourcelink.json
+D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\Services\obj\Release\net8.0\Services.csproj.Up2Date
+D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\Services\obj\Release\net8.0\Services.dll
+D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\Services\obj\Release\net8.0\refint\Services.dll
+D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\Services\obj\Release\net8.0\Services.pdb
+D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\Services\obj\Release\net8.0\ref\Services.dll
