@@ -23,10 +23,36 @@ import {
   Eye
 } from "lucide-react";
 
+interface ProfileData {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  address: string;
+  dateOfBirth: string;
+  gender: string;
+  occupation: string;
+  emergencyContact: string;
+  emergencyContactName: string;
+  notes: string;
+}
+
+interface TestHistory {
+  id: string;
+  testName: string;
+  date: string;
+  status: string;
+  result: string;
+  price: string;
+}
+
+type StatusType = "Hoàn thành" | "Đang xử lý" | "Đã lấy mẫu" | "Hủy";
+type ResultType = "Có kết quả" | "Chờ kết quả" | "Đang phân tích";
+
 export default function CustomerProfile() {
   const { toast } = useToast();
-  const [isEditing, setIsEditing] = useState(false);
-  const [profileData, setProfileData] = useState({
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [profileData, setProfileData] = useState<ProfileData>({
     id: "KH001",
     fullName: "Nguyễn Văn A",
     email: "nguyenvana@email.com",
@@ -40,10 +66,10 @@ export default function CustomerProfile() {
     notes: ""
   });
 
-  const [editData, setEditData] = useState({ ...profileData });
+  const [editData, setEditData] = useState<ProfileData>({ ...profileData });
 
   // Dữ liệu lịch sử xét nghiệm mẫu
-  const [testHistory] = useState([
+  const [testHistory] = useState<TestHistory[]>([
     {
       id: "XN001",
       testName: "Xét nghiệm huyết thống dân sự",
@@ -70,14 +96,14 @@ export default function CustomerProfile() {
     }
   ]);
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (field: keyof ProfileData, value: string): void => {
     setEditData(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = (): void => {
     setProfileData({ ...editData });
     setIsEditing(false);
     toast({
@@ -86,29 +112,29 @@ export default function CustomerProfile() {
     });
   };
 
-  const handleCancel = () => {
+  const handleCancel = (): void => {
     setEditData({ ...profileData });
     setIsEditing(false);
   };
 
-  const getStatusBadge = (status) => {
-    const statusConfig = {
+  const getStatusBadge = (status: string) => {
+    const statusConfig: Record<StatusType, { variant: string; className: string }> = {
       "Hoàn thành": { variant: "default", className: "bg-green-100 text-green-800" },
       "Đang xử lý": { variant: "secondary", className: "bg-yellow-100 text-yellow-800" },
       "Đã lấy mẫu": { variant: "outline", className: "bg-blue-100 text-blue-800" },
       "Hủy": { variant: "destructive", className: "bg-red-100 text-red-800" }
     };
-    const config = statusConfig[status] || { variant: "default", className: "" };
+    const config = statusConfig[status as StatusType] || { variant: "default", className: "" };
     return <Badge className={config.className}>{status}</Badge>;
   };
 
-  const getResultBadge = (result) => {
-    const resultConfig = {
+  const getResultBadge = (result: string) => {
+    const resultConfig: Record<ResultType, { className: string }> = {
       "Có kết quả": { className: "bg-green-100 text-green-800" },
       "Chờ kết quả": { className: "bg-yellow-100 text-yellow-800" },
       "Đang phân tích": { className: "bg-blue-100 text-blue-800" }
     };
-    const config = resultConfig[result] || { className: "bg-gray-100 text-gray-800" };
+    const config = resultConfig[result as ResultType] || { className: "bg-gray-100 text-gray-800" };
     return <Badge className={config.className}>{result}</Badge>;
   };
 
