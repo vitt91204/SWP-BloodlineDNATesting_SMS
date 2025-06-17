@@ -30,8 +30,8 @@ export default function Login() {
         description: "Chào mừng bạn quay trở lại!",
       });
 
-      // Redirect to dashboard
-      navigate('/admin');
+      // Redirect to home page instead of admin
+      navigate('/');
     } catch (error) {
       toast({
         variant: "destructive",
