@@ -15,6 +15,7 @@ import Booking from "@/pages/Booking";
 import Payment from "@/pages/Payment";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
+import CustomerProfile from "@/pages/customer/Profile";
 
 // Admin pages
 import { AdminLayout } from "@/layouts/AdminLayout";
@@ -49,6 +50,7 @@ function App() {
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
               <Route path="customers" element={<CustomersPage />} />
+              <Route path="customers/:id" element={<CustomerProfile />} />
             </Route>
           </Routes>
         </Router>

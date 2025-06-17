@@ -92,7 +92,7 @@ export default function Booking() {
 
   // Hàm kiểm tra validation các trường bắt buộc
   const isStep3Valid = () => {
-    const requiredFields = formData.fullName && formData.phone && formData.numberOfPeople;
+    const requiredFields = formData.fullName && formData.phone && formData.numberOfPeople && formData.address;
     
     if (selectedLocation === 'home') {
       return requiredFields && selectedDate && selectedTimeSlot;
@@ -392,14 +392,18 @@ export default function Booking() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Địa chỉ {selectedLocation === 'home' ? 'thu mẫu' : 'liên hệ'}
+                    Địa chỉ  {selectedLocation === 'home' ? 'thu mẫu' : 'liên hệ'} *
                   </label>
                   <Textarea 
                     placeholder="Nhập địa chỉ chi tiết..." 
                     rows={3} 
                     value={formData.address}
                     onChange={(e) => updateFormData('address', e.target.value)}
+                    className={showValidation && !formData.address ? 'border-red-300 focus:border-red-500' : ''}
                   />
+                  {showValidation && !formData.address && (
+                    <p className="text-red-500 text-xs mt-1">Vui lòng nhập địa chỉ</p>
+                  )}
                 </div>
 
                 <div>
