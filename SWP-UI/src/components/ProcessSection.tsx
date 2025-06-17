@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Link } from "react-router-dom";
 import { 
   Calendar, 
   Package, 
@@ -147,9 +148,9 @@ export const ProcessSection = () => {
     const Icon = step.icon;
     
     return (
-      <div className="relative h-full">
-        <Card className="bg-white border-gray-200 hover:shadow-lg transition-all duration-300 h-full flex flex-col">
-          <CardHeader className="pb-4 flex-none">
+      <div className="relative">
+        <Card className="bg-white border-gray-200 hover:shadow-lg transition-all duration-300">
+          <CardHeader className="pb-4">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-green-500 rounded-xl flex items-center justify-center">
                 <Icon className="w-6 h-6 text-white" />
@@ -166,7 +167,7 @@ export const ProcessSection = () => {
             </p>
           </CardHeader>
           
-          <CardContent className="flex-1 flex flex-col justify-between">
+          <CardContent>
             <div className="space-y-3">
               <div className="flex items-center text-sm text-blue-600">
                 <Clock className="w-4 h-4 mr-2" />
@@ -278,12 +279,16 @@ export const ProcessSection = () => {
               Chọn hình thức phù hợp với bạn và bắt đầu hành trình tìm hiểu về mối quan hệ huyết thống
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-green-600">
-                Đặt lịch thu mẫu tại nhà
-              </Button>
-              <Button size="lg" variant="outline">
-                Đặt lịch hẹn tại cơ sở
-              </Button>
+              <Link to="/booking">
+                <Button size="lg" className="bg-gradient-to-r from-blue-600 to-green-600">
+                  Đặt lịch thu mẫu tại nhà
+                </Button>
+              </Link>
+              <Link to="/booking">
+                <Button size="lg" variant="outline">
+                  Đặt lịch hẹn tại cơ sở
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
