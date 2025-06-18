@@ -21,7 +21,23 @@ namespace Services
         public async Task<User> CreateUserAsynce(CreateUserRequest createUserRequest)
         {
             var role = string.IsNullOrWhiteSpace(createUserRequest.Role) ? "Customer" : createUserRequest.Role.Trim();
-
+            var existingUser = await userRepository.GetUserByUsernameAsync(createUserRequest.Username);
+            if (existingUser != null)
+            {
+                throw new InvalidOperationException($"User with username {createUserRequest.Username} already exists.");
+            }
+            if (string.IsNullOrWhiteSpace(createUserRequest.Username) || string.IsNullOrWhiteSpace(createUserRequest.Password))
+            {
+                throw new ArgumentException("Username and password cannot be empty.");
+            }
+            if (createUserRequest.Password.Length < 8)
+            {
+                throw new ArgumentException("Password must be at least 8 characters long.");
+            }
+            if (createUserRequest.Password != createUserRequest.RepeatPassword)
+            {
+                throw new ArgumentException("Passwords do not match.");
+            }
             var user = new User
             {
                 Username = createUserRequest.Username,

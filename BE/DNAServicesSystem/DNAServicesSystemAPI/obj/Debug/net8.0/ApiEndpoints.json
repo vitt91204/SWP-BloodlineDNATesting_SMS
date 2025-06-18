@@ -85,7 +85,7 @@
   },
   {
     "ContainingType": "DNAServicesSystemAPI.Controllers.UserController",
-    "Method": "Lon",
+    "Method": "Login",
     "RelativePath": "api/User/login",
     "HttpMethod": "POST",
     "IsController": true,

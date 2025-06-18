@@ -21,6 +21,12 @@ namespace Repositories
             return await context.Users
                 .FirstOrDefaultAsync(u => u.Username == username && u.Password == password);
         }
+
+        public async Task<User?> GetUserByUsernameAsync(string username)
+        {
+            return await context.Users
+                .FirstOrDefaultAsync(u => u.Username == username);
+        }   
     }
       
 }
