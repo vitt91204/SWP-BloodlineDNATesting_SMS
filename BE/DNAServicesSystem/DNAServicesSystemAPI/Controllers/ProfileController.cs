@@ -6,7 +6,7 @@ namespace DNAServicesSystemAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [ApiExplorerSettings(GroupName = "profile")] // This groups endpoints in Swagger
+ // This groups endpoints in Swagger
     public class ProfileController : ControllerBase
     {
         private readonly ProfileService profileService;
