@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,10 +10,26 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, MapPin, Home, Users, TestTube, Clock, CheckCircle, ArrowRight } from "lucide-react";
 
-export default function Booking() {
+export default function Booking() { 
+  const navigate = useNavigate();
   const [selectedService, setSelectedService] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState("");
   const [step, setStep] = useState(1);
+
+  // Thêm state cho form data
+  const [formData, setFormData] = useState({
+    fullName: "",
+    phone: "",
+    email: "",
+    address: "",
+    numberOfPeople: "",
+    notes: ""
+  });
+
+  // Thêm state để theo dõi khi nào hiển thị validation
+  const [showValidation, setShowValidation] = useState(false);
 
   const services = [
     {
@@ -58,6 +75,67 @@ export default function Booking() {
       ]
     }
   ];
+
+  // Thêm time slots cố định
+  const timeSlots = [
+    { id: "08:00", time: "08:00", label: "08:00 - 09:00", available: true },
+    { id: "09:00", time: "09:00", label: "09:00 - 10:00", available: true },
+    { id: "10:00", time: "10:00", label: "10:00 - 11:00", available: false },
+    { id: "11:00", time: "11:00", label: "11:00 - 12:00", available: true },
+    { id: "13:00", time: "13:00", label: "13:00 - 14:00", available: true },
+    { id: "14:00", time: "14:00", label: "14:00 - 15:00", available: true },
+    { id: "15:00", time: "15:00", label: "15:00 - 16:00", available: false },
+    { id: "16:00", time: "16:00", label: "16:00 - 17:00", available: true },
+    { id: "18:00", time: "18:00", label: "18:00 - 19:00", available: true },
+    { id: "19:00", time: "19:00", label: "19:00 - 20:00", available: true },
+  ];
+
+  // Hàm kiểm tra validation các trường bắt buộc
+  const isStep3Valid = () => {
+    const requiredFields = formData.fullName && formData.phone && formData.numberOfPeople && formData.address;
+    
+    if (selectedLocation === 'home') {
+      return requiredFields && selectedDate && selectedTimeSlot;
+    }
+    
+    return requiredFields;
+  };
+
+  // Hàm cập nhật form data
+  const updateFormData = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Hàm xử lý khi nhấn "Tiếp tục" ở step 3
+  const handleStep3Continue = () => {
+    if (isStep3Valid()) {
+      setStep(4);
+      setShowValidation(false); // Reset validation state
+    } else {
+      setShowValidation(true); // Hiển thị validation errors
+    }
+  };
+
+  // Hàm xử lý khi nhấn "Xác nhận đặt lịch" - chuyển đến trang thanh toán
+  const handleConfirmBooking = () => {
+    // Có thể lưu thông tin đặt lịch vào localStorage hoặc state management
+    const bookingData = {
+      service: services.find(s => s.id === selectedService),
+      location: locations.find(l => l.id === selectedLocation),
+      date: selectedDate,
+      timeSlot: selectedTimeSlot ? timeSlots.find(slot => slot.id === selectedTimeSlot) : null,
+      formData: formData
+    };
+    
+    // Lưu vào localStorage để trang thanh toán có thể truy cập
+    localStorage.setItem('bookingData', JSON.stringify(bookingData));
+    
+    // Chuyển hướng đến trang thanh toán
+    navigate('/payment');
+  };
 
   const BookingSteps = () => {
     const steps = [
@@ -274,13 +352,29 @@ export default function Booking() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Họ và tên người đặt *
                     </label>
-                    <Input placeholder="Nhập họ và tên" />
+                    <Input 
+                      placeholder="Nhập họ và tên" 
+                      value={formData.fullName}
+                      onChange={(e) => updateFormData('fullName', e.target.value)}
+                      className={showValidation && !formData.fullName ? 'border-red-300 focus:border-red-500' : ''}
+                    />
+                    {showValidation && !formData.fullName && (
+                      <p className="text-red-500 text-xs mt-1">Vui lòng nhập họ và tên</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Số điện thoại *
                     </label>
-                    <Input placeholder="Nhập số điện thoại" />
+                    <Input 
+                      placeholder="Nhập số điện thoại" 
+                      value={formData.phone}
+                      onChange={(e) => updateFormData('phone', e.target.value)}
+                      className={showValidation && !formData.phone ? 'border-red-300 focus:border-red-500' : ''}
+                    />
+                    {showValidation && !formData.phone && (
+                      <p className="text-red-500 text-xs mt-1">Vui lòng nhập số điện thoại</p>
+                    )}
                   </div>
                 </div>
 
@@ -288,43 +382,122 @@ export default function Booking() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Email
                   </label>
-                  <Input type="email" placeholder="Nhập địa chỉ email" />
+                  <Input 
+                    type="email" 
+                    placeholder="Nhập địa chỉ email" 
+                    value={formData.email}
+                    onChange={(e) => updateFormData('email', e.target.value)}
+                  />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Địa chỉ {selectedLocation === 'home' ? 'thu mẫu' : 'liên hệ'}
+                    Địa chỉ  {selectedLocation === 'home' ? 'thu mẫu' : 'liên hệ'} *
                   </label>
-                  <Textarea placeholder="Nhập địa chỉ chi tiết..." rows={3} />
+                  <Textarea 
+                    placeholder="Nhập địa chỉ chi tiết..." 
+                    rows={3} 
+                    value={formData.address}
+                    onChange={(e) => updateFormData('address', e.target.value)}
+                    className={showValidation && !formData.address ? 'border-red-300 focus:border-red-500' : ''}
+                  />
+                  {showValidation && !formData.address && (
+                    <p className="text-red-500 text-xs mt-1">Vui lòng nhập địa chỉ</p>
+                  )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Số người tham gia xét nghiệm *
                   </label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                  <select 
+                    className={`w-full px-3 py-2 border rounded-md ${
+                      showValidation && !formData.numberOfPeople ? 'border-red-300 focus:border-red-500' : 'border-gray-300'
+                    }`}
+                    value={formData.numberOfPeople}
+                    onChange={(e) => updateFormData('numberOfPeople', e.target.value)}
+                  >
                     <option value="">Chọn số người</option>
                     <option value="2">2 người</option>
                     <option value="3">3 người</option>
                     <option value="4">4 người</option>
                     <option value="5">5 người trở lên</option>
                   </select>
+                  {showValidation && !formData.numberOfPeople && (
+                    <p className="text-red-500 text-xs mt-1">Vui lòng chọn số người tham gia</p>
+                  )}
                 </div>
 
                 {selectedLocation === 'home' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Thời gian mong muốn
-                    </label>
-                    <div className="grid grid-cols-2 gap-4">
-                      <Input type="date" />
-                      <select className="px-3 py-2 border border-gray-300 rounded-md">
-                        <option value="">Chọn giờ</option>
-                        <option value="morning">Sáng (8:00 - 12:00)</option>
-                        <option value="afternoon">Chiều (13:00 - 17:00)</option>
-                        <option value="evening">Tối (18:00 - 20:00)</option>
-                      </select>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Chọn ngày mong muốn *
+                      </label>
+                      <Input 
+                        type="date" 
+                        value={selectedDate}
+                        onChange={(e) => {
+                          setSelectedDate(e.target.value);
+                          setSelectedTimeSlot(""); // Reset time slot when date changes
+                        }}
+                        min={new Date().toISOString().split('T')[0]} // Không cho chọn ngày trong quá khứ
+                        className={showValidation && selectedLocation === 'home' && !selectedDate ? 'border-red-300 focus:border-red-500' : ''}
+                      />
+                      {showValidation && selectedLocation === 'home' && !selectedDate && (
+                        <p className="text-red-500 text-xs mt-1">Vui lòng chọn ngày mong muốn</p>
+                      )}
                     </div>
+                    
+                    {selectedDate && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">
+                          Chọn khung giờ *
+                        </label>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                          {timeSlots.map((slot) => (
+                            <button
+                              key={slot.id}
+                              type="button"
+                              disabled={!slot.available}
+                              onClick={() => setSelectedTimeSlot(slot.id)}
+                              className={`px-4 py-3 text-sm font-medium rounded-lg border-2 transition-all ${
+                                !slot.available
+                                  ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                                  : selectedTimeSlot === slot.id
+                                  ? 'bg-blue-50 text-blue-700 border-blue-500'
+                                  : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                              }`}
+                            >
+                              <div className="flex items-center justify-center">
+                                <Clock className="w-4 h-4 mr-1" />
+                                {slot.label}
+                              </div>
+                              {!slot.available && (
+                                <div className="text-xs text-gray-400 mt-1">
+                                  Đã đặt
+                                </div>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                        {selectedTimeSlot && (
+                          <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                            <div className="flex items-center text-green-700">
+                              <CheckCircle className="w-4 h-4 mr-2" />
+                              <span className="text-sm font-medium">
+                                Đã chọn: {timeSlots.find(slot => slot.id === selectedTimeSlot)?.label} ngày {selectedDate}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                        {showValidation && selectedLocation === 'home' && selectedDate && !selectedTimeSlot && (
+                          <div className="mt-3 p-3 bg-red-50 rounded-lg border border-red-200">
+                            <p className="text-red-500 text-sm">Vui lòng chọn khung giờ</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -332,14 +505,22 @@ export default function Booking() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Ghi chú
                   </label>
-                  <Textarea placeholder="Thông tin bổ sung (nếu có)..." rows={3} />
+                  <Textarea 
+                    placeholder="Thông tin bổ sung (nếu có)..." 
+                    rows={3} 
+                    value={formData.notes}
+                    onChange={(e) => updateFormData('notes', e.target.value)}
+                  />
                 </div>
 
                 <div className="flex space-x-4">
                   <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
                     Quay lại
                   </Button>
-                  <Button className="flex-1" onClick={() => setStep(4)}>
+                  <Button 
+                    className="flex-1" 
+                    onClick={handleStep3Continue}
+                  >
                     Tiếp tục
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -411,7 +592,7 @@ export default function Booking() {
                   <Button variant="outline" onClick={() => setStep(3)} className="flex-1">
                     Quay lại
                   </Button>
-                  <Button className="flex-1 bg-gradient-to-r from-blue-600 to-green-600">
+                  <Button className="flex-1 bg-gradient-to-r from-blue-600 to-green-600" onClick={handleConfirmBooking}>
                     Xác nhận đặt lịch
                     <CheckCircle className="w-4 h-4 ml-2" />
                   </Button>
@@ -426,3 +607,4 @@ export default function Booking() {
     </div>
   );
 }
+  

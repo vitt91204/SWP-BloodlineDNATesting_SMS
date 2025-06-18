@@ -12,8 +12,10 @@ import Blog from "@/pages/Blog";
 import Contact from "@/pages/Contact";
 import Results from "@/pages/Results";
 import Booking from "@/pages/Booking";
+import Payment from "@/pages/Payment";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
+import CustomerProfile from "@/pages/customer/Profile";
 
 // Admin pages
 import { AdminLayout } from "@/layouts/AdminLayout";
@@ -38,6 +40,7 @@ function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/results" element={<Results />} />
             <Route path="/booking" element={<Booking />} />
+            <Route path="/payment" element={<Payment />} />
 
             {/* Auth routes */}
             <Route path="/login" element={<Login />} />
@@ -47,6 +50,7 @@ function App() {
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
               <Route path="customers" element={<CustomersPage />} />
+              <Route path="customers/:id" element={<CustomerProfile />} />
             </Route>
           </Routes>
         </Router>
