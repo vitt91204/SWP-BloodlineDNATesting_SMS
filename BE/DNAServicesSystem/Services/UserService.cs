@@ -45,8 +45,8 @@ namespace Services
                 Email = createUserRequest.Email,
                 Phone = createUserRequest.Phone,
                 Role = role,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
             };
             await userRepository.CreateAsync(user);
             return user;

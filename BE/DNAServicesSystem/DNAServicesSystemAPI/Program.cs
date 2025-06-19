@@ -1,4 +1,3 @@
-
 using Services;
 
 namespace DNAServicesSystemAPI
@@ -8,6 +7,17 @@ namespace DNAServicesSystemAPI
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            // Add CORS policy
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy.AllowAnyOrigin()
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
 
             builder.Services.AddScoped<UserService>();
 
@@ -20,11 +30,14 @@ namespace DNAServicesSystemAPI
 
             var app = builder.Build();
 
+            // Use CORS policy
+            app.UseCors("AllowAll");
+
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerUI(); 
             }
 
             app.UseAuthorization();
