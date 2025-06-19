@@ -5,9 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { Microscope } from "lucide-react";
+import { authAPI } from "@/api/axios";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -18,11 +19,16 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      // TODO: Implement actual authentication logic here
-      // For now, we'll just simulate a successful login
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Call the actual login API
+      const response = await authAPI.login(username, password);
       
-      // Store auth token or user data
+      // Store auth token and user data
+      if (response.token) {
+        localStorage.setItem('authToken', response.token);
+      }
+      if (response.user) {
+        localStorage.setItem('userData', JSON.stringify(response.user));
+      }
       localStorage.setItem('isAuthenticated', 'true');
       
       toast({
@@ -30,13 +36,20 @@ export default function Login() {
         description: "Chào mừng bạn quay trở lại!",
       });
 
-      // Redirect to home page instead of admin
+      // Redirect to home page
       navigate('/');
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Login error:', error);
+      
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error || 
+                          error.message || 
+                          "Email hoặc mật khẩu không chính xác.";
+      
       toast({
         variant: "destructive",
         title: "Đăng nhập thất bại",
-        description: "Email hoặc mật khẩu không chính xác.",
+        description: errorMessage,
       });
     } finally {
       setIsLoading(false);
@@ -79,13 +92,13 @@ export default function Login() {
 
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="username">Tên đăng nhập</Label>
               <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Nhập tên đăng nhập"
                 required
                 className="mt-1"
               />
