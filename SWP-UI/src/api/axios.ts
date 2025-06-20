@@ -75,6 +75,30 @@ export const authAPI = {
 
 // Other API functions
 export const userAPI = {
+  // Get all users (for admin)
+  getAllUsers: async () => {
+    console.log('Calling /api/User to get all users...');
+    const response = await api.get('/api/User');
+    console.log('All Users API Response:', response.data);
+    return response.data;
+  },
+
+  // Update user (for admin)
+  updateUser: async (userId: number, userData: any) => {
+    console.log(`Updating user ${userId} with data:`, userData);
+    const response = await api.put(`/api/User/${userId}`, userData);
+    console.log('Update User Response:', response.data);
+    return response.data;
+  },
+
+  // Delete user (for admin)
+  deleteUser: async (userId: number) => {
+    console.log(`Deleting user ${userId}...`);
+    const response = await api.delete(`/api/User/${userId}`);
+    console.log('Delete User Response:', response.data);
+    return response.data;
+  },
+
   // Get user basic info (email, phone) from /api/User
   getUserInfo: async (userId?: string) => {
     console.log('Calling /api/User endpoint...');
