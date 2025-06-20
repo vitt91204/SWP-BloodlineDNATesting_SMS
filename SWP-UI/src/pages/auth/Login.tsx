@@ -43,7 +43,12 @@ export default function Login() {
       }
       
       // Always store some user data, even if just username
-      const userData = user || { username: username, fullName: username };
+      // Ensure we have an id field for the user
+      const userData = user || { 
+        username: username, 
+        fullName: username,
+        id: user?.id || user?.userId || user?.user_id || username // fallback to username as id
+      };
       localStorage.setItem('userData', JSON.stringify(userData));
       console.log('User data saved to localStorage:', userData);
       
