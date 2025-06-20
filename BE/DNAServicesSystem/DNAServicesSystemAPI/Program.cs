@@ -21,6 +21,7 @@ namespace DNAServicesSystemAPI
 
             builder.Services.AddScoped<UserService>();
             builder.Services.AddScoped<AddressService>();
+            builder.Services.AddScoped<ProfileService>();
 
             // Add services to the container.
 
@@ -28,6 +29,7 @@ namespace DNAServicesSystemAPI
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
 
             var app = builder.Build();
 
