@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
+import { userAPI } from "@/api/axios";
 import { 
   User, 
   Mail, 
@@ -22,7 +23,8 @@ import {
   X,
   TestTube,
   Download,
-  Eye
+  Eye,
+  Loader2
 } from "lucide-react";
 
 interface ProfileData {
@@ -33,9 +35,6 @@ interface ProfileData {
   address: string;
   dateOfBirth: string;
   gender: string;
-  occupation: string;
-  emergencyContact: string;
-  emergencyContactName: string;
   notes: string;
 }
 
@@ -54,21 +53,106 @@ type ResultType = "Có kết quả" | "Chờ kết quả" | "Đang phân tích";
 export default function CustomerProfile() {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [profileData, setProfileData] = useState<ProfileData>({
-    id: "KH001",
-    fullName: "Nguyễn Văn A",
-    email: "nguyenvana@email.com",
-    phone: "0901234567",
-    address: "123 Đường ABC, Quần 1, TP.HCM",
-    dateOfBirth: "1990-01-15",
-    gender: "Nam",
-    occupation: "Kỹ sư",
-    emergencyContact: "0907654321",
-    emergencyContactName: "Nguyễn Thị B",
+    id: "",
+    fullName: "",
+    email: "",
+    phone: "",
+    address: "",
+    dateOfBirth: "",
+    gender: "",
     notes: ""
   });
 
   const [editData, setEditData] = useState<ProfileData>({ ...profileData });
+
+  // Load profile data from API
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Load data from both APIs
+      const [userInfoResponse, profileResponse] = await Promise.all([
+        userAPI.getUserInfo().catch(err => {
+          console.log('User info API failed:', err);
+          return null;
+        }),
+        userAPI.getProfile().catch(err => {
+          console.log('Profile API failed:', err);
+          return null;
+        })
+      ]);
+      
+      console.log('User Info API Response:', userInfoResponse);
+      console.log('Profile API Response:', profileResponse);
+      
+      // Function to extract email from various possible field names
+      const extractEmail = (data: any) => {
+        return data?.email || data?.Email || data?.emailAddress || data?.mail || "";
+      };
+      
+      // Function to extract phone from various possible field names  
+      const extractPhone = (data: any) => {
+        return data?.phone || data?.Phone || data?.phoneNumber || data?.PhoneNumber || 
+               data?.mobile || data?.Mobile || data?.telephone || data?.tel || "";
+      };
+      
+      // Get email/phone from localStorage if available
+      const localUserData = localStorage.getItem('userData');
+      const localUser = localUserData ? JSON.parse(localUserData) : null;
+      
+      // Combine data from all sources
+      const profile: ProfileData = {
+        id: profileResponse?.id || profileResponse?.userId || userInfoResponse?.id || userInfoResponse?.userId || "",
+        fullName: profileResponse?.fullName || profileResponse?.name || userInfoResponse?.fullName || userInfoResponse?.name || "",
+        email: extractEmail(userInfoResponse) || extractEmail(profileResponse) || extractEmail(localUser) || "", // Try User API, Profile API, then localStorage
+        phone: extractPhone(userInfoResponse) || extractPhone(profileResponse) || extractPhone(localUser) || "", // Try User API, Profile API, then localStorage  
+        address: profileResponse?.address || "",
+        dateOfBirth: profileResponse?.dateOfBirth || profileResponse?.birthDate || "",
+        gender: profileResponse?.gender || "",
+        notes: profileResponse?.notes || profileResponse?.description || ""
+      };
+      
+      console.log('=== FINAL COMBINED PROFILE DATA ===');
+      console.log('Raw User Info Response:', userInfoResponse);
+      console.log('Raw Profile Response:', profileResponse);
+      
+      console.log('Email sources:', {
+        fromUserAPI: userInfoResponse?.email,
+        fromProfileAPI: profileResponse?.email,
+        finalEmail: profile.email
+      });
+      console.log('Phone sources:', {
+        fromUserAPI: userInfoResponse?.phone || userInfoResponse?.phoneNumber,
+        fromProfileAPI: profileResponse?.phone || profileResponse?.phoneNumber,
+        finalPhone: profile.phone
+      });
+      
+      // Check all possible field names
+      console.log('All User API fields:', userInfoResponse ? Object.keys(userInfoResponse) : 'null');
+      console.log('All Profile API fields:', profileResponse ? Object.keys(profileResponse) : 'null');
+      
+      console.log('Final profile:', profile);
+      console.log('=== END DEBUG ===');
+      
+      setProfileData(profile);
+      setEditData(profile);
+    } catch (error) {
+      console.error('Error loading profile:', error);
+      toast({
+        variant: "destructive",
+        title: "Lỗi tải dữ liệu",
+        description: "Không thể tải thông tin hồ sơ. Vui lòng thử lại.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Dữ liệu lịch sử xét nghiệm mẫu
   const [testHistory] = useState<TestHistory[]>([
@@ -105,13 +189,40 @@ export default function CustomerProfile() {
     }));
   };
 
-  const handleSave = (): void => {
-    setProfileData({ ...editData });
-    setIsEditing(false);
-    toast({
-      title: "Cập nhật thành công",
-      description: "Thông tin cá nhân đã được cập nhật.",
-    });
+  const handleSave = async (): Promise<void> => {
+    try {
+      setIsLoading(true);
+      
+      // Prepare data for API - ensure all required fields are included
+      const updateData = {
+        ...editData,
+        // Make sure we have an ID for the update
+        id: editData.id || profileData.id
+      };
+      
+      console.log('Saving profile data:', updateData);
+      
+      // Call API to update profile
+      const result = await userAPI.updateProfile(updateData);
+      
+      setProfileData({ ...editData });
+      setIsEditing(false);
+      toast({
+        title: "Cập nhật thành công",
+        description: "Thông tin cá nhân đã được cập nhật.",
+      });
+      
+      console.log('Profile update successful:', result);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast({
+        variant: "destructive",
+        title: "Lỗi cập nhật",
+        description: "Không thể cập nhật thông tin. Vui lòng thử lại.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCancel = (): void => {
@@ -177,11 +288,15 @@ export default function CustomerProfile() {
                     </Button>
                   ) : (
                     <div className="flex gap-2">
-                      <Button onClick={handleSave} size="sm">
-                        <Save className="w-4 h-4 mr-2" />
-                        Lưu
+                      <Button onClick={handleSave} size="sm" disabled={isLoading}>
+                        {isLoading ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Save className="w-4 h-4 mr-2" />
+                        )}
+                        {isLoading ? "Đang lưu..." : "Lưu"}
                       </Button>
-                      <Button onClick={handleCancel} variant="outline" size="sm">
+                      <Button onClick={handleCancel} variant="outline" size="sm" disabled={isLoading}>
                         <X className="w-4 h-4 mr-2" />
                         Hủy
                       </Button>
@@ -190,6 +305,13 @@ export default function CustomerProfile() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-8 h-8 animate-spin" />
+                    <span className="ml-2">Đang tải...</span>
+                  </div>
+                ) : (
+                  <>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="fullName">Họ và tên</Label>
@@ -215,11 +337,12 @@ export default function CustomerProfile() {
                         type="email"
                         value={editData.email}
                         onChange={(e) => handleInputChange('email', e.target.value)}
+                        placeholder="Nhập email của bạn"
                       />
                     ) : (
                       <p className="flex items-center gap-2 text-gray-900">
                         <Mail className="w-4 h-4 text-gray-500" />
-                        {profileData.email}
+                        {profileData.email || "Chưa có email"}
                       </p>
                     )}
                   </div>
@@ -231,11 +354,12 @@ export default function CustomerProfile() {
                         id="phone"
                         value={editData.phone}
                         onChange={(e) => handleInputChange('phone', e.target.value)}
+                        placeholder="Nhập số điện thoại"
                       />
                     ) : (
                       <p className="flex items-center gap-2 text-gray-900">
                         <Phone className="w-4 h-4 text-gray-500" />
-                        {profileData.phone}
+                        {profileData.phone || "Chưa có số điện thoại"}
                       </p>
                     )}
                   </div>
@@ -273,19 +397,6 @@ export default function CustomerProfile() {
                       <p className="text-gray-900">{profileData.gender}</p>
                     )}
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="occupation">Nghề nghiệp</Label>
-                    {isEditing ? (
-                      <Input
-                        id="occupation"
-                        value={editData.occupation}
-                        onChange={(e) => handleInputChange('occupation', e.target.value)}
-                      />
-                    ) : (
-                      <p className="text-gray-900">{profileData.occupation}</p>
-                    )}
-                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -307,37 +418,6 @@ export default function CustomerProfile() {
 
                 <Separator />
 
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Liên hệ khẩn cấp</h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="emergencyContactName">Tên người liên hệ</Label>
-                      {isEditing ? (
-                        <Input
-                          id="emergencyContactName"
-                          value={editData.emergencyContactName}
-                          onChange={(e) => handleInputChange('emergencyContactName', e.target.value)}
-                        />
-                      ) : (
-                        <p className="text-gray-900">{profileData.emergencyContactName}</p>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="emergencyContact">Số điện thoại khẩn cấp</Label>
-                      {isEditing ? (
-                        <Input
-                          id="emergencyContact"
-                          value={editData.emergencyContact}
-                          onChange={(e) => handleInputChange('emergencyContact', e.target.value)}
-                        />
-                      ) : (
-                        <p className="text-gray-900">{profileData.emergencyContact}</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="notes">Ghi chú</Label>
                   {isEditing ? (
@@ -352,6 +432,8 @@ export default function CustomerProfile() {
                     <p className="text-gray-900">{profileData.notes || "Không có ghi chú"}</p>
                   )}
                 </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
