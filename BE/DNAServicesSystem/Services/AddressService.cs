@@ -18,11 +18,11 @@ namespace Services
            addressRepository =  new AddressRepository();
         }
         
-        public async Task<Address> CreateAddress(CreateAddressRequest createAddressRequest)
+        public async Task<Address> CreateAddress(CreateAddressRequest createAddressRequest, int userId)
         {
             var address = new Address
             {
-                UserId = createAddressRequest.UserId,
+                UserId = userId,
                 Label = createAddressRequest.Label,
                 AddressLine = createAddressRequest.AddressLine,
                 City = createAddressRequest.City,
@@ -54,6 +54,20 @@ namespace Services
         {
             var addresses = await addressRepository.GetAllAsync();
             return addresses.Where(a => a.UserId == userId);
+        }
+
+        public async Task<Address> GetAddressByIdAsync(int addressId, int userId)
+        {
+            var address = await addressRepository.GetByIdAsync(addressId);
+            if (address == null)
+            {
+                throw new KeyNotFoundException($"Address with ID {addressId} not found.");
+            }
+            if (address.UserId != userId)
+            {
+                throw new UnauthorizedAccessException($"User with ID {userId} does not have access to this address.");
+            }
+            return address;
         }
 
         public async Task DeleteAddressAsync(int addressId, int userId)

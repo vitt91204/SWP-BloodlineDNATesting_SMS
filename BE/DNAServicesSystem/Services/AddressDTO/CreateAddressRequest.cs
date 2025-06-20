@@ -9,9 +9,7 @@ namespace Services.AddressDTO
 {
     public class CreateAddressRequest
     {
-        
-        [Required]
-        public int UserId { get; set; }
+
 
         [StringLength(50)]
         public string? Label { get; set; }

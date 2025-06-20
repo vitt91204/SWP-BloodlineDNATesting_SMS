@@ -14,5 +14,10 @@ namespace Repositories
         {
             // Default constructor initializes the context
         }
+
+        public async Task<Address?> GetByAddressIdAsync(int addressId)
+        {
+            return await context.Addresses.FindAsync(addressId);
+        }
     }
 }

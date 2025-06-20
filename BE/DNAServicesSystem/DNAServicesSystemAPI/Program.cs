@@ -20,6 +20,7 @@ namespace DNAServicesSystemAPI
             });
 
             builder.Services.AddScoped<UserService>();
+            builder.Services.AddScoped<AddressService>();
 
             // Add services to the container.
 
