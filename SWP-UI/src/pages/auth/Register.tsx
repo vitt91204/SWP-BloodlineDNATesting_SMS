@@ -5,14 +5,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { Microscope } from "lucide-react";
+import { authAPI } from "@/api/axios";
 
 export default function Register() {
   const [formData, setFormData] = useState({
-    fullName: "",
+    username: "",
     email: "",
     password: "",
-    confirmPassword: "",
+    repeatPassword: "",
     phone: "",
+    role: "", 
   });
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -30,8 +32,7 @@ export default function Register() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Basic validation
-    if (formData.password !== formData.confirmPassword) {
+    if (formData.password !== formData.repeatPassword) {
       toast({
         variant: "destructive",
         title: "Lỗi",
@@ -42,22 +43,26 @@ export default function Register() {
     }
 
     try {
-      // TODO: Implement actual registration logic here
-      // For now, we'll just simulate a successful registration
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await authAPI.register({
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        repeatPassword: formData.repeatPassword,
+        phone: formData.phone,
+        role: formData.role,
+      });
+
       toast({
         title: "Đăng ký thành công",
         description: "Vui lòng đăng nhập để tiếp tục.",
       });
 
-      // Redirect to login
       navigate('/login');
-    } catch (error) {
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Đăng ký thất bại",
-        description: "Có lỗi xảy ra. Vui lòng thử lại sau.",
+        description: error.response?.data?.message || "Có lỗi xảy ra. Vui lòng thử lại sau.",
       });
     } finally {
       setIsLoading(false);
@@ -100,12 +105,12 @@ export default function Register() {
 
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <Label htmlFor="fullName">Họ và tên</Label>
+              <Label htmlFor="username">Tên người dùng</Label>
               <Input
-                id="fullName"
-                name="fullName"
+                id="username"
+                name="username"
                 type="text"
-                value={formData.fullName}
+                value={formData.username}
                 onChange={handleChange}
                 required
                 className="mt-1"
@@ -152,12 +157,12 @@ export default function Register() {
             </div>
 
             <div>
-              <Label htmlFor="confirmPassword">Xác nhận mật khẩu</Label>
+              <Label htmlFor="repeatPassword">Xác nhận mật khẩu</Label>
               <Input
-                id="confirmPassword"
-                name="confirmPassword"
+                id="repeatPassword"
+                name="repeatPassword"
                 type="password"
-                value={formData.confirmPassword}
+                value={formData.repeatPassword}
                 onChange={handleChange}
                 required
                 className="mt-1"
@@ -176,4 +181,4 @@ export default function Register() {
       </div>
     </div>
   );
-} 
+}

@@ -4,7 +4,7 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 // Backend configuration
-const API_TARGET = process.env.VITE_API_URL || 'https://4725-118-69-182-149.ngrok-free.app';
+const API_TARGET = process.env.VITE_API_URL || 'https://possible-macaque-keen.ngrok-free.app';
 const isNgrok = API_TARGET.includes('ngrok');
 
 // https://vitejs.dev/config/
