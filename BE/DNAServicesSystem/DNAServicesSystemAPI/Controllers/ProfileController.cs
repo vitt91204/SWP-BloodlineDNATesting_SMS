@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Services;
 using Services.ProfileDTO;
+using Repositories.Models;
 
 namespace DNAServicesSystemAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
- // This groups endpoints in Swagger
     public class ProfileController : ControllerBase
     {
         private readonly ProfileService profileService;
@@ -14,6 +14,25 @@ namespace DNAServicesSystemAPI.Controllers
         public ProfileController(ProfileService profileService)
         {
             this.profileService = profileService;
+        }
+
+        [HttpGet("{userId:int}")]
+        public async Task<IActionResult> GetProfile(int userId)
+        {
+            var profile = await profileService.GetProfileByUserIdAsync(userId);
+            if (profile == null)
+                return NotFound();
+            return Ok(profile);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateProfile([FromBody] Profile profile)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var created = await profileService.CreateProfileAsync(profile);
+            return CreatedAtAction(nameof(GetProfile), new { userId = created.UserId }, created);
         }
 
         [HttpPut("{userId:int}")]
@@ -33,7 +52,5 @@ namespace DNAServicesSystemAPI.Controllers
                 return NotFound(ex.Message);
             }
         }
-
-        // Add other profile endpoints as needed
     }
 }
