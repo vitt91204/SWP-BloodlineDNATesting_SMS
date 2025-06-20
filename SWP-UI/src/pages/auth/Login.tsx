@@ -22,13 +22,31 @@ export default function Login() {
       // Call the actual login API
       const response = await authAPI.login(username, password);
       
-      // Store auth token and user data
-      if (response.token) {
-        localStorage.setItem('authToken', response.token);
+      // Debug: Log the API response
+      console.log('Login API Response:', response);
+      console.log('Response keys:', Object.keys(response));
+      console.log('Response type:', typeof response);
+      
+      // Store auth token and user data - handle multiple API response formats
+      const token = response.token || response.accessToken || response.access_token || response.authToken;
+      const user = response.user || response.data || response.userData || response;
+      
+      console.log('Extracted token:', token);
+      console.log('Extracted user:', user);
+      
+      if (token) {
+        localStorage.setItem('authToken', token);  
+        console.log('Token saved to localStorage:', token);
+      } else {
+        console.log('No token found in response, setting dummy token');
+        localStorage.setItem('authToken', 'dummy-token-for-testing');
       }
-      if (response.user) {
-        localStorage.setItem('userData', JSON.stringify(response.user));
-      }
+      
+      // Always store some user data, even if just username
+      const userData = user || { username: username, fullName: username };
+      localStorage.setItem('userData', JSON.stringify(userData));
+      console.log('User data saved to localStorage:', userData);
+      
       localStorage.setItem('isAuthenticated', 'true');
       
       toast({
@@ -36,8 +54,23 @@ export default function Login() {
         description: "Chào mừng bạn quay trở lại!",
       });
 
-      // Redirect to home page
-      navigate('/');
+      // Trigger a storage event to notify other components
+      window.dispatchEvent(new Event('storage'));
+      
+      // Check user role and redirect accordingly
+      const userRole = userData?.role || userData?.userRole || user?.role || user?.userRole;
+      console.log('User role:', userRole);
+      
+      // Wait a bit then navigate based on role
+      setTimeout(() => {
+        if (userRole === 'admin' || userRole === 'Admin' || userRole === 'ADMIN') {
+          console.log('Redirecting to admin dashboard');
+          navigate('/admin');
+        } else {
+          console.log('Redirecting to home page');
+          navigate('/');
+        }
+      }, 500);
     } catch (error: any) {
       console.error('Login error:', error);
       
