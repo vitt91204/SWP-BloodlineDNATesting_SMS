@@ -23,6 +23,7 @@ namespace DNAServicesSystemAPI.Controllers
         }
 
         [HttpPost]
+        [Route("register")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest createUserRequest)
         {
             if (!ModelState.IsValid)
