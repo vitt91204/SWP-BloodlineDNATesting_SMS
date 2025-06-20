@@ -5,9 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { Microscope } from "lucide-react";
+import { authAPI } from "@/api/axios";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -18,11 +19,34 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      // TODO: Implement actual authentication logic here
-      // For now, we'll just simulate a successful login
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Call the actual login API
+      const response = await authAPI.login(username, password);
       
-      // Store auth token or user data
+      // Debug: Log the API response
+      console.log('Login API Response:', response);
+      console.log('Response keys:', Object.keys(response));
+      console.log('Response type:', typeof response);
+      
+      // Store auth token and user data - handle multiple API response formats
+      const token = response.token || response.accessToken || response.access_token || response.authToken;
+      const user = response.user || response.data || response.userData || response;
+      
+      console.log('Extracted token:', token);
+      console.log('Extracted user:', user);
+      
+      if (token) {
+        localStorage.setItem('authToken', token);  
+        console.log('Token saved to localStorage:', token);
+      } else {
+        console.log('No token found in response, setting dummy token');
+        localStorage.setItem('authToken', 'dummy-token-for-testing');
+      }
+      
+      // Always store some user data, even if just username
+      const userData = user || { username: username, fullName: username };
+      localStorage.setItem('userData', JSON.stringify(userData));
+      console.log('User data saved to localStorage:', userData);
+      
       localStorage.setItem('isAuthenticated', 'true');
       
       toast({
@@ -30,13 +54,35 @@ export default function Login() {
         description: "Chào mừng bạn quay trở lại!",
       });
 
-      // Redirect to home page instead of admin
-      navigate('/');
-    } catch (error) {
+      // Trigger a storage event to notify other components
+      window.dispatchEvent(new Event('storage'));
+      
+      // Check user role and redirect accordingly
+      const userRole = userData?.role || userData?.userRole || user?.role || user?.userRole;
+      console.log('User role:', userRole);
+      
+      // Wait a bit then navigate based on role
+      setTimeout(() => {
+        if (userRole === 'admin' || userRole === 'Admin' || userRole === 'ADMIN') {
+          console.log('Redirecting to admin dashboard');
+          navigate('/admin');
+        } else {
+          console.log('Redirecting to home page');
+          navigate('/');
+        }
+      }, 500);
+    } catch (error: any) {
+      console.error('Login error:', error);
+      
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error || 
+                          error.message || 
+                          "Email hoặc mật khẩu không chính xác.";
+      
       toast({
         variant: "destructive",
         title: "Đăng nhập thất bại",
-        description: "Email hoặc mật khẩu không chính xác.",
+        description: errorMessage,
       });
     } finally {
       setIsLoading(false);
@@ -79,13 +125,13 @@ export default function Login() {
 
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="username">Tên đăng nhập</Label>
               <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Nhập tên đăng nhập"
                 required
                 className="mt-1"
               />

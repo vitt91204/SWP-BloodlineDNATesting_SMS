@@ -45,6 +45,9 @@ function App() {
             {/* Auth routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            
+            {/* User profile route */}
+            <Route path="/profile" element={<CustomerProfile />} />
 
             {/* Admin routes */}
             <Route path="/admin" element={<AdminLayout />}>

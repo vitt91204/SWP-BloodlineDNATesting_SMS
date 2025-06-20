@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
+import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 import { 
   User, 
   Mail, 
@@ -139,7 +141,8 @@ export default function CustomerProfile() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
+      <Navigation />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -418,6 +421,7 @@ export default function CustomerProfile() {
           </TabsContent>
         </Tabs>
       </div>
+      <Footer />
     </div>
   );
 }

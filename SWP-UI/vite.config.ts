@@ -3,11 +3,27 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
+// Backend configuration
+const API_TARGET = process.env.VITE_API_URL || 'https://4725-118-69-182-149.ngrok-free.app';
+const isNgrok = API_TARGET.includes('ngrok');
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    proxy: {
+      '/api': {
+        target: API_TARGET,
+        changeOrigin: true,
+        secure: true,
+        ...(isNgrok && {
+          headers: {
+            'ngrok-skip-browser-warning': 'true'
+          }
+        })
+      }
+    }
   },
   plugins: [
     react(),
