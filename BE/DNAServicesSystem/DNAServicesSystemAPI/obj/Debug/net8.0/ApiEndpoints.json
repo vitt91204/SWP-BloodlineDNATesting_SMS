@@ -158,6 +158,117 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
+    "Method": "GetAllTestRequests",
+    "RelativePath": "api/testrequest",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
+    "Method": "CreateTestRequest",
+    "RelativePath": "api/testrequest",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "testRequestDto",
+        "Type": "Services.TestRequestDTO.TestRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
+    "Method": "GetTestRequest",
+    "RelativePath": "api/testrequest/{requestId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
+    "Method": "DeleteTestRequest",
+    "RelativePath": "api/testrequest/{requestId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
+    "Method": "UpdateTestRequest",
+    "RelativePath": "api/testrequest/{requestId}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "updateTestRequestDto",
+        "Type": "Services.TestRequestDTO.TestRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
+    "Method": "GetTestRequestsByServiceId",
+    "RelativePath": "api/testrequest/service/{serviceId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "serviceId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
+    "Method": "GetTestRequestByUserId",
+    "RelativePath": "api/testrequest/user/{userId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "DNAServicesSystemAPI.Controllers.UserController",
     "Method": "GetUsers",
     "RelativePath": "api/User",
