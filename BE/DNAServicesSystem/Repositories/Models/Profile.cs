@@ -18,5 +18,5 @@ public partial class Profile
 
     public string? Address { get; set; }
     [JsonIgnore]
-    public virtual User User { get; set; } = null!;
+    public virtual User? User { get; set; }
 }

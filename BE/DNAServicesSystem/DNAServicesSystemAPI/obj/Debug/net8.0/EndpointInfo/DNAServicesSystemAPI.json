@@ -251,17 +251,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Profile"
+                "$ref": "#/components/schemas/CreateProfileRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/Profile"
+                "$ref": "#/components/schemas/CreateProfileRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/Profile"
+                "$ref": "#/components/schemas/CreateProfileRequest"
               }
             }
           }
@@ -461,6 +461,33 @@
         },
         "additionalProperties": false
       },
+      "CreateProfileRequest": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "fullName": {
+            "type": "string",
+            "nullable": true
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "gender": {
+            "type": "string",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "CreateUserRequest": {
         "required": [
           "password",
@@ -514,37 +541,6 @@
             "nullable": true
           },
           "password": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "Profile": {
-        "type": "object",
-        "properties": {
-          "profileId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "userId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "fullName": {
-            "type": "string",
-            "nullable": true
-          },
-          "dateOfBirth": {
-            "type": "string",
-            "format": "date",
-            "nullable": true
-          },
-          "gender": {
-            "type": "string",
-            "nullable": true
-          },
-          "address": {
             "type": "string",
             "nullable": true
           }

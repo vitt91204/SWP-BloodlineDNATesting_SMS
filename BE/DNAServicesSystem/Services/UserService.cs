@@ -34,15 +34,6 @@ namespace Services
             };
             await userRepository.CreateAsync(user);
 
-            // Automatically create a profile for the new user
-            var profileService = new ProfileService();
-            var profile = new Profile
-            {
-                UserId = user.UserId
-                // Set other default profile fields if needed
-            };
-            await profileService.CreateProfileAsync(profile);
-
             return user;
         }
 

@@ -19,8 +19,16 @@ namespace Services
             return await profileRepository.GetByUserIdAsync(userId);
         }
 
-        public async Task<Profile> CreateProfileAsync(Profile profile)
+        public async Task<Profile> CreateProfileAsync(CreateProfileRequest request)
         {
+            var profile = new Profile
+            {
+                UserId = request.UserId,
+                FullName = request.FullName,
+                DateOfBirth = request.DateOfBirth,
+                Gender = request.Gender,
+                Address = request.Address
+            };
             await profileRepository.CreateAsync(profile);
             return profile;
         }

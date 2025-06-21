@@ -26,12 +26,12 @@ namespace DNAServicesSystemAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateProfile([FromBody] Profile profile)
+        public async Task<IActionResult> CreateProfile([FromBody] CreateProfileRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var created = await profileService.CreateProfileAsync(profile);
+            var created = await profileService.CreateProfileAsync(request);
             return CreatedAtAction(nameof(GetProfile), new { userId = created.UserId }, created);
         }
 

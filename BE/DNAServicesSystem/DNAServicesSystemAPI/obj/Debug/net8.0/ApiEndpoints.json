@@ -113,8 +113,8 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "profile",
-        "Type": "Repositories.Models.Profile",
+        "Name": "request",
+        "Type": "Services.ProfileDTO.CreateProfileRequest",
         "IsRequired": true
       }
     ],
