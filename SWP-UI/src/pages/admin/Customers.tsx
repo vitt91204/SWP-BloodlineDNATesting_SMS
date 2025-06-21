@@ -116,7 +116,7 @@ export default function Customers() {
       });
       
       setIsEditDialogOpen(false);
-      setEditingCustomer(null);
+    setEditingCustomer(null);
       
       // Refresh customer list
       await fetchCustomers();
@@ -160,12 +160,12 @@ export default function Customers() {
   }, []);
 
   if (loading) {
-    return (
+  return (
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
         </div>
-      </div>
+              </div>
     );
   }
 
@@ -201,8 +201,8 @@ export default function Customers() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Tổng khách hàng</p>
                 <p className="text-2xl font-bold text-gray-900">{customers.length}</p>
-              </div>
-            </div>
+          </div>
+        </div>
           </CardContent>
         </Card>
 
@@ -213,7 +213,7 @@ export default function Customers() {
                 <p className="text-sm font-medium text-gray-600">Kết quả tìm kiếm</p>
                 <p className="text-2xl font-bold text-gray-900">{filteredCustomers.length}</p>
               </div>
-            </div>
+                    </div>
           </CardContent>
         </Card>
 
@@ -229,8 +229,8 @@ export default function Customers() {
                     return customerDate === today;
                   }).length}
                 </p>
-              </div>
-            </div>
+                    </div>
+                  </div>
           </CardContent>
         </Card>
       </div>
@@ -282,9 +282,9 @@ export default function Customers() {
                       </td>
                       <td className="p-4">
                         <div className="flex gap-2">
-                          <Button
+                    <Button
                             variant="outline"
-                            size="sm"
+                      size="sm"
                             onClick={() => handleEditClick(customer)}
                           >
                             <Pencil className="h-4 w-4 mr-1" />
@@ -296,7 +296,7 @@ export default function Customers() {
                               <Button variant="destructive" size="sm">
                                 <Trash2 className="h-4 w-4 mr-1" />
                                 Xóa
-                              </Button>
+                    </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
@@ -317,13 +317,13 @@ export default function Customers() {
                               </AlertDialogFooter>
                             </AlertDialogContent>
                           </AlertDialog>
-                        </div>
+                  </div>
                       </td>
                     </tr>
-                  ))}
+            ))}
                 </tbody>
               </table>
-            </div>
+      </div>
           )}
         </CardContent>
       </Card>

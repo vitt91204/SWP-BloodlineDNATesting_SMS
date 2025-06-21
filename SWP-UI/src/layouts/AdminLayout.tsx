@@ -1,5 +1,16 @@
 // import { Sidebar, SidebarProvider } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { 
   LayoutDashboard, 
   Users, 
@@ -8,7 +19,8 @@ import {
   Calendar,
   LogOut,
 } from "lucide-react";
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 const navigation = [
   {
@@ -31,15 +43,34 @@ const navigation = [
     href: "/admin/appointments",
     icon: Calendar
   },
-  {
-    name: "Cài đặt",
-    href: "/admin/settings",
-    icon: Settings
-  }
+  
 ];
 
 export const AdminLayout = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleLogout = () => {
+    // Xóa thông tin đăng nhập từ localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('adminSession');
+    
+    // Xóa thông tin từ sessionStorage (nếu có)
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+    sessionStorage.removeItem('adminSession');
+    
+    // Hiển thị thông báo
+    toast({
+      title: "Đăng xuất thành công",
+      description: "Bạn đã đăng xuất khỏi hệ thống admin",
+    });
+    
+    // Chuyển hướng về trang đăng nhập
+    navigate('/login', { replace: true });
+  };
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -83,13 +114,32 @@ export const AdminLayout = () => {
 
           {/* Footer */}
           <div className="border-t border-sidebar-border p-4">
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start gap-2 text-sidebar-foreground/60 hover:bg-sidebar-accent/50"
-            >
-              <LogOut className="h-4 w-4" />
-              Đăng xuất
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start gap-2 text-sidebar-foreground/60 hover:bg-sidebar-accent/50"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Đăng xuất
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Xác nhận đăng xuất</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Bạn có chắc chắn muốn đăng xuất khỏi hệ thống quản trị? 
+                    Bạn sẽ cần đăng nhập lại để tiếp tục sử dụng.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Hủy</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleLogout}>
+                    Đăng xuất
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </div>
