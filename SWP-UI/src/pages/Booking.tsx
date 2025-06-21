@@ -8,12 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, MapPin, Home, Users, TestTube, Clock, CheckCircle, ArrowRight } from "lucide-react";
+import { Calendar, MapPin, Home, Users, TestTube, Clock, CheckCircle, ArrowRight, Package } from "lucide-react";
 
 export default function Booking() { 
   const navigate = useNavigate();
   const [selectedService, setSelectedService] = useState("");
+  const [selectedRelationship, setSelectedRelationship] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
+  const [selectedHomeOption, setSelectedHomeOption] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTimeSlot, setSelectedTimeSlot] = useState("");
   const [step, setStep] = useState(1);
@@ -35,25 +37,66 @@ export default function Booking() {
     {
       id: "civil",
       name: "Xét nghiệm huyết thống dân sự",
-      price: "2.500.000 - 4.500.000 VNĐ",
-      duration: "5-7 ngày",
-      locations: ["home", "facility"]
+      price: "2.500.000 - 5.000.000 VNĐ",
+      duration: "5-14 ngày",
+      locations: ["home", "facility"],
+      description: "Xét nghiệm ADN cho mục đích cá nhân, không có giá trị pháp lý"
     },
     {
       id: "legal",
       name: "Xét nghiệm huyết thống hành chính",
       price: "3.500.000 - 6.000.000 VNĐ",
-      duration: "7-10 ngày",
-      locations: ["facility"]
+      duration: "7-14 ngày",
+      locations: ["facility"],
+      description: "Xét nghiệm ADN có giá trị pháp lý, được thực hiện tại cơ sở"
+    }
+  ];
+
+  // Thêm danh sách các loại quan hệ
+  const relationships = [
+    {
+      id: "paternity",
+      name: "Xét nghiệm cha con",
+      civilPrice: "2.500.000 - 3.500.000 VNĐ",
+      legalPrice: "3.500.000 - 4.500.000 VNĐ",
+      duration: "5-7 ngày",
+      description: "Xác định mối quan hệ huyết thống giữa cha và con",
+      accuracy: "99.9%"
     },
-   
+    {
+      id: "maternity",
+      name: "Xét nghiệm mẹ con",
+      civilPrice: "2.500.000 - 3.500.000 VNĐ",
+      legalPrice: "3.500.000 - 4.500.000 VNĐ",
+      duration: "5-7 ngày",
+      description: "Xác định mối quan hệ huyết thống giữa mẹ và con",
+      accuracy: "99.9%"
+    },
+    {
+      id: "sibling",
+      name: "Xét nghiệm anh chị em ruột",
+      civilPrice: "3.000.000 - 4.500.000 VNĐ",
+      legalPrice: "4.000.000 - 5.500.000 VNĐ",
+      duration: "7-10 ngày",
+      description: "Xác định mối quan hệ huyết thống giữa anh chị em ruột",
+      accuracy: "95-99%"
+    },
+    {
+      id: "grandparent",
+      name: "Xét nghiệm ông bà - cháu",
+      civilPrice: "3.500.000 - 5.000.000 VNĐ",
+      legalPrice: "4.500.000 - 6.000.000 VNĐ",
+      duration: "7-14 ngày",
+      description: "Xác định mối quan hệ huyết thống giữa ông bà và cháu",
+      accuracy: "90-95%"
+    }
   ];
 
   const locations = [
     {
       id: "home",
       name: "Thu mẫu tại nhà",
-      description: "Nhân viên đến tận nhà thu mẫu",
+      description: "Lựa chọn hình thức thu mẫu tại nhà",
       icon: Home,
       benefits: [
         "Tiện lợi, thoải mái",
@@ -76,6 +119,36 @@ export default function Booking() {
     }
   ];
 
+  // Thêm home options
+  const homeOptions = [
+    {
+      id: "staff_visit",
+      name: "Nhân viên đến thu mẫu",
+      description: "Nhân viên chuyên nghiệp đến tận nhà thu mẫu",
+      icon: Users,
+      benefits: [
+        "Chuyên nghiệp, an toàn",
+        "Tư vấn trực tiếp",
+        "Đảm bảo chất lượng mẫu",
+        "Không lo lắng về kỹ thuật"
+      ],
+      requiresSchedule: true
+    },
+    {
+      id: "diy_kit",
+      name: "Gửi bộ kit tự thu mẫu",
+      description: "Gửi bộ kit và hướng dẫn để bạn tự thu mẫu",
+      icon: Package,
+      benefits: [
+        "Hoàn toàn riêng tư",
+        "Linh hoạt về thời gian",
+        "Hướng dẫn chi tiết",
+        "Giao nhận tận nơi"
+      ],
+      requiresSchedule: false
+    }
+  ];
+
   // Thêm time slots cố định
   const timeSlots = [
     { id: "08:00", time: "08:00", label: "08:00 - 09:00", available: true },
@@ -95,7 +168,11 @@ export default function Booking() {
     const requiredFields = formData.fullName && formData.phone && formData.numberOfPeople && formData.address;
     
     if (selectedLocation === 'home') {
-      return requiredFields && selectedDate && selectedTimeSlot;
+      const homeOptionData = homeOptions.find(opt => opt.id === selectedHomeOption);
+      if (homeOptionData?.requiresSchedule) {
+        return requiredFields && selectedDate && selectedTimeSlot;
+      }
+      return requiredFields;
     }
     
     return requiredFields;
@@ -121,50 +198,49 @@ export default function Booking() {
 
   // Hàm xử lý khi nhấn "Xác nhận đặt lịch" - chuyển đến trang thanh toán
   const handleConfirmBooking = () => {
-    // Có thể lưu thông tin đặt lịch vào localStorage hoặc state management
     const bookingData = {
       service: services.find(s => s.id === selectedService),
+      relationship: relationships.find(r => r.id === selectedRelationship),
       location: locations.find(l => l.id === selectedLocation),
+      homeOption: selectedLocation === 'home' ? homeOptions.find(opt => opt.id === selectedHomeOption) : null,
       date: selectedDate,
       timeSlot: selectedTimeSlot ? timeSlots.find(slot => slot.id === selectedTimeSlot) : null,
       formData: formData
     };
     
-    // Lưu vào localStorage để trang thanh toán có thể truy cập
     localStorage.setItem('bookingData', JSON.stringify(bookingData));
-    
-    // Chuyển hướng đến trang thanh toán
     navigate('/payment');
   };
 
   const BookingSteps = () => {
     const steps = [
-      { number: 1, title: "Chọn dịch vụ", description: "Lựa chọn loại xét nghiệm" },
-      { number: 2, title: "Chọn hình thức", description: "Thu mẫu tại nhà hoặc cơ sở" },
-      { number: 3, title: "Thông tin", description: "Điền thông tin cá nhân" },
-      { number: 4, title: "Xác nhận", description: "Xác nhận và thanh toán" }
+      { number: 1, title: "Chọn dịch vụ", description: "Dân sự hoặc hành chính" },
+      { number: 2, title: "Loại quan hệ", description: "Chọn loại xét nghiệm" },
+      { number: 3, title: "Hình thức", description: "Thu mẫu tại nhà hoặc cơ sở" },
+      { number: 4, title: "Thông tin", description: "Điền thông tin cá nhân" },
+      { number: 5, title: "Xác nhận", description: "Xác nhận và thanh toán" }
     ];
 
     return (
       <div className="flex justify-center mb-8">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 md:space-x-4">
           {steps.map((stepItem, index) => (
             <div key={stepItem.number} className="flex items-center">
               <div className={`flex flex-col items-center ${step >= stepItem.number ? 'text-blue-600' : 'text-gray-400'}`}>
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${
+                <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-xs md:text-sm font-medium ${
                   step >= stepItem.number 
                     ? 'bg-blue-600 text-white' 
                     : 'bg-gray-200 text-gray-600'
                 }`}>
-                  {step > stepItem.number ? <CheckCircle className="w-5 h-5" /> : stepItem.number}
+                  {step > stepItem.number ? <CheckCircle className="w-4 h-4 md:w-5 md:h-5" /> : stepItem.number}
                 </div>
-                <div className="text-xs mt-2 text-center">
-                  <div className="font-medium">{stepItem.title}</div>
-                  <div className="text-gray-500">{stepItem.description}</div>
+                <div className="text-xs mt-1 md:mt-2 text-center max-w-16 md:max-w-none">
+                  <div className="font-medium text-xs md:text-sm">{stepItem.title}</div>
+                  <div className="text-gray-500 hidden md:block">{stepItem.description}</div>
                 </div>
               </div>
               {index < steps.length - 1 && (
-                <ArrowRight className={`w-5 h-5 mx-4 ${step > stepItem.number ? 'text-blue-600' : 'text-gray-400'}`} />
+                <ArrowRight className={`w-4 h-4 mx-1 md:mx-4 ${step > stepItem.number ? 'text-blue-600' : 'text-gray-400'}`} />
               )}
             </div>
           ))}
@@ -194,20 +270,20 @@ export default function Booking() {
 
           <BookingSteps />
 
-          {/* Step 1: Select Service */}
+          {/* Step 1: Select Service Type */}
           {step === 1 && (
             <Card>
               <CardHeader>
-                <CardTitle>Chọn dịch vụ xét nghiệm</CardTitle>
+                <CardTitle>Chọn loại dịch vụ xét nghiệm</CardTitle>
                 <CardDescription>
-                  Lựa chọn loại xét nghiệm phù hợp với nhu cầu của bạn
+                  Lựa chọn loại dịch vụ phù hợp với mục đích sử dụng
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {services.map((service) => (
                   <div
                     key={service.id}
-                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                    className={`p-6 border-2 rounded-lg cursor-pointer transition-all ${
                       selectedService === service.id
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:border-gray-300'
@@ -215,29 +291,52 @@ export default function Booking() {
                     onClick={() => setSelectedService(service.id)}
                   >
                     <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          {service.name}
-                        </h3>
-                        <div className="flex items-center space-x-4 text-sm text-gray-600">
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="text-xl font-semibold text-gray-900">
+                            {service.name}
+                          </h3>
+                          <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 ml-4 ${
+                            selectedService === service.id
+                              ? 'border-blue-500 bg-blue-500'
+                              : 'border-gray-300'
+                          }`}>
+                            {selectedService === service.id && (
+                              <CheckCircle className="w-5 h-5 text-white" />
+                            )}
+                          </div>
+                        </div>
+                        
+                        <p className="text-gray-600 mb-4">
+                          {service.description}
+                        </p>
+                        
+                        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-4">
                           <div className="flex items-center">
                             <TestTube className="w-4 h-4 mr-1" />
-                            {service.price}
+                            <span className="font-medium text-blue-600">{service.price}</span>
                           </div>
                           <div className="flex items-center">
                             <Clock className="w-4 h-4 mr-1" />
                             {service.duration}
                           </div>
                         </div>
-                      </div>
-                      <div className={`w-6 h-6 rounded-full border-2 ${
-                        selectedService === service.id
-                          ? 'border-blue-500 bg-blue-500'
-                          : 'border-gray-300'
-                      }`}>
-                        {selectedService === service.id && (
-                          <CheckCircle className="w-5 h-5 text-white" />
-                        )}
+                        
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-gray-500">Hình thức:</span>
+                          {service.locations.includes('home') && (
+                            <Badge variant="outline" className="text-xs">
+                              <Home className="w-3 h-3 mr-1" />
+                              Tại nhà
+                            </Badge>
+                          )}
+                          {service.locations.includes('facility') && (
+                            <Badge variant="outline" className="text-xs">
+                              <MapPin className="w-3 h-3 mr-1" />
+                              Tại cơ sở
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -257,8 +356,89 @@ export default function Booking() {
             </Card>
           )}
 
-          {/* Step 2: Select Location */}
+          {/* Step 2: Select Relationship Type */}
           {step === 2 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Chọn loại quan hệ cần xét nghiệm</CardTitle>
+                <CardDescription>
+                  Lựa chọn loại quan hệ huyết thống cần xác định
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4">
+                  {relationships.map((relationship) => (
+                    <div
+                      key={relationship.id}
+                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                        selectedRelationship === relationship.id
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                      onClick={() => setSelectedRelationship(relationship.id)}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-2">
+                            <h3 className="text-lg font-semibold text-gray-900">
+                              {relationship.name}
+                            </h3>
+                            <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 ml-4 ${
+                              selectedRelationship === relationship.id
+                                ? 'border-blue-500 bg-blue-500'
+                                : 'border-gray-300'
+                            }`}>
+                              {selectedRelationship === relationship.id && (
+                                <CheckCircle className="w-5 h-5 text-white" />
+                              )}
+                            </div>
+                          </div>
+                          
+                          <p className="text-gray-600 text-sm mb-3">
+                            {relationship.description}
+                          </p>
+                          
+                          <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                            <div className="flex items-center">
+                              <TestTube className="w-4 h-4 mr-1" />
+                              <span className="font-medium text-blue-600">
+                                {selectedService === 'civil' ? relationship.civilPrice : relationship.legalPrice}
+                              </span>
+                            </div>
+                            <div className="flex items-center">
+                              <Clock className="w-4 h-4 mr-1" />
+                              {relationship.duration}
+                            </div>
+                            <div className="flex items-center">
+                              <CheckCircle className="w-4 h-4 mr-1 text-green-500" />
+                              Độ chính xác: {relationship.accuracy}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="flex space-x-4">
+                  <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
+                    Quay lại
+                  </Button>
+                  <Button 
+                    className="flex-1" 
+                    disabled={!selectedRelationship}
+                    onClick={() => setStep(3)}
+                  >
+                    Tiếp tục
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Step 3: Select Location */}
+          {step === 3 && (
             <Card>
               <CardHeader>
                 <CardTitle>Chọn hình thức thu mẫu</CardTitle>
@@ -283,7 +463,14 @@ export default function Booking() {
                             ? 'border-blue-500 bg-blue-50'
                             : 'border-gray-200 hover:border-gray-300'
                         }`}
-                        onClick={() => isAvailable && setSelectedLocation(location.id)}
+                        onClick={() => {
+                          if (isAvailable) {
+                            setSelectedLocation(location.id);
+                            if (location.id !== 'home') {
+                              setSelectedHomeOption("");
+                            }
+                          }
+                        }}
                       >
                         <div className="flex items-start justify-between mb-4">
                           <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
@@ -319,15 +506,82 @@ export default function Booking() {
                     );
                   })}
                 </div>
+
+                {/* Home Options - Show when home is selected */}
+                {selectedLocation === 'home' && (
+                  <div className="mt-8">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      Chọn hình thức thu mẫu tại nhà
+                    </h3>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {homeOptions.map((option) => {
+                        const Icon = option.icon;
+                        return (
+                          <div
+                            key={option.id}
+                            className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                              selectedHomeOption === option.id
+                                ? 'border-blue-500 bg-blue-50'
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                            onClick={() => {
+                              setSelectedHomeOption(option.id);
+                              // Reset date and time if switching to DIY kit
+                              if (option.id === 'diy_kit') {
+                                setSelectedDate("");
+                                setSelectedTimeSlot("");
+                              }
+                            }}
+                          >
+                            <div className="flex items-start justify-between mb-3">
+                              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                                selectedHomeOption === option.id ? 'bg-blue-100' : 'bg-gray-100'
+                              }`}>
+                                <Icon className={`w-5 h-5 ${
+                                  selectedHomeOption === option.id ? 'text-blue-600' : 'text-gray-600'
+                                }`} />
+                              </div>
+                              <div className={`w-5 h-5 rounded-full border-2 ${
+                                selectedHomeOption === option.id
+                                  ? 'border-blue-500 bg-blue-500'
+                                  : 'border-gray-300'
+                              }`}>
+                                {selectedHomeOption === option.id && (
+                                  <CheckCircle className="w-4 h-4 text-white" />
+                                )}
+                              </div>
+                            </div>
+                            
+                            <h4 className="font-semibold text-gray-900 mb-2">
+                              {option.name}
+                            </h4>
+                            <p className="text-gray-600 text-sm mb-3">
+                              {option.description}
+                            </p>
+                            
+                            <ul className="space-y-1">
+                              {option.benefits.map((benefit, index) => (
+                                <li key={index} className="flex items-center text-xs text-gray-700">
+                                  <CheckCircle className="w-3 h-3 text-green-500 mr-1 flex-shrink-0" />
+                                  {benefit}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
                 
                 <div className="flex space-x-4">
-                  <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
+                  <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
                     Quay lại
                   </Button>
                   <Button 
                     className="flex-1" 
-                    disabled={!selectedLocation}
-                    onClick={() => setStep(3)}
+                    disabled={!selectedLocation || (selectedLocation === 'home' && !selectedHomeOption)}
+                    onClick={() => setStep(4)}
                   >
                     Tiếp tục
                     <ArrowRight className="w-4 h-4 ml-2" />
@@ -337,8 +591,8 @@ export default function Booking() {
             </Card>
           )}
 
-          {/* Step 3: Personal Information */}
-          {step === 3 && (
+          {/* Step 4: Personal Information */}
+          {step === 4 && (
             <Card>
               <CardHeader>
                 <CardTitle>Thông tin cá nhân</CardTitle>
@@ -428,7 +682,7 @@ export default function Booking() {
                   )}
                 </div>
 
-                {selectedLocation === 'home' && (
+                {selectedLocation === 'home' && selectedHomeOption === 'staff_visit' && (
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -441,10 +695,10 @@ export default function Booking() {
                           setSelectedDate(e.target.value);
                           setSelectedTimeSlot(""); // Reset time slot when date changes
                         }}
-                        min={new Date().toISOString().split('T')[0]} // Không cho chọn ngày trong quá khứ
-                        className={showValidation && selectedLocation === 'home' && !selectedDate ? 'border-red-300 focus:border-red-500' : ''}
+                        min={new Date().toISOString().split('T')[0]}
+                        className={showValidation && !selectedDate ? 'border-red-300 focus:border-red-500' : ''}
                       />
-                      {showValidation && selectedLocation === 'home' && !selectedDate && (
+                      {showValidation && !selectedDate && (
                         <p className="text-red-500 text-xs mt-1">Vui lòng chọn ngày mong muốn</p>
                       )}
                     </div>
@@ -501,6 +755,23 @@ export default function Booking() {
                   </div>
                 )}
 
+                {selectedLocation === 'home' && selectedHomeOption === 'diy_kit' && (
+                  <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+                    <div className="flex items-start">
+                      <Package className="w-5 h-5 text-amber-600 mr-2 mt-0.5" />
+                      <div>
+                        <h4 className="font-medium text-amber-800 mb-1">
+                          Giao nhận bộ kit tự thu mẫu
+                        </h4>
+                        <p className="text-sm text-amber-700">
+                          Chúng tôi sẽ gửi bộ kit cùng hướng dẫn chi tiết đến địa chỉ của bạn trong vòng 1-2 ngày làm việc. 
+                          Sau khi thu mẫu, vui lòng gửi lại theo địa chỉ được cung cấp.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Ghi chú
@@ -514,12 +785,19 @@ export default function Booking() {
                 </div>
 
                 <div className="flex space-x-4">
-                  <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
+                  <Button variant="outline" onClick={() => setStep(3)} className="flex-1">
                     Quay lại
                   </Button>
                   <Button 
                     className="flex-1" 
-                    onClick={handleStep3Continue}
+                    onClick={() => {
+                      if (isStep3Valid()) {
+                        setStep(5);
+                        setShowValidation(false);
+                      } else {
+                        setShowValidation(true);
+                      }
+                    }}
                   >
                     Tiếp tục
                     <ArrowRight className="w-4 h-4 ml-2" />
@@ -529,8 +807,8 @@ export default function Booking() {
             </Card>
           )}
 
-          {/* Step 4: Confirmation */}
-          {step === 4 && (
+          {/* Step 5: Confirmation */}
+          {step === 5 && (
             <Card>
               <CardHeader>
                 <CardTitle>Xác nhận thông tin đặt lịch</CardTitle>
@@ -544,27 +822,48 @@ export default function Booking() {
                   
                   <div className="space-y-4">
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Dịch vụ:</span>
+                      <span className="text-gray-600">Loại dịch vụ:</span>
                       <span className="font-medium">
                         {services.find(s => s.id === selectedService)?.name}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Loại quan hệ:</span>
+                      <span className="font-medium">
+                        {relationships.find(r => r.id === selectedRelationship)?.name}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Hình thức:</span>
                       <span className="font-medium">
                         {locations.find(l => l.id === selectedLocation)?.name}
+                        {selectedLocation === 'home' && selectedHomeOption && (
+                          <div className="text-sm text-gray-500 mt-1">
+                            → {homeOptions.find(opt => opt.id === selectedHomeOption)?.name}
+                          </div>
+                        )}
                       </span>
                     </div>
+                    {selectedLocation === 'home' && selectedHomeOption === 'staff_visit' && selectedDate && selectedTimeSlot && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Lịch hẹn:</span>
+                        <span className="font-medium">
+                          {timeSlots.find(slot => slot.id === selectedTimeSlot)?.label} - {selectedDate}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex justify-between">
                       <span className="text-gray-600">Thời gian hoàn thành:</span>
                       <span className="font-medium">
-                        {services.find(s => s.id === selectedService)?.duration}
+                        {relationships.find(r => r.id === selectedRelationship)?.duration}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Giá dự kiến:</span>
                       <span className="font-medium text-lg text-blue-600">
-                        {services.find(s => s.id === selectedService)?.price}
+                        {selectedService === 'civil' 
+                          ? relationships.find(r => r.id === selectedRelationship)?.civilPrice
+                          : relationships.find(r => r.id === selectedRelationship)?.legalPrice}
                       </span>
                     </div>
                   </div>
@@ -575,7 +874,15 @@ export default function Booking() {
                   <ul className="text-blue-800 text-sm space-y-1">
                     <li>• Chúng tôi sẽ liên hệ trong vòng 30 phút để xác nhận</li>
                     <li>• Gửi hợp đồng và hướng dẫn chi tiết qua email</li>
-                    <li>• {selectedLocation === 'home' ? 'Nhân viên đến thu mẫu theo lịch hẹn' : 'Bạn đến cơ sở theo lịch hẹn'}</li>
+                    {selectedLocation === 'home' && selectedHomeOption === 'staff_visit' && (
+                      <li>• Nhân viên đến thu mẫu theo lịch hẹn</li>
+                    )}
+                    {selectedLocation === 'home' && selectedHomeOption === 'diy_kit' && (
+                      <li>• Gửi bộ kit tự thu mẫu đến địa chỉ của bạn</li>
+                    )}
+                    {selectedLocation === 'facility' && (
+                      <li>• Bạn đến cơ sở theo lịch hẹn</li>
+                    )}
                     <li>• Thông báo kết quả qua SMS/Email khi hoàn thành</li>
                   </ul>
                 </div>
@@ -589,7 +896,7 @@ export default function Booking() {
                 </div>
 
                 <div className="flex space-x-4">
-                  <Button variant="outline" onClick={() => setStep(3)} className="flex-1">
+                  <Button variant="outline" onClick={() => setStep(4)} className="flex-1">
                     Quay lại
                   </Button>
                   <Button className="flex-1 bg-gradient-to-r from-blue-600 to-green-600" onClick={handleConfirmBooking}>
