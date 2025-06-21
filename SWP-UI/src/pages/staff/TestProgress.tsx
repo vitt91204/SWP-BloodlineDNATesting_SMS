@@ -28,22 +28,8 @@ export default function TestProgress() {
       currentStatus: 'Analysis',
       progress: 65
     },
-    {
-      id: 'TP002',
-      testName: 'Xét nghiệm ADN xác định tổ tiên',
-      customerName: 'Phạm Thị E',
-      sampleDate: '2024-01-12',
-      currentStatus: 'Processing',
-      progress: 30
-    },
-    {
-      id: 'TP003',
-      testName: 'Xét nghiệm huyết thống pháp y',
-      customerName: 'Hoàng Văn F',
-      sampleDate: '2024-01-08',
-      currentStatus: 'Quality Check',
-      progress: 90
-    }
+    
+    
   ]);
 
   const getProgressColor = (progress: number) => {
