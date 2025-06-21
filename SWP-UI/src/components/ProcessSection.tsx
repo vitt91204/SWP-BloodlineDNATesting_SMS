@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { 
   Calendar, 
   Package, 
@@ -143,11 +144,15 @@ export const ProcessSection = () => {
     }
   ];
 
-  const ProcessStep = ({ step, isLast = false }: { step: any; isLast?: boolean }) => {
+  const ProcessStep = ({ step, isLast = false, index = 0 }: { step: any; isLast?: boolean; index?: number }) => {
     const Icon = step.icon;
     
     return (
-      <div className="relative h-full">
+      <ScrollReveal 
+        animation="fadeInUp" 
+        delay={300 + (index * 150)}
+        className="relative h-full"
+      >
         <Card className="bg-white border-gray-200 hover:shadow-lg transition-all duration-300 h-full flex flex-col">
           <CardHeader className="pb-4 flex-none">
             <div className="flex items-center justify-between mb-4">
@@ -174,8 +179,8 @@ export const ProcessSection = () => {
               </div>
               
               <ul className="space-y-2">
-                {step.details.map((detail: string, index: number) => (
-                  <li key={index} className="flex items-center text-sm text-gray-700">
+                {step.details.map((detail: string, detailIndex: number) => (
+                  <li key={detailIndex} className="flex items-center text-sm text-gray-700">
                     <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
                     {detail}
                   </li>
@@ -192,101 +197,98 @@ export const ProcessSection = () => {
             </div>
           </div>
         )}
-      </div>
+      </ScrollReveal>
     );
   };
 
   return (
     <section className="py-24 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
+        {/* Header with staggered animations */}
         <div className="text-center mb-16">
-          <Badge className="bg-green-100 text-green-700 mb-4">
-            Quy trình xét nghiệm
-          </Badge>
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Quy trình xét nghiệm ADN
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Chúng tôi có 2 hình thức xét nghiệm linh hoạt để phục vụ nhu cầu đa dạng của khách hàng
-          </p>
+          <ScrollReveal animation="fadeIn" delay={100}>
+            <Badge className="bg-green-100 text-green-700 mb-4">
+              Quy trình xét nghiệm
+            </Badge>
+          </ScrollReveal>
+          
+          <ScrollReveal animation="fadeInUp" delay={200}>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Quy trình xét nghiệm ADN đơn giản
+            </h2>
+          </ScrollReveal>
+          
+          <ScrollReveal animation="fadeInUp" delay={300}>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Chỉ với vài bước đơn giản, bạn có thể thực hiện xét nghiệm ADN một cách dễ dàng 
+              và nhận kết quả chính xác nhất.
+            </p>
+          </ScrollReveal>
         </div>
 
-        {/* Process Tabs */}
-        <Tabs defaultValue="home" className="w-full">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-12">
-            <TabsTrigger value="home" className="flex items-center space-x-2">
-              <Home className="w-4 h-4" />
-              <span>Thu mẫu tại nhà</span>
-            </TabsTrigger>
-            <TabsTrigger value="facility" className="flex items-center space-x-2">
-              <Building2 className="w-4 h-4" />
-              <span>Thu mẫu tại cơ sở</span>
-            </TabsTrigger>
-          </TabsList>
+        {/* Tabs with animations */}
+        <ScrollReveal animation="scaleIn" delay={400}>
+          <Tabs defaultValue="home" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-12">
+              <TabsTrigger value="home" className="flex items-center gap-2">
+                <Home className="w-4 h-4" />
+                Xét nghiệm tại nhà
+              </TabsTrigger>
+              <TabsTrigger value="facility" className="flex items-center gap-2">
+                <Building2 className="w-4 h-4" />
+                Xét nghiệm tại cơ sở
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="home" className="space-y-8">
-            <div className="text-center mb-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                Thu mẫu tại nhà (Dịch vụ ADN dân sự)
+            <TabsContent value="home" className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative">
+                {homeTestingSteps.map((step, index) => (
+                  <ProcessStep 
+                    key={step.step} 
+                    step={step} 
+                    index={index}
+                    isLast={index === homeTestingSteps.length - 1} 
+                  />
+                ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="facility" className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
+                {facilityTestingSteps.map((step, index) => (
+                  <ProcessStep 
+                    key={step.step} 
+                    step={step} 
+                    index={index}
+                    isLast={index === facilityTestingSteps.length - 1} 
+                  />
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </ScrollReveal>
+
+        {/* CTA Section */}
+        <ScrollReveal animation="fadeInUp" delay={600}>
+          <div className="mt-16 text-center">
+            <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                Sẵn sàng bắt đầu xét nghiệm ADN?
               </h3>
-              <p className="text-gray-600">
-                Tiện lợi và riêng tư - thực hiện xét nghiệm từ sự thoải mái của ngôi nhà bạn
+              <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+                Đăng ký ngay hôm nay để nhận được tư vấn miễn phí và bắt đầu quy trình xét nghiệm
               </p>
-            </div>
-            
-            <div className="grid lg:grid-cols-3 gap-8">
-              {homeTestingSteps.map((step, index) => (
-                <ProcessStep 
-                  key={step.step} 
-                  step={step} 
-                  isLast={index === homeTestingSteps.length - 1}
-                />
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="facility" className="space-y-8">
-            <div className="text-center mb-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                Thu mẫu tại cơ sở y tế
-              </h3>
-              <p className="text-gray-600">
-                Chuyên nghiệp và đảm bảo - thực hiện bởi đội ngũ y tế giàu kinh nghiệm
-              </p>
-            </div>
-            
-            <div className="grid lg:grid-cols-2 xl:grid-cols-4 gap-8">
-              {facilityTestingSteps.map((step, index) => (
-                <ProcessStep 
-                  key={step.step} 
-                  step={step} 
-                  isLast={index === facilityTestingSteps.length - 1}
-                />
-              ))}
-            </div>
-          </TabsContent>
-        </Tabs>
-
-        {/* CTA */}
-        <div className="mt-16 text-center">
-          <div className="bg-white rounded-2xl p-8 shadow-lg max-w-4xl mx-auto">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">
-              Bắt đầu quy trình xét nghiệm ADN ngay hôm nay
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Chọn hình thức phù hợp với bạn và bắt đầu hành trình tìm hiểu về mối quan hệ huyết thống
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-green-600">
-                Đặt lịch thu mẫu tại nhà
-              </Button>
-              <Button size="lg" variant="outline">
-                Đặt lịch hẹn tại cơ sở
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button size="lg" className="bg-gradient-to-r from-blue-600 to-green-600">
+                  Đăng ký xét nghiệm
+                </Button>
+                <Button size="lg" variant="outline">
+                  Tư vấn miễn phí
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
+        </ScrollReveal>
       </div>
     </section>
   );
