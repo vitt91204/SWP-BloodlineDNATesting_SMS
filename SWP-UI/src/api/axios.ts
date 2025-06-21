@@ -105,37 +105,73 @@ export const userAPI = {
     const currentUserId = userId || getUserIdFromLocalStorage();
     
     try {
-      // Try without userId first
+      // Try with userId first if we have it
+      if (currentUserId) {
+        console.log('Trying to get user info with userId:', currentUserId);
+        const response = await api.get(`/api/User/${currentUserId}`);
+        console.log('User API Response (with userId):', response);
+        console.log('User API Response Data (with userId):', response.data);
+        
+        // Handle array response for userId endpoint
+        if (Array.isArray(response.data)) {
+          const foundUser = response.data.find(user => user.userId?.toString() === currentUserId.toString() || user.id?.toString() === currentUserId.toString());
+          console.log('Found specific user in array:', foundUser);
+          return foundUser || response.data[0];
+        }
+        
+        return response.data;
+      }
+      
+      // Fallback: Try without userId
       const response = await api.get('/api/User');
       console.log('User API Response (no params):', response);
       console.log('User API Response Data (no params):', response.data);
-      
-      // Handle array response - get first user or find current user
+      console.log('Array check:', Array.isArray(response.data));
       if (Array.isArray(response.data)) {
-        console.log('User API returned array, taking first element:', response.data[0]);
+        console.log('Users found:', response.data.map(u => ({ id: u.id || u.userId, username: u.username, email: u.email })));
+      }
+      
+      // Handle array response - find current user or get first user
+      if (Array.isArray(response.data)) {
+        if (currentUserId) {
+          const foundUser = response.data.find(user => user.userId?.toString() === currentUserId.toString() || user.id?.toString() === currentUserId.toString());
+          if (foundUser) {
+            console.log('Found specific user in array:', foundUser);
+            return foundUser;
+          }
+        }
+        
+        // Get user data from localStorage to match
+        const localUserData = localStorage.getItem('userData');
+        const localUser = localUserData ? JSON.parse(localUserData) : null;
+        
+        console.log('Looking for user with localStorage data:', localUser);
+        
+        if (localUser?.username) {
+          const foundUser = response.data.find(user => user.username === localUser.username);
+          if (foundUser) {
+            console.log('Found user by username:', foundUser);
+            return foundUser;
+          }
+        }
+        
+        // Try to find by ID if available
+        if (localUser?.id) {
+          const foundUser = response.data.find(user => user.userId?.toString() === localUser.id?.toString() || user.id?.toString() === localUser.id?.toString());
+          if (foundUser) {
+            console.log('Found user by ID from localStorage:', foundUser);
+            return foundUser;
+          }
+        }
+        
+        console.log('User API returned array, taking first element as fallback:', response.data[0]);
         return response.data[0];
       }
       
       return response.data;
     } catch (error) {
-      console.log('User API failed without userId, trying with userId:', currentUserId);
-      try {
-        // If that fails, try with userId
-        const response = await api.get(`/api/User/${currentUserId}`);
-        console.log('User API Response (with userId):', response);
-        console.log('User API Response Data (with userId):', response.data);
-        
-        // Handle array response for userId endpoint too
-        if (Array.isArray(response.data)) {
-          console.log('User API with userId returned array, taking first element:', response.data[0]);
-          return response.data[0];
-        }
-        
-        return response.data;
-      } catch (error2) {
-        console.log('Both User API calls failed:', error, error2);
-        throw error2;
-      }
+      console.log('User API call failed:', error);
+      throw error;
     }
   },
 

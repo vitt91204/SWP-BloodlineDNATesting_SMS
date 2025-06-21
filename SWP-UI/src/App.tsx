@@ -24,6 +24,9 @@ import Customers from "@/pages/admin/Customers";
 import Tests from "@/pages/admin/Tests";
 import Appointments from "@/pages/admin/Appointments";
 
+// Staff pages
+import StaffDashboard from "@/pages/staff/Dashboard";
+
 const queryClient = new QueryClient();
 
 function App() {
@@ -50,6 +53,9 @@ function App() {
             
             {/* User profile route */}
             <Route path="/profile" element={<CustomerProfile />} />
+
+            {/* Staff routes */}
+            <Route path="/staff" element={<StaffDashboard />} />
 
             {/* Admin routes */}
             <Route path="/admin" element={<AdminLayout />}>

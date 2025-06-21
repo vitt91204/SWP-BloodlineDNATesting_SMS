@@ -60,13 +60,23 @@ export const Navigation = () => {
 
   const handleLogout = async () => {
     try {
-      await authAPI.logout();
+      // Clear all authentication data from localStorage
+      localStorage.removeItem('token');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('username');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userData');
+      localStorage.removeItem('isAuthenticated');
+      
       setIsAuthenticated(false);
       setUserData(null);
+      
       toast({
         title: "Đăng xuất thành công",
         description: "Hẹn gặp lại bạn!",
       });
+      
       navigate('/');
     } catch (error) {
       console.error('Logout error:', error);
@@ -164,6 +174,14 @@ export const Navigation = () => {
                       </Link>
                     </DropdownMenuItem>
                   )}
+                  {(userData?.role === 'staff' || userData?.role === 'Staff' || userData?.role === 'STAFF' || userData?.userRole === 'staff') && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/staff" className="cursor-pointer">
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>Bảng điều khiển nhân viên</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem asChild>
                     <Link to="/settings" className="cursor-pointer">
                       <Settings className="mr-2 h-4 w-4" />
@@ -256,6 +274,22 @@ export const Navigation = () => {
                             Hồ sơ cá nhân
                           </Link>
                         </Button>
+                        {(userData?.role === 'admin' || userData?.role === 'Admin' || userData?.role === 'ADMIN' || userData?.userRole === 'admin') && (
+                          <Button variant="outline" asChild>
+                            <Link to="/admin" onClick={() => setIsOpen(false)}>
+                              <Settings className="w-4 h-4 mr-2" />
+                              Quản trị
+                            </Link>
+                          </Button>
+                        )}
+                        {(userData?.role === 'staff' || userData?.role === 'Staff' || userData?.role === 'STAFF' || userData?.userRole === 'staff') && (
+                          <Button variant="outline" asChild>
+                            <Link to="/staff" onClick={() => setIsOpen(false)}>
+                              <Settings className="w-4 h-4 mr-2" />
+                              Bảng điều khiển nhân viên
+                            </Link>
+                          </Button>
+                        )}
                         <Button variant="outline" asChild>
                           <Link to="/settings" onClick={() => setIsOpen(false)}>
                             <Settings className="w-4 h-4 mr-2" />

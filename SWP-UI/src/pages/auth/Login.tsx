@@ -42,12 +42,15 @@ export default function Login() {
         localStorage.setItem('authToken', 'dummy-token-for-testing');
       }
       
-      // Always store some user data, even if just username
-      // Ensure we have an id field for the user
-      const userData = user || { 
-        username: username, 
-        fullName: username,
-        id: user?.id || user?.userId || user?.user_id || username // fallback to username as id
+      // Store user data with username for later identification
+      const userData = {
+        username: username, // Store the login username for identification
+        fullName: user?.fullName || user?.name || username,
+        id: user?.id || user?.userId || user?.user_id,
+        email: user?.email,
+        phone: user?.phone,
+        role: user?.role || user?.userRole,
+        ...user // Spread any additional user data from API
       };
       localStorage.setItem('userData', JSON.stringify(userData));
       console.log('User data saved to localStorage:', userData);
@@ -71,6 +74,9 @@ export default function Login() {
         if (userRole === 'admin' || userRole === 'Admin' || userRole === 'ADMIN') {
           console.log('Redirecting to admin dashboard');
           navigate('/admin');
+        } else if (userRole === 'staff' || userRole === 'Staff' || userRole === 'STAFF') {
+          console.log('Redirecting to staff dashboard');
+          navigate('/staff');
         } else {
           console.log('Redirecting to home page');
           navigate('/');
