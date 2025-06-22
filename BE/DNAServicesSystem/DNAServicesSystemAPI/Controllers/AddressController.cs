@@ -4,7 +4,9 @@ using Services.AddressDTO;
 
 namespace DNAServicesSystemAPI.Controllers
 {
-    public class AddressController : Controller
+    [Route("api/[controller]")]
+    [ApiController]
+    public class AddressController : ControllerBase
     {
         private readonly AddressService addressService;
 
@@ -14,7 +16,7 @@ namespace DNAServicesSystemAPI.Controllers
         }
 
         [HttpGet]
-        [Route("api/addresses/{userId:int}")]
+        [Route("{userId:int}")]
         public async Task<IActionResult> GetAllAddresses(int userId)
         {
             var addresses = await addressService.GetAddressesByUserId(userId);
@@ -40,7 +42,7 @@ namespace DNAServicesSystemAPI.Controllers
         }
 
         [HttpPost]
-        [Route("api/addresses/{userId:int}")]
+        [Route("{userId:int}")]
 
         public async Task<IActionResult> CreateAddress([FromBody] CreateAddressRequest createAddressRequest, int userId)
         {
@@ -60,7 +62,7 @@ namespace DNAServicesSystemAPI.Controllers
         }
 
         [HttpGet]
-        [Route("api/addresses/{addressId:int}/{userId:int}")]
+        [Route("{addressId:int}/{userId:int}")]
         public async Task<IActionResult> GetAddressById(int addressId, int userId)
         {
             try
@@ -79,7 +81,7 @@ namespace DNAServicesSystemAPI.Controllers
 
         }
         [HttpDelete]
-        [Route("api/addresses/{addressId:int}/{userId:int}")]
+        [Route("{addressId:int}/{userId:int}")]
         public async Task<IActionResult> DeleteAddress(int addressId, int userId)
         {
             try
@@ -97,7 +99,7 @@ namespace DNAServicesSystemAPI.Controllers
             }
         }
         [HttpPut]
-        [Route("api/addresses/{addressId:int}/{userId:int}")]
+        [Route("{addressId:int}/{userId:int}")]
 
         public async Task<IActionResult> UpdateAddress(int addressId, int userId, [FromBody] CreateAddressRequest updateAddressRequest)
         {

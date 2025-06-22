@@ -19,10 +19,13 @@ namespace DNAServicesSystemAPI
                 });
             });
 
+            //Dependency Injection for Services
+
             builder.Services.AddScoped<UserService>();
             builder.Services.AddScoped<AddressService>();
             builder.Services.AddScoped<ProfileService>();
             builder.Services.AddScoped<TestRequestService>();
+            builder.Services.AddScoped<TestKitService>();
 
             // Add services to the container.
 

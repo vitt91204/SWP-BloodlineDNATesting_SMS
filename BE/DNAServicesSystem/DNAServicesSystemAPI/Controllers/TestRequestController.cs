@@ -4,10 +4,12 @@ using Services.TestRequestDTO;
 
 namespace DNAServicesSystemAPI.Controllers
 {
+    [Route("api/[controller]")]
+    [ApiController]
     public class TestRequestController : ControllerBase
     {
         [HttpGet]
-        [Route("api/testrequest/{requestId:int}")]
+        [Route("{requestId:int}")]
         public async Task<IActionResult> GetTestRequest(int requestId)
         {
             var testRequestService = new TestRequestService();
@@ -23,7 +25,6 @@ namespace DNAServicesSystemAPI.Controllers
         }
 
         [HttpGet]
-        [Route("api/testrequest")]
         public async Task<IActionResult> GetAllTestRequests()
         {
             var testRequestService = new TestRequestService();
@@ -32,7 +33,7 @@ namespace DNAServicesSystemAPI.Controllers
         }
 
         [HttpGet]
-        [Route("api/testrequest/user/{userId:int}")]
+        [Route("user/{userId:int}")]
         public async Task<IActionResult> GetTestRequestByUserId(int userId)
         {
             var testRequestService = new TestRequestService();
@@ -48,7 +49,7 @@ namespace DNAServicesSystemAPI.Controllers
         }
 
         [HttpGet]
-        [Route("api/testrequest/service/{serviceId:int}")]
+        [Route("service/{serviceId:int}")]
         public async Task<IActionResult> GetTestRequestsByServiceId(int serviceId)
         {
             var testRequestService = new TestRequestService();
@@ -76,7 +77,7 @@ namespace DNAServicesSystemAPI.Controllers
             return CreatedAtAction(nameof(GetTestRequest), new { requestId = testRequest.RequestId }, testRequest);
         }
         [HttpDelete]
-        [Route("api/testrequest/{requestId:int}")]
+        [Route("{requestId:int}")]
         public async Task<IActionResult> DeleteTestRequest(int requestId)
         {
             var testRequestService = new TestRequestService();
@@ -91,7 +92,7 @@ namespace DNAServicesSystemAPI.Controllers
             }
         }
         [HttpPut]
-        [Route("api/testrequest/{requestId:int}")]
+        [Route("{requestId:int}")]
         public async Task<IActionResult> UpdateTestRequest(int requestId, [FromBody] TestRequestDto updateTestRequestDto)
         {
             if (!ModelState.IsValid)
