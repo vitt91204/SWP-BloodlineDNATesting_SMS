@@ -20,6 +20,11 @@ namespace Services
 
         public async Task<TestRequest> CreateTestRequestAsync(TestRequestDto testRequestDto)
         {
+            if (testRequestDto == null)
+            {
+                throw new ArgumentNullException(nameof(testRequestDto), "Test request data cannot be null.");
+            }
+
             var testRequest = new TestRequest
             {
                 UserId = testRequestDto.UserId,

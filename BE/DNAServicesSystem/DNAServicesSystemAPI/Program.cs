@@ -26,6 +26,7 @@ namespace DNAServicesSystemAPI
             builder.Services.AddScoped<ProfileService>();
             builder.Services.AddScoped<TestRequestService>();
             builder.Services.AddScoped<TestKitService>();
+            builder.Services.AddScoped<TestServiceService>();
 
             // Add services to the container.
 
