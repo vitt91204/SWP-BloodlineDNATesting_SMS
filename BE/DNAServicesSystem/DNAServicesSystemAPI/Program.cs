@@ -1,4 +1,6 @@
 using Services;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace DNAServicesSystemAPI
 {
@@ -18,7 +20,7 @@ namespace DNAServicesSystemAPI
                           .AllowAnyMethod();
                 });
             });
-
+            
             //Dependency Injection for Services
 
             builder.Services.AddScoped<UserService>();
@@ -26,7 +28,10 @@ namespace DNAServicesSystemAPI
             builder.Services.AddScoped<ProfileService>();
             builder.Services.AddScoped<TestRequestService>();
             builder.Services.AddScoped<TestKitService>();
+            builder.Services.AddScoped<FeedbackService>();
             builder.Services.AddScoped<TestServiceService>();
+            builder.Services.AddScoped<PaymentService>();
+            
 
             // Add services to the container.
 
