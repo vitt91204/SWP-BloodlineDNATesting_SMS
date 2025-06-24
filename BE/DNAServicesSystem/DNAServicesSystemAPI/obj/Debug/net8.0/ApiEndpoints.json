@@ -407,6 +407,111 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.SampleController",
+    "Method": "GetAll",
+    "RelativePath": "api/Sample",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.SampleController",
+    "Method": "Create",
+    "RelativePath": "api/Sample",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "Services.SampleDTO.SampleDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.SampleController",
+    "Method": "GetById",
+    "RelativePath": "api/Sample/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.SampleController",
+    "Method": "Update",
+    "RelativePath": "api/Sample/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "Services.SampleDTO.SampleDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.SubSampleController",
+    "Method": "GetAll",
+    "RelativePath": "api/SubSample",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.SubSampleController",
+    "Method": "Create",
+    "RelativePath": "api/SubSample",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "Services.SubSampleDTO.SubSampleDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.SubSampleController",
+    "Method": "GetById",
+    "RelativePath": "api/SubSample/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "DNAServicesSystemAPI.Controllers.TestKitController",
     "Method": "GetAllTestKits",
     "RelativePath": "api/TestKit",
@@ -607,6 +712,69 @@
       {
         "Name": "userId",
         "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.TestResultController",
+    "Method": "GetAll",
+    "RelativePath": "api/TestResult",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.TestResultController",
+    "Method": "Create",
+    "RelativePath": "api/TestResult",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "Services.TestResultDTO.TestResultDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.TestResultController",
+    "Method": "GetById",
+    "RelativePath": "api/TestResult/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.TestResultController",
+    "Method": "Update",
+    "RelativePath": "api/TestResult/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "Services.TestResultDTO.TestResultDto",
         "IsRequired": true
       }
     ],
