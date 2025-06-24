@@ -1,11 +1,13 @@
-using Services;
 using Microsoft.EntityFrameworkCore;
+using Repositories;
+using Services;
 
 
 namespace DNAServicesSystemAPI
 {
     public class Program
     {
+        
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
@@ -31,7 +33,9 @@ namespace DNAServicesSystemAPI
             builder.Services.AddScoped<FeedbackService>();
             builder.Services.AddScoped<TestServiceService>();
             builder.Services.AddScoped<PaymentService>();
-            
+            builder.Services.AddScoped<BlogPostRepository>();
+            builder.Services.AddScoped<BlogPostService>();
+
 
             // Add services to the container.
 
