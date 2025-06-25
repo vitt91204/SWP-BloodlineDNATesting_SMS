@@ -181,13 +181,7 @@ export const Navigation = () => {
                         <span>Bảng điều khiển nhân viên</span>
                       </Link>
                     </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem asChild>
-                    <Link to="/settings" className="cursor-pointer">
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Cài đặt</span>
-                    </Link>
-                  </DropdownMenuItem>
+                  )} 
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     className="cursor-pointer text-red-600 focus:text-red-600"

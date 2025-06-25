@@ -20,7 +20,7 @@ import CustomerProfile from "@/pages/customer/Profile";
 // Admin pages
 import { AdminLayout } from "@/layouts/AdminLayout";
 import { AdminDashboard } from "@/pages/admin/Dashboard";
-import Customers from "@/pages/admin/Customers";
+import Customers from "@/pages/admin/account/Customer";
 import Tests from "@/pages/admin/Tests";
 import Appointments from "@/pages/admin/Appointments";
 

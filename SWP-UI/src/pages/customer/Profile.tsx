@@ -17,6 +17,13 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -46,10 +53,61 @@ interface ProfileData {
   notes: string;
 }
 
+// Gender mapping cho hiển thị
+const genderDisplayMap: Record<string, string> = {
+  "Male": "Nam",
+  "Female": "Nữ", 
+  "Other": "Khác",
+  "": "Chưa xác định"
+};
+
+// Gender options cho select
+const genderOptions = [
+  { value: "Male", label: "Nam" },
+  { value: "Female", label: "Nữ" },
+  { value: "Other", label: "Khác" }
+];
+
+// Helper function to get userId from localStorage
+const getUserIdFromLocalStorage = () => {
+  try {
+    const userData = localStorage.getItem('userData');
+    console.log('Raw userData from localStorage:', userData);
+    
+    if (userData) {
+      const parsedData = JSON.parse(userData);
+      console.log('Parsed userData:', parsedData);
+      
+      // Try different possible field names for userId
+      const userId = parsedData.id || 
+                    parsedData.userId || 
+                    parsedData.user_id || 
+                    parsedData.ID ||
+                    parsedData.UserId ||
+                    '';
+      console.log('Extracted userId:', userId);
+      return userId.toString();
+    }
+    
+    // Also try from authToken or other storage keys
+    const authToken = localStorage.getItem('authToken');
+    const isAuthenticated = localStorage.getItem('isAuthenticated');
+    console.log('AuthToken exists:', !!authToken);
+    console.log('IsAuthenticated:', isAuthenticated);
+    
+    console.log('No userData in localStorage');
+    return '';
+  } catch (error) {
+    console.error('Error parsing userData from localStorage:', error);
+    return '';
+  }
+};
+
 export default function CustomerProfile() {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [currentUserId, setCurrentUserId] = useState<string>('');
   const [profileData, setProfileData] = useState<ProfileData>({
     id: "",
     fullName: "",
@@ -62,16 +120,34 @@ export default function CustomerProfile() {
   const [editData, setEditData] = useState<ProfileData>({ ...profileData });
 
   useEffect(() => {
-    loadProfile();
+    // Get userId first
+    const userId = getUserIdFromLocalStorage();
+    console.log('Current userId from localStorage:', userId);
+    setCurrentUserId(userId);
+    
+    loadProfile(userId);
   }, []);
 
-  const loadProfile = async () => {
+  const loadProfile = async (userId?: string) => {
     try {
       setIsLoading(true);
+      const currentUserId = userId || getUserIdFromLocalStorage();
+      console.log('Loading profile for userId:', currentUserId);
+
+      // Get user info and profile data
       const [userInfoResponse, profileResponse] = await Promise.all([
-        userAPI.getUserInfo().catch(() => null),
-        userAPI.getProfile().catch(() => null),
+        userAPI.getUserInfo(currentUserId).catch((error) => {
+          console.log('getUserInfo failed:', error);
+          return null;
+        }),
+        userAPI.getProfile(currentUserId).catch((error) => {
+          console.log('getProfile failed:', error);
+          return null;
+        }),
       ]);
+
+      console.log('UserInfo Response:', userInfoResponse);
+      console.log('Profile Response:', profileResponse);
 
       const extractEmail = (data: any) =>
         data?.email || data?.Email || data?.emailAddress || data?.mail || "";
@@ -88,19 +164,50 @@ export default function CustomerProfile() {
 
       const localUserData = localStorage.getItem("userData");
       const localUser = localUserData ? JSON.parse(localUserData) : null;
+      console.log('Local user data:', localUser);
+
+      // Normalize gender value
+      const normalizeGender = (gender: any) => {
+        if (!gender) return "";
+        const genderStr = String(gender).toLowerCase();
+        if (genderStr === "male" || genderStr === "nam") return "Male";
+        if (genderStr === "female" || genderStr === "nữ" || genderStr === "nu") return "Female";
+        if (genderStr === "other" || genderStr === "khác" || genderStr === "khac") return "Other";
+        return String(gender); // Keep original if no match
+      };
+
+      // Extract ID with priority order
+      const extractId = () => {
+        // Try profile response first
+        if (profileResponse?.id) return String(profileResponse.id);
+        if (profileResponse?.userId) return String(profileResponse.userId);
+        
+        // Try user info response
+        if (userInfoResponse?.id) return String(userInfoResponse.id);
+        if (userInfoResponse?.userId) return String(userInfoResponse.userId);
+        
+        // Try current userId
+        if (currentUserId) return String(currentUserId);
+        
+        // Try localStorage
+        if (localUser?.id) return String(localUser.id);
+        if (localUser?.userId) return String(localUser.userId);
+        
+        return "";
+      };
+
+      const profileId = extractId();
+      console.log('Final profile ID:', profileId);
 
       const profile: ProfileData = {
-        id:
-          profileResponse?.id ||
-          profileResponse?.userId ||
-          userInfoResponse?.id ||
-          userInfoResponse?.userId ||
-          "",
+        id: profileId,
         fullName:
           profileResponse?.fullName ||
           profileResponse?.name ||
           userInfoResponse?.fullName ||
           userInfoResponse?.name ||
+          localUser?.fullName ||
+          localUser?.name ||
           "",
         email:
           extractEmail(userInfoResponse) ||
@@ -113,14 +220,25 @@ export default function CustomerProfile() {
           extractPhone(localUser) ||
           "",
         dateOfBirth:
-          profileResponse?.dateOfBirth || profileResponse?.birthDate || "",
-        gender: profileResponse?.gender || "",
+          profileResponse?.dateOfBirth || 
+          profileResponse?.birthDate || 
+          localUser?.dateOfBirth ||
+          "",
+        gender: normalizeGender(profileResponse?.gender || localUser?.gender || ""),
         notes: profileResponse?.notes || profileResponse?.description || "",
       };
 
+      console.log("Final profile data:", profile);
       setProfileData(profile);
       setEditData(profile);
+
+      // Update current user ID if we got a better one
+      if (profileId && profileId !== currentUserId) {
+        setCurrentUserId(profileId);
+      }
+
     } catch (error) {
+      console.error("Error loading profile:", error);
       toast({
         variant: "destructive",
         title: "Lỗi tải dữ liệu",
@@ -138,11 +256,50 @@ export default function CustomerProfile() {
   const handleSave = async () => {
     try {
       setIsLoading(true);
+      
+      // Validate required fields
+      if (!editData.fullName.trim()) {
+        toast({
+          variant: "destructive",
+          title: "Lỗi validation",
+          description: "Họ và tên không được để trống.",
+        });
+        return;
+      }
+
+      if (!editData.email.trim()) {
+        toast({
+          variant: "destructive",
+          title: "Lỗi validation", 
+          description: "Email không được để trống.",
+        });
+        return;
+      }
+
+      // Get the most current userId
+      const userIdToUse = currentUserId || editData.id || profileData.id || getUserIdFromLocalStorage();
+      
+      if (!userIdToUse) {
+        toast({
+          variant: "destructive",
+          title: "Lỗi validation",
+          description: "Không tìm thấy ID người dùng. Vui lòng đăng nhập lại.",
+        });
+        return;
+      }
+
+      // Prepare update data
       const updateData = {
         ...editData,
-        id: editData.id || profileData.id,
+        id: userIdToUse,
+        // Ensure gender is properly formatted
+        gender: editData.gender || "Other"
       };
-      await userAPI.updateProfile(updateData);
+      
+      console.log("Sending update data:", updateData);
+      console.log("Using userId:", userIdToUse);
+      
+      await userAPI.updateProfile(updateData, userIdToUse);
       setProfileData({ ...editData });
       setIsEditing(false);
       toast({
@@ -150,6 +307,7 @@ export default function CustomerProfile() {
         description: "Thông tin cá nhân đã được cập nhật.",
       });
     } catch (error) {
+      console.error("Error updating profile:", error);
       toast({
         variant: "destructive",
         title: "Lỗi cập nhật",
@@ -172,6 +330,10 @@ export default function CustomerProfile() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Hồ sơ cá nhân</h1>
           <p className="text-gray-600">Quản lý thông tin cá nhân và lịch sử xét nghiệm</p>
+          {/* Debug info - remove in production */}
+          {process.env.NODE_ENV === 'development' && (
+            <p className="text-xs text-gray-400">Debug: User ID = {currentUserId || 'Not found'}</p>
+          )}
         </div>
 
         <Tabs defaultValue="profile" className="space-y-6">
@@ -231,11 +393,12 @@ export default function CustomerProfile() {
                             id="fullName"
                             value={editData.fullName}
                             onChange={(e) => handleInputChange("fullName", e.target.value)}
+                            placeholder="Nhập họ và tên"
                           />
                         ) : (
                           <p className="flex items-center gap-2 text-gray-900">
                             <User className="w-4 h-4 text-gray-500" />
-                            {profileData.fullName}
+                            {profileData.fullName || "Chưa có thông tin"}
                           </p>
                         )}
                       </div>
@@ -247,6 +410,7 @@ export default function CustomerProfile() {
                             type="email"
                             value={editData.email}
                             onChange={(e) => handleInputChange("email", e.target.value)}
+                            placeholder="Nhập email"
                           />
                         ) : (
                           <p className="flex items-center gap-2 text-gray-900">
@@ -262,6 +426,7 @@ export default function CustomerProfile() {
                             id="phone"
                             value={editData.phone}
                             onChange={(e) => handleInputChange("phone", e.target.value)}
+                            placeholder="Nhập số điện thoại"
                           />
                         ) : (
                           <p className="flex items-center gap-2 text-gray-900">
@@ -282,24 +447,35 @@ export default function CustomerProfile() {
                         ) : (
                           <p className="flex items-center gap-2 text-gray-900">
                             <Calendar className="w-4 h-4 text-gray-500" />
-                            {new Date(profileData.dateOfBirth).toLocaleDateString("vi-VN")}
+                            {profileData.dateOfBirth ? 
+                              new Date(profileData.dateOfBirth).toLocaleDateString("vi-VN") : 
+                              "Chưa có thông tin"
+                            }
                           </p>
                         )}
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="gender">Giới tính</Label>
                         {isEditing ? (
-                          <select
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          <Select
                             value={editData.gender}
-                            onChange={(e) => handleInputChange("gender", e.target.value)}
+                            onValueChange={(value) => handleInputChange("gender", value)}
                           >
-                            <option value="Nam">Nam</option>
-                            <option value="Nữ">Nữ</option>
-                            <option value="Khác">Khác</option>
-                          </select>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Chọn giới tính" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {genderOptions.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         ) : (
-                          <p className="text-gray-900">{profileData.gender}</p>
+                          <p className="text-gray-900">
+                            {genderDisplayMap[profileData.gender] || "Chưa xác định"}
+                          </p>
                         )}
                       </div>
                     </div>

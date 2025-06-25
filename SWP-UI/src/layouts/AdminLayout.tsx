@@ -18,6 +18,7 @@ import {
   Settings, 
   Calendar,
   LogOut,
+  Home,
 } from "lucide-react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -113,7 +114,19 @@ export const AdminLayout = () => {
           </div>
 
           {/* Footer */}
-          <div className="border-t border-sidebar-border p-4">
+          <div className="border-t border-sidebar-border p-4 space-y-2">
+            {/* Nút về trang chủ */}
+            <Link to="/">
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start gap-2 text-sidebar-foreground/60 hover:bg-sidebar-accent/50"
+              >
+                <Home className="h-4 w-4" />
+                Về trang chủ
+              </Button>
+            </Link>
+
+            {/* Nút đăng xuất */}
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button 
