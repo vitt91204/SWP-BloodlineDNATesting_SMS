@@ -286,6 +286,16 @@
   },
   {
     "ContainingType": "DNAServicesSystemAPI.Controllers.PaymentController",
+    "Method": "GetAllPayment",
+    "RelativePath": "api/Payment",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.PaymentController",
     "Method": "UpdatePayment",
     "RelativePath": "api/Payment/{paymentId}",
     "HttpMethod": "PUT",
@@ -300,22 +310,6 @@
       {
         "Name": "paymentDTO",
         "Type": "Services.PaymentDTO.PaymentDto",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DNAServicesSystemAPI.Controllers.PaymentController",
-    "Method": "GetPaymentsByStatus",
-    "RelativePath": "api/Payment/{status}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "status",
-        "Type": "System.String",
         "IsRequired": true
       }
     ],
@@ -937,7 +931,7 @@
       },
       {
         "Name": "updateUserRequest",
-        "Type": "Services.UserDTO.CreateUserRequest",
+        "Type": "Services.UserDTO.UpdateUserRequest",
         "IsRequired": true
       }
     ],
@@ -971,6 +965,27 @@
         "Name": "createUserRequest",
         "Type": "Services.UserDTO.CreateUserRequest",
         "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.UserController",
+    "Method": "UpdateUserRole",
+    "RelativePath": "role/{userId}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "role",
+        "Type": "System.String",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []

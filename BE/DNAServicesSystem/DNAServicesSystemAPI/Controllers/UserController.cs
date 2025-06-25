@@ -50,9 +50,18 @@ namespace DNAServicesSystemAPI.Controllers
         }
         [HttpPut]
         [Route("{userId:int}")]
-        public async Task<IActionResult> UpdateUser(int userId, [FromBody] CreateUserRequest updateUserRequest)
+        public async Task<IActionResult> UpdateUser(int userId, [FromBody] UpdateUserRequest updateUserRequest)
         {
             var user = await userService.UpdateUserAsync(userId, updateUserRequest);
+            return Ok(user);
+        }
+
+        [HttpPut]
+        [Route("/role/{userId:int}")]
+
+        public async Task<IActionResult> UpdateUserRole(int userId, String role)
+        {
+            var user = await userService.UpdateUserRoleAsync(userId, role);
             return Ok(user);
         }
 

@@ -60,8 +60,8 @@ namespace Services
             }
             return user;
         }
-
-        public async Task<User> UpdateUserAsync(int userId, CreateUserRequest updateUserRequest)
+        #region UpdateUserAsync
+        public async Task<User> UpdateUserAsync(int userId, UpdateUserRequest updateUserRequest)
         {
             var user = await userRepository.GetByIdAsync(userId);
             if (user == null)
@@ -76,6 +76,24 @@ namespace Services
             await userRepository.UpdateAsync(user);
             return user;
         }
+
+        public async Task<User?> UpdateUserRoleAsync(int userId, String role)
+        {
+            var user = await userRepository.GetByIdAsync(userId);
+            
+            if (user == null)
+            {
+                throw new KeyNotFoundException($"User with ID {userId} not found");
+
+            }
+            user.Role = role;
+
+            await userRepository.UpdateAsync(user);
+            return user;
+
+        }
+        #endregion
+
         public async Task<User?> GetUserByUsernameAndPasswordAsync(string username, string password)
         {
             return await userRepository.GetUserByUsernameAndPasswordAsync(username, password);

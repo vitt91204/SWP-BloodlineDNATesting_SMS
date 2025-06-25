@@ -14,13 +14,12 @@ namespace DNAServicesSystemAPI.Controllers
         {
             this.paymentService = paymentService;
         }
-
         [HttpGet]
-        [Route("{status}")]
-        public async Task<IActionResult> GetPaymentsByStatus(string status)
+        public async Task<IActionResult> GetAllPayment()
         {
-            var payments = await paymentService.GetPaymentsByStatusAsync(status);
+            var payments = await paymentService.GetPaymentsByStatusAsync("All");
             return Ok(payments);
+
         }
         [HttpGet]
         [Route("payment/{paymentId:int}")]
