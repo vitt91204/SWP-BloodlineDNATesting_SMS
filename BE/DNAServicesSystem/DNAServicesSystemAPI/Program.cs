@@ -35,6 +35,10 @@ namespace DNAServicesSystemAPI
             builder.Services.AddScoped<PaymentService>();
             builder.Services.AddScoped<BlogPostRepository>();
             builder.Services.AddScoped<BlogPostService>();
+            builder.Services.AddScoped<SubSampleRepository>();
+            builder.Services.AddScoped<SubSampleService>();
+            builder.Services.AddScoped<SampleRepository>();
+            builder.Services.AddScoped<SampleService>();
 
 
             // Add services to the container.

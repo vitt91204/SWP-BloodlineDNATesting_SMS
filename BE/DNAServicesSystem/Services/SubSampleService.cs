@@ -14,7 +14,6 @@ namespace Services
             var subsamples = await _repository.GetAllAsync();
             return subsamples.Select(s => new SubSampleDto
             {
-                SubSampleId = s.SubSampleId,
                 SampleId = s.SampleId,
                 Description = s.Description,
                 CreatedAt = s.CreatedAt
@@ -27,7 +26,6 @@ namespace Services
             if (s == null) return null;
             return new SubSampleDto
             {
-                SubSampleId = s.SubSampleId,
                 SampleId = s.SampleId,
                 Description = s.Description,
                 CreatedAt = s.CreatedAt

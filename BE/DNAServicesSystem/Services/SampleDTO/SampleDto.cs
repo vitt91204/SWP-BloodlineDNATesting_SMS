@@ -1,12 +1,19 @@
+using System;
+using System.ComponentModel.DataAnnotations;
+
 namespace Services.SampleDTO
 {
     public class SampleDto
     {
-        public int SampleId { get; set; }
+        [Required]
         public int RequestId { get; set; }
-        public int? CollectedBy { get; set; }
+        [Required]
+        public int CollectedBy { get; set; }
         public DateTime? CollectionTime { get; set; }
         public DateTime? ReceivedTime { get; set; }
-        public string? Status { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
+        [StringLength(50)]
+        public string Status { get; set; } = string.Empty;
     }
 }

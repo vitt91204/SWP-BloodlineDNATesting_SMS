@@ -14,7 +14,6 @@ namespace Services
             var samples = await _repository.GetAllAsync();
             return samples.Select(s => new SampleDto
             {
-                SampleId = s.SampleId,
                 RequestId = s.RequestId,
                 CollectedBy = s.CollectedBy,
                 CollectionTime = s.CollectionTime,
@@ -29,7 +28,6 @@ namespace Services
             if (s == null) return null;
             return new SampleDto
             {
-                SampleId = s.SampleId,
                 RequestId = s.RequestId,
                 CollectedBy = s.CollectedBy,
                 CollectionTime = s.CollectionTime,
@@ -43,7 +41,7 @@ namespace Services
             var entity = new Sample
             {
                 RequestId = dto.RequestId,
-                CollectedBy = dto.CollectedBy ?? throw new InvalidOperationException("CollectedBy cannot be null."),
+                CollectedBy = dto.CollectedBy,
                 CollectionTime = dto.CollectionTime,
                 ReceivedTime = dto.ReceivedTime,
                 Status = dto.Status
@@ -57,7 +55,7 @@ namespace Services
             if (entity == null) return false;
 
             entity.RequestId = dto.RequestId;
-            entity.CollectedBy = dto.CollectedBy ?? throw new InvalidOperationException("CollectedBy cannot be null.");
+            entity.CollectedBy = dto.CollectedBy;
             entity.CollectionTime = dto.CollectionTime;
             entity.ReceivedTime = dto.ReceivedTime;
             entity.Status = dto.Status;

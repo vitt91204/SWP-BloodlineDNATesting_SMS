@@ -844,6 +844,46 @@
             "description": "OK"
           }
         }
+      },
+      "put": {
+        "tags": [
+          "SubSample"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubSampleDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubSampleDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubSampleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
       }
     },
     "/api/TestKit/{name}": {
@@ -1558,23 +1598,25 @@
   "components": {
     "schemas": {
       "BlogPostDto": {
+        "required": [
+          "authorId",
+          "content",
+          "title"
+        ],
         "type": "object",
         "properties": {
-          "postId": {
+          "authorId": {
             "type": "integer",
             "format": "int32"
           },
           "title": {
-            "type": "string",
-            "nullable": true
+            "maxLength": 200,
+            "minLength": 0,
+            "type": "string"
           },
           "content": {
-            "type": "string",
-            "nullable": true
-          },
-          "authorId": {
-            "type": "integer",
-            "format": "int32"
+            "minLength": 1,
+            "type": "string"
           },
           "createdAt": {
             "type": "string",
@@ -1816,20 +1858,20 @@
         "additionalProperties": false
       },
       "SampleDto": {
+        "required": [
+          "collectedBy",
+          "requestId",
+          "status"
+        ],
         "type": "object",
         "properties": {
-          "sampleId": {
-            "type": "integer",
-            "format": "int32"
-          },
           "requestId": {
             "type": "integer",
             "format": "int32"
           },
           "collectedBy": {
             "type": "integer",
-            "format": "int32",
-            "nullable": true
+            "format": "int32"
           },
           "collectionTime": {
             "type": "string",
@@ -1842,24 +1884,26 @@
             "nullable": true
           },
           "status": {
-            "type": "string",
-            "nullable": true
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
           }
         },
         "additionalProperties": false
       },
       "SubSampleDto": {
+        "required": [
+          "sampleId"
+        ],
         "type": "object",
         "properties": {
-          "subSampleId": {
-            "type": "integer",
-            "format": "int32"
-          },
           "sampleId": {
             "type": "integer",
             "format": "int32"
           },
           "description": {
+            "maxLength": 200,
+            "minLength": 0,
             "type": "string",
             "nullable": true
           },
@@ -1948,6 +1992,10 @@
         "additionalProperties": false
       },
       "TestResultDto": {
+        "required": [
+          "requestId",
+          "sampleId"
+        ],
         "type": "object",
         "properties": {
           "resultId": {
@@ -1963,6 +2011,8 @@
             "format": "int32"
           },
           "resultData": {
+            "maxLength": 500,
+            "minLength": 0,
             "type": "string",
             "nullable": true
           },

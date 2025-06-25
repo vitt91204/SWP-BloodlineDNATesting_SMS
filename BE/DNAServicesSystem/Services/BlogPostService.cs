@@ -18,7 +18,6 @@ namespace Services
             var posts = await _repository.GetAllAsync();
             return posts.Select(p => new BlogPostDto
             {
-                PostId = p.PostId,
                 AuthorId = p.AuthorId ?? 0, // Explicitly handle nullable value
                 Title = p.Title,
                 Content = p.Content,
@@ -33,7 +32,6 @@ namespace Services
             return new BlogPostDto
             {
                 AuthorId = post.AuthorId ?? 0, // Explicitly handle nullable value
-                PostId = post.PostId,
                 Title = post.Title,
                 Content = post.Content,
                 CreatedAt = post.CreatedAt ?? DateTime.MinValue

@@ -28,5 +28,13 @@ namespace DNAServicesSystemAPI.Controllers
             var id = await _service.CreateAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id }, dto);
         }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] SubSampleDto dto)
+        {
+            var updated = await _service.UpdateAsync(id, dto);
+            if (!updated) return NotFound();
+            return NoContent();
+        }
     }
 }

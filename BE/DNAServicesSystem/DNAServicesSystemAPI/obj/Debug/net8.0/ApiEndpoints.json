@@ -512,6 +512,27 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.SubSampleController",
+    "Method": "Update",
+    "RelativePath": "api/SubSample/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "Services.SubSampleDTO.SubSampleDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "DNAServicesSystemAPI.Controllers.TestKitController",
     "Method": "GetAllTestKits",
     "RelativePath": "api/TestKit",
