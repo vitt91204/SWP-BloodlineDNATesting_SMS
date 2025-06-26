@@ -53,11 +53,49 @@ api.interceptors.response.use(
 // Auth API functions
 export const authAPI = {
   login: async (username: string, password: string) => {
-    const response = await api.post('/api/User/login', {
-      username,
-      password,
-    });
-    return response.data;
+    try {
+      // Since there's no login endpoint, we'll validate against the user list
+      console.log('Attempting login with username:', username);
+      
+      const response = await api.get('/api/User');
+      console.log('Got users from API:', response.data);
+      
+      if (Array.isArray(response.data)) {
+        // Find user with matching username
+        const user = response.data.find(u => u.username === username);
+        
+        if (user) {
+          console.log('Found user:', user);
+          
+          // Simple password validation (you should implement proper password checking in backend)
+          if (user.password === password) {
+            console.log('Password matches');
+            
+            // Return successful login response
+            return {
+              token: 'dummy-token-' + user.userId,
+              user: user,
+              success: true,
+              message: 'Login successful'
+            };
+          } else {
+            console.log('Password does not match');
+            throw new Error('Mật khẩu không chính xác');
+          }
+        } else {
+          console.log('User not found');
+          throw new Error('Tên đăng nhập không tồn tại');
+        }
+      } else {
+        throw new Error('Invalid API response format');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      if (error.message && (error.message.includes('không chính xác') || error.message.includes('không tồn tại'))) {
+        throw error;
+      }
+      throw new Error('Lỗi kết nối API: ' + error.message);
+    }
   },
   
   register: async (userData: any) => {
@@ -105,27 +143,10 @@ export const userAPI = {
     const currentUserId = userId || getUserIdFromLocalStorage();
     
     try {
-      // Try with userId first if we have it
-      if (currentUserId) {
-        console.log('Trying to get user info with userId:', currentUserId);
-        const response = await api.get(`/api/User/${currentUserId}`);
-        console.log('User API Response (with userId):', response);
-        console.log('User API Response Data (with userId):', response.data);
-        
-        // Handle array response for userId endpoint
-        if (Array.isArray(response.data)) {
-          const foundUser = response.data.find(user => user.userId?.toString() === currentUserId.toString() || user.id?.toString() === currentUserId.toString());
-          console.log('Found specific user in array:', foundUser);
-          return foundUser || response.data[0];
-        }
-        
-        return response.data;
-      }
-      
-      // Fallback: Try without userId
+      // Call /api/User to get all users (API doesn't support /api/User/{id})
       const response = await api.get('/api/User');
-      console.log('User API Response (no params):', response);
-      console.log('User API Response Data (no params):', response.data);
+      console.log('User API Response:', response);
+      console.log('User API Response Data:', response.data);
       console.log('Array check:', Array.isArray(response.data));
       if (Array.isArray(response.data)) {
         console.log('Users found:', response.data.map(u => ({ id: u.id || u.userId, username: u.username, email: u.email })));
@@ -197,6 +218,79 @@ export const userAPI = {
         console.log('Profile not found, returning empty profile');
         return null;
       }
+      throw error;
+    }
+  },
+
+  // Update password using User API endpoint
+  updatePassword: async (userId: string, oldPassword: string, newPassword: string) => {
+    console.log(`Updating password for user ${userId}...`);
+    
+    try {
+      // First get the current user data
+      const currentUser = await userAPI.getUserInfo(userId);
+      
+      // Prepare the update payload with the new password
+      const updateData = {
+        id: parseInt(userId),
+        username: currentUser.username,
+        email: currentUser.email,
+        phone: currentUser.phone,
+        password: newPassword,
+        role: currentUser.role
+      };
+      
+      const response = await api.put(`/api/User/${userId}`, updateData);
+      console.log('Update Password Response:', response);
+      console.log('Update Password Response Data:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Update password error:', error);
+      throw error;
+    }
+  },
+
+  // Create new profile using POST
+  createProfile: async (userData: any, userId?: string) => {
+    console.log('Creating new profile with data:', userData);
+    
+    // Get user info from localStorage
+    const localUserData = localStorage.getItem('userData');
+    const localUser = localUserData ? JSON.parse(localUserData) : null;
+    const currentUserId = userId || localUser?.id || getUserIdFromLocalStorage();
+    
+    if (!currentUserId) {
+      console.error('No userId available for profile creation');
+      throw new Error('User ID is required to create profile');
+    }
+    
+    // Format request body for new profile
+    const requestBody = {
+      User: {
+        id: parseInt(currentUserId),
+        username: localUser?.username || '',
+        email: userData.email || localUser?.email || '',
+        phone: userData.phone || localUser?.phone || ''
+      },
+      id: null, // New profile, no ID yet
+      fullName: userData.fullName,
+      email: userData.email,
+      phone: userData.phone,
+      address: userData.address,
+      dateOfBirth: userData.dateOfBirth,
+      gender: userData.gender,
+      notes: userData.notes
+    };
+    
+    console.log('Creating profile with request body:', requestBody);
+    
+    try {
+      const response = await api.post('/api/Profile', requestBody);
+      console.log('Create Profile Response:', response);
+      console.log('Create Profile Response Data:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Create profile error:', error);
       throw error;
     }
   },

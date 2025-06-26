@@ -27,7 +27,6 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
-import { userAPI } from "@/api/axios";
 import TestHistory from "./TestHistory";
 import Feedback from "./Feedback";
 import AddressTab from "./Address"; // ✅ Thêm Address tab
@@ -128,43 +127,23 @@ export default function CustomerProfile() {
     loadProfile(userId);
   }, []);
 
-  const loadProfile = async (userId?: string) => {
+  const loadProfile = (userId?: string) => {
     try {
       setIsLoading(true);
-      const currentUserId = userId || getUserIdFromLocalStorage();
-      console.log('Loading profile for userId:', currentUserId);
-
-      // Get user info and profile data
-      const [userInfoResponse, profileResponse] = await Promise.all([
-        userAPI.getUserInfo(currentUserId).catch((error) => {
-          console.log('getUserInfo failed:', error);
-          return null;
-        }),
-        userAPI.getProfile(currentUserId).catch((error) => {
-          console.log('getProfile failed:', error);
-          return null;
-        }),
-      ]);
-
-      console.log('UserInfo Response:', userInfoResponse);
-      console.log('Profile Response:', profileResponse);
-
-      const extractEmail = (data: any) =>
-        data?.email || data?.Email || data?.emailAddress || data?.mail || "";
-      const extractPhone = (data: any) =>
-        data?.phone ||
-        data?.Phone ||
-        data?.phoneNumber ||
-        data?.PhoneNumber ||
-        data?.mobile ||
-        data?.Mobile ||
-        data?.telephone ||
-        data?.tel ||
-        "";
-
+      
+      // Get user data from localStorage only
       const localUserData = localStorage.getItem("userData");
       const localUser = localUserData ? JSON.parse(localUserData) : null;
-      console.log('Local user data:', localUser);
+      console.log('Loading profile from localStorage:', localUser);
+
+      if (!localUser) {
+        toast({
+          variant: "destructive",
+          title: "Không tìm thấy dữ liệu",
+          description: "Vui lòng đăng nhập lại để tải thông tin.",
+        });
+        return;
+      }
 
       // Normalize gender value
       const normalizeGender = (gender: any) => {
@@ -176,73 +155,36 @@ export default function CustomerProfile() {
         return String(gender); // Keep original if no match
       };
 
-      // Extract ID with priority order
+      // Extract user ID
       const extractId = () => {
-        // Try profile response first
-        if (profileResponse?.id) return String(profileResponse.id);
-        if (profileResponse?.userId) return String(profileResponse.userId);
-        
-        // Try user info response
-        if (userInfoResponse?.id) return String(userInfoResponse.id);
-        if (userInfoResponse?.userId) return String(userInfoResponse.userId);
-        
-        // Try current userId
-        if (currentUserId) return String(currentUserId);
-        
-        // Try localStorage
-        if (localUser?.id) return String(localUser.id);
-        if (localUser?.userId) return String(localUser.userId);
-        
-        return "";
+        return String(localUser?.id || localUser?.userId || localUser?.user_id || "");
       };
 
       const profileId = extractId();
-      console.log('Final profile ID:', profileId);
+      console.log('Profile ID from localStorage:', profileId);
+      setCurrentUserId(profileId);
 
+      // Build empty profile
       const profile: ProfileData = {
         id: profileId,
-        fullName:
-          profileResponse?.fullName ||
-          profileResponse?.name ||
-          userInfoResponse?.fullName ||
-          userInfoResponse?.name ||
-          localUser?.fullName ||
-          localUser?.name ||
-          "",
-        email:
-          extractEmail(userInfoResponse) ||
-          extractEmail(profileResponse) ||
-          extractEmail(localUser) ||
-          "",
-        phone:
-          extractPhone(userInfoResponse) ||
-          extractPhone(profileResponse) ||
-          extractPhone(localUser) ||
-          "",
-        dateOfBirth:
-          profileResponse?.dateOfBirth || 
-          profileResponse?.birthDate || 
-          localUser?.dateOfBirth ||
-          "",
-        gender: normalizeGender(profileResponse?.gender || localUser?.gender || ""),
-        notes: profileResponse?.notes || profileResponse?.description || "",
+        fullName: "",
+        email: "",
+        phone: "",
+        dateOfBirth: "",
+        gender: "",
+        notes: "",
       };
 
-      console.log("Final profile data:", profile);
+      console.log("Profile data from localStorage:", profile);
       setProfileData(profile);
       setEditData(profile);
 
-      // Update current user ID if we got a better one
-      if (profileId && profileId !== currentUserId) {
-        setCurrentUserId(profileId);
-      }
-
     } catch (error) {
-      console.error("Error loading profile:", error);
+      console.error("Error loading profile from localStorage:", error);
       toast({
         variant: "destructive",
         title: "Lỗi tải dữ liệu",
-        description: "Không thể tải thông tin hồ sơ. Vui lòng thử lại.",
+        description: "Không thể tải thông tin từ bộ nhớ local.",
       });
     } finally {
       setIsLoading(false);
@@ -253,7 +195,7 @@ export default function CustomerProfile() {
     setEditData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     try {
       setIsLoading(true);
       
@@ -264,6 +206,7 @@ export default function CustomerProfile() {
           title: "Lỗi validation",
           description: "Họ và tên không được để trống.",
         });
+        setIsLoading(false);
         return;
       }
 
@@ -273,33 +216,27 @@ export default function CustomerProfile() {
           title: "Lỗi validation", 
           description: "Email không được để trống.",
         });
+        setIsLoading(false);
         return;
       }
 
-      // Get the most current userId
-      const userIdToUse = currentUserId || editData.id || profileData.id || getUserIdFromLocalStorage();
-      
-      if (!userIdToUse) {
-        toast({
-          variant: "destructive",
-          title: "Lỗi validation",
-          description: "Không tìm thấy ID người dùng. Vui lòng đăng nhập lại.",
-        });
-        return;
-      }
+      // Get current userData from localStorage
+      const localUserData = localStorage.getItem("userData");
+      const localUser = localUserData ? JSON.parse(localUserData) : {};
 
-      // Prepare update data
-      const updateData = {
+      // Update userData with new profile data
+      const updatedUserData = {
+        ...localUser,
         ...editData,
-        id: userIdToUse,
         // Ensure gender is properly formatted
         gender: editData.gender || "Other"
       };
       
-      console.log("Sending update data:", updateData);
-      console.log("Using userId:", userIdToUse);
+      console.log("Updating localStorage with:", updatedUserData);
       
-      await userAPI.updateProfile(updateData, userIdToUse);
+      // Save to localStorage
+      localStorage.setItem('userData', JSON.stringify(updatedUserData));
+      
       setProfileData({ ...editData });
       setIsEditing(false);
       toast({
