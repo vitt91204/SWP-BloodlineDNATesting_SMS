@@ -21,23 +21,7 @@ namespace Services
         public async Task<User> CreateUserAsynce(CreateUserRequest createUserRequest)
         {
             var role = string.IsNullOrWhiteSpace(createUserRequest.Role) ? "Customer" : createUserRequest.Role.Trim();
-            var existingUser = await userRepository.GetUserByUsernameAsync(createUserRequest.Username);
-            if (existingUser != null)
-            {
-                throw new InvalidOperationException($"User with username {createUserRequest.Username} already exists.");
-            }
-            if (string.IsNullOrWhiteSpace(createUserRequest.Username) || string.IsNullOrWhiteSpace(createUserRequest.Password))
-            {
-                throw new ArgumentException("Username and password cannot be empty.");
-            }
-            if (createUserRequest.Password.Length < 8)
-            {
-                throw new ArgumentException("Password must be at least 8 characters long.");
-            }
-            if (createUserRequest.Password != createUserRequest.RepeatPassword)
-            {
-                throw new ArgumentException("Passwords do not match.");
-            }
+
             var user = new User
             {
                 Username = createUserRequest.Username,
@@ -45,10 +29,11 @@ namespace Services
                 Email = createUserRequest.Email,
                 Phone = createUserRequest.Phone,
                 Role = role,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
             await userRepository.CreateAsync(user);
+
             return user;
         }
 
@@ -75,8 +60,8 @@ namespace Services
             }
             return user;
         }
-
-        public async Task<User> UpdateUserAsync(int userId, CreateUserRequest updateUserRequest)
+        #region UpdateUserAsync
+        public async Task<User> UpdateUserAsync(int userId, UpdateUserRequest updateUserRequest)
         {
             var user = await userRepository.GetByIdAsync(userId);
             if (user == null)
@@ -91,9 +76,63 @@ namespace Services
             await userRepository.UpdateAsync(user);
             return user;
         }
+
+        public async Task<User?> UpdateUserRoleAsync(int userId, String role)
+        {
+            var user = await userRepository.GetByIdAsync(userId);
+            
+            if (user == null)
+            {
+                throw new KeyNotFoundException($"User with ID {userId} not found");
+
+            }
+            user.Role = role;
+
+            await userRepository.UpdateAsync(user);
+            return user;
+
+        }
+
+        public async Task<User?> UpdateUserPasswordAsync(int userId, ChangePasswordRequest changePasswordRequest)
+        {
+            var user = await userRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                throw new KeyNotFoundException($"User with ID {userId} not found.");
+            }
+            if (string.IsNullOrWhiteSpace(changePasswordRequest.OldPassword) || string.IsNullOrWhiteSpace(changePasswordRequest.NewPassword) || string.IsNullOrWhiteSpace(changePasswordRequest.RepeatPassword))
+            {
+                throw new ArgumentException("Old password, new password, and repeat password cannot be empty.");
+            }
+            if (user.Password != changePasswordRequest.OldPassword.Trim())
+            {
+                throw new ArgumentException("Old password is incorrect.");
+            }
+            var newPassword = changePasswordRequest.NewPassword.Trim();
+            if (newPassword != changePasswordRequest.RepeatPassword.Trim())
+            {
+                throw new ArgumentException("Passwords do not match.");
+            }
+            user.Password = newPassword;
+            user.UpdatedAt = DateTime.UtcNow;
+            await userRepository.UpdateAsync(user);
+            return user;
+        }
+        #endregion
+
         public async Task<User?> GetUserByUsernameAndPasswordAsync(string username, string password)
         {
             return await userRepository.GetUserByUsernameAndPasswordAsync(username, password);
+        }
+
+        public async Task <User> ExistingUserAsync(int userId)
+        {
+            var user = await userRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                throw new KeyNotFoundException($"User with ID {userId} not found.");
+            }
+            return user;
         }
     }
     }

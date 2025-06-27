@@ -1,7 +1,6 @@
 using Repositories;
 using Repositories.Models;
 using Services.ProfileDTO;
-using System;
 using System.Threading.Tasks;
 
 namespace Services
@@ -13,6 +12,25 @@ namespace Services
         public ProfileService()
         {
             profileRepository = new ProfileRepository();
+        }
+
+        public async Task<Profile?> GetProfileByUserIdAsync(int userId)
+        {
+            return await profileRepository.GetByUserIdAsync(userId);
+        }
+
+        public async Task<Profile> CreateProfileAsync(CreateProfileRequest request)
+        {
+            var profile = new Profile
+            {
+                UserId = request.UserId,
+                FullName = request.FullName,
+                DateOfBirth = request.DateOfBirth,
+                Gender = request.Gender,
+                Address = request.Address
+            };
+            await profileRepository.CreateAsync(profile);
+            return profile;
         }
 
         public async Task<Profile> UpdateProfileAsync(int userId, UpdateProfileRequest request)

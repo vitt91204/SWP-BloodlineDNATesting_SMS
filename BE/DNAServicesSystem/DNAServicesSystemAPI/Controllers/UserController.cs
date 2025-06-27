@@ -50,9 +50,18 @@ namespace DNAServicesSystemAPI.Controllers
         }
         [HttpPut]
         [Route("{userId:int}")]
-        public async Task<IActionResult> UpdateUser(int userId, [FromBody] CreateUserRequest updateUserRequest)
+        public async Task<IActionResult> UpdateUser(int userId, [FromBody] UpdateUserRequest updateUserRequest)
         {
             var user = await userService.UpdateUserAsync(userId, updateUserRequest);
+            return Ok(user);
+        }
+
+        [HttpPut]
+        [Route("/role/{userId:int}")]
+
+        public async Task<IActionResult> UpdateUserRole(int userId, String role)
+        {
+            var user = await userService.UpdateUserRoleAsync(userId, role);
             return Ok(user);
         }
 
@@ -69,6 +78,17 @@ namespace DNAServicesSystemAPI.Controllers
             {
                 return Unauthorized("Invalid username or password.");
             }
+            return Ok(user);
+        }
+        [HttpPut]
+        [Route("/{userId:int}/update_password")]
+        public async Task<IActionResult> UpdatePassword(int userId, [FromBody] ChangePasswordRequest updatePasswordRequest)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var user = await userService.UpdateUserPasswordAsync(userId, updatePasswordRequest);
             return Ok(user);
         }
     }
