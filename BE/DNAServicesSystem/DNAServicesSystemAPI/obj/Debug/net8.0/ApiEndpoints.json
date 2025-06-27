@@ -386,22 +386,6 @@
   },
   {
     "ContainingType": "DNAServicesSystemAPI.Controllers.ProfileController",
-    "Method": "CreateProfile",
-    "RelativePath": "api/Profile",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "request",
-        "Type": "Services.ProfileDTO.CreateProfileRequest",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DNAServicesSystemAPI.Controllers.ProfileController",
     "Method": "GetProfile",
     "RelativePath": "api/Profile/{userId}",
     "HttpMethod": "GET",
