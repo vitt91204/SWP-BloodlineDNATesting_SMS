@@ -166,6 +166,12 @@ export const Navigation = () => {
                       <span>Hồ sơ cá nhân</span>
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings" className="cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Cài đặt</span>
+                    </Link>
+                  </DropdownMenuItem>
                   {(userData?.role === 'admin' || userData?.role === 'Admin' || userData?.role === 'ADMIN' || userData?.userRole === 'admin') && (
                     <DropdownMenuItem asChild>
                       <Link to="/admin" className="cursor-pointer">
@@ -183,6 +189,7 @@ export const Navigation = () => {
                     </DropdownMenuItem>
                   )} 
                   <DropdownMenuSeparator />
+                       
                   <DropdownMenuItem
                     className="cursor-pointer text-red-600 focus:text-red-600"
                     onSelect={handleLogout}
