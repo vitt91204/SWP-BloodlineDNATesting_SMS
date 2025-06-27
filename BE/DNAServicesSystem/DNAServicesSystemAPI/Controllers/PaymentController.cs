@@ -17,7 +17,7 @@ namespace DNAServicesSystemAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllPayment()
         {
-            var payments = await paymentService.GetPaymentsByStatusAsync("All");
+            var payments = await paymentService.GetAllPaymentsAsync();
             return Ok(payments);
 
         }
@@ -48,8 +48,8 @@ namespace DNAServicesSystemAPI.Controllers
         }
 
         [HttpPut]
-        [Route("{paymentId:int}")]
-        public async Task<IActionResult> UpdatePayment(int paymentId, [FromBody] PaymentDto paymentDTO)
+        [Route("update/{paymentId:int}")]
+        public async Task<IActionResult> UpdatePaymentStatus(int paymentId, [FromBody] UpdateStatusRequest updateStatusRequest)
         {
             if (!ModelState.IsValid)
             {
@@ -57,8 +57,8 @@ namespace DNAServicesSystemAPI.Controllers
             }
             try
             {
-                await paymentService.UpdatePaymentAsync(paymentId, paymentDTO);
-                return NoContent();
+                var updatedPayment = await paymentService.UpdateStatusAsync(paymentId, updateStatusRequest);
+                return Ok(updatedPayment);
             }
             catch (KeyNotFoundException ex)
             {

@@ -18,10 +18,26 @@ namespace Services
             paymentRepository = new PaymentRepository();
         }
 
-        public async Task<List<Payment>> GetPaymentsByStatusAsync(string status)
+        public async Task<IEnumerable<Payment>> GetAllPaymentsAsync()
         {
-            var payments = await paymentRepository.GetPaymentByStatusAsync(status);
-            return payments;
+            return await paymentRepository.GetAllAsync();
+        }
+
+        public async Task<Payment> UpdateStatusAsync(int paymentId, UpdateStatusRequest updateStatusRequest)
+        {
+            if (updateStatusRequest == null)
+            {
+                throw new ArgumentNullException(nameof(updateStatusRequest), "Update status request cannot be null.");
+            }
+            var payment = await paymentRepository.GetByIdAsync(paymentId);
+            if (payment == null)
+            {
+                throw new KeyNotFoundException($"Payment with ID {paymentId} not found.");
+            }
+            payment.Status = updateStatusRequest.Status;
+            payment.PaidAt = updateStatusRequest.PaidAt;
+            await paymentRepository.UpdateAsync(payment);
+            return payment;
         }
         public async Task<Payment> GetPaymentAsync(int paymentId)
         {

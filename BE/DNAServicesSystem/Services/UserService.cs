@@ -92,6 +92,32 @@ namespace Services
             return user;
 
         }
+
+        public async Task<User?> UpdateUserPasswordAsync(int userId, ChangePasswordRequest changePasswordRequest)
+        {
+            var user = await userRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                throw new KeyNotFoundException($"User with ID {userId} not found.");
+            }
+            if (string.IsNullOrWhiteSpace(changePasswordRequest.OldPassword) || string.IsNullOrWhiteSpace(changePasswordRequest.NewPassword) || string.IsNullOrWhiteSpace(changePasswordRequest.RepeatPassword))
+            {
+                throw new ArgumentException("Old password, new password, and repeat password cannot be empty.");
+            }
+            if (user.Password != changePasswordRequest.OldPassword.Trim())
+            {
+                throw new ArgumentException("Old password is incorrect.");
+            }
+            var newPassword = changePasswordRequest.NewPassword.Trim();
+            if (newPassword != changePasswordRequest.RepeatPassword.Trim())
+            {
+                throw new ArgumentException("Passwords do not match.");
+            }
+            user.Password = newPassword;
+            user.UpdatedAt = DateTime.UtcNow;
+            await userRepository.UpdateAsync(user);
+            return user;
+        }
         #endregion
 
         public async Task<User?> GetUserByUsernameAndPasswordAsync(string username, string password)

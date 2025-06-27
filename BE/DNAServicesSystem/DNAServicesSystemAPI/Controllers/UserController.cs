@@ -80,5 +80,16 @@ namespace DNAServicesSystemAPI.Controllers
             }
             return Ok(user);
         }
+        [HttpPut]
+        [Route("/{userId:int}/update_password")]
+        public async Task<IActionResult> UpdatePassword(int userId, [FromBody] ChangePasswordRequest updatePasswordRequest)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var user = await userService.UpdateUserPasswordAsync(userId, updatePasswordRequest);
+            return Ok(user);
+        }
     }
 }

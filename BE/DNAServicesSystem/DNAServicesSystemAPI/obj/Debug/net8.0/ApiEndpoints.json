@@ -1,5 +1,26 @@
 [
   {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.UserController",
+    "Method": "UpdatePassword",
+    "RelativePath": "{userId}/update_password",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "updatePasswordRequest",
+        "Type": "Services.UserDTO.ChangePasswordRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "DNAServicesSystemAPI.Controllers.AddressController",
     "Method": "GetAddressByUserId",
     "RelativePath": "api/Address",
