@@ -532,7 +532,7 @@
         }
       }
     },
-    "/api/Payment/{paymentId}": {
+    "/api/Payment/update/{paymentId}": {
       "put": {
         "tags": [
           "Payment"
@@ -552,17 +552,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PaymentDto"
+                "$ref": "#/components/schemas/UpdateStatusRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/PaymentDto"
+                "$ref": "#/components/schemas/UpdateStatusRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/PaymentDto"
+                "$ref": "#/components/schemas/UpdateStatusRequest"
               }
             }
           }
@@ -2186,6 +2186,20 @@
           "address": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateStatusRequest": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "paidAt": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false

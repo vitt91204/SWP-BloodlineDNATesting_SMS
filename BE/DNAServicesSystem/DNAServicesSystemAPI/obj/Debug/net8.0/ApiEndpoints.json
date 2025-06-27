@@ -317,27 +317,6 @@
   },
   {
     "ContainingType": "DNAServicesSystemAPI.Controllers.PaymentController",
-    "Method": "UpdatePayment",
-    "RelativePath": "api/Payment/{paymentId}",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "paymentId",
-        "Type": "System.Int32",
-        "IsRequired": true
-      },
-      {
-        "Name": "paymentDTO",
-        "Type": "Services.PaymentDTO.PaymentDto",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DNAServicesSystemAPI.Controllers.PaymentController",
     "Method": "CreatePayment",
     "RelativePath": "api/Payment/create",
     "HttpMethod": "POST",
@@ -363,6 +342,27 @@
       {
         "Name": "paymentId",
         "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.PaymentController",
+    "Method": "UpdatePaymentStatus",
+    "RelativePath": "api/Payment/update/{paymentId}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "paymentId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "updateStatusRequest",
+        "Type": "Services.PaymentDTO.UpdateStatusRequest",
         "IsRequired": true
       }
     ],
