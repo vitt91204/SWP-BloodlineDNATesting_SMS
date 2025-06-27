@@ -9,7 +9,8 @@ import {
   FileText, 
   PenTool,
   LogOut,
-  User
+  User,
+  ArrowLeft
 } from 'lucide-react';
 import { useToast } from '../../hooks/use-toast';
 import HomeCollections from './HomeCollections';
@@ -45,6 +46,11 @@ export default function StaffDashboard() {
     navigate('/login');
   };
 
+  const handleGoHome = () => {
+    // Chuyển về trang chủ
+    navigate('/');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-6">
@@ -61,14 +67,24 @@ export default function StaffDashboard() {
                   <p className="text-gray-600">Vai trò: {staffInfo.role} | ID: {staffInfo.id}</p>
                 </div>
               </div>
-              <Button 
-                variant="outline" 
-                onClick={handleLogout}
-                className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-              >
-                <LogOut className="w-4 h-4" />
-                Đăng xuất
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={handleGoHome}
+                  className="flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Về trang chủ
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Đăng xuất
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
