@@ -25,17 +25,22 @@ namespace Services
             }).ToList();
         }
 
-        public async Task<BlogPostDto?> GetByIdAsync(int id)
+        //public async Task<BlogPostDto?> GetByIdAsync(int id)
+        //{
+        //    var post = await _repository.GetByIdAsync(id);
+        //    if (post == null) return null;
+        //    return new BlogPostDto
+        //    {
+        //        AuthorId = post.AuthorId ?? 0, // Explicitly handle nullable value
+        //        Title = post.Title,
+        //        Content = post.Content,
+        //        CreatedAt = post.CreatedAt ?? DateTime.MinValue
+        //    };
+        //}
+
+        public async Task<BlogPost?> GetByIdAsync(int id)
         {
-            var post = await _repository.GetByIdAsync(id);
-            if (post == null) return null;
-            return new BlogPostDto
-            {
-                AuthorId = post.AuthorId ?? 0, // Explicitly handle nullable value
-                Title = post.Title,
-                Content = post.Content,
-                CreatedAt = post.CreatedAt ?? DateTime.MinValue
-            };
+            return await _repository.GetByIdAsync(id);
         }
 
         public async Task<int> CreateAsync(BlogPostDto dto)
@@ -61,6 +66,14 @@ namespace Services
             post.UpdatedAt = DateTime.UtcNow;
 
             await _repository.UpdateAsync(post);
+            return true;
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var post = await _repository.GetByIdAsync(id);
+            if (post == null) return false;
+            await _repository.DeleteAsync(post);
             return true;
         }
     }
