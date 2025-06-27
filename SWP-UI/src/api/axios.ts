@@ -300,3 +300,38 @@ export const bookingAPI = {
 };
 
 export default api; 
+export const testRequestAPI = {
+  create: async (requestData: any) => {
+    const response = await api.post('/api/TestRequest/api/testrequest', requestData);
+    return response.data;
+  },
+};
+// Cuối file axios.ts
+export const blogAPI = {
+  // GET all bài viết
+  getAll: async () => {
+    const response = await api.get('/api/BlogPost');
+    return response.data;
+  },
+
+  // ✅ GET chi tiết 1 bài viết theo id
+  getById: async (id: string | number) => {
+    const response = await api.get(`/api/BlogPost/${id}`);
+    return response.data;
+  },
+
+  create: async (data: any) => {
+    const response = await api.post('/api/BlogPost', data);
+    return response.data;
+  },
+
+  update: async (id: number, data: any) => {
+    const response = await api.put(`/api/BlogPost/${id}`, data);
+    return response.data;
+  },
+};
+
+
+
+  
+

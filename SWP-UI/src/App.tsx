@@ -26,6 +26,7 @@ import Appointments from "@/pages/admin/Appointments";
 
 // Staff pages
 import StaffDashboard from "@/pages/staff/Dashboard";
+import BlogDetail from "./pages/Blogdetails";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,9 @@ function App() {
             <Route path="/results" element={<Results />} />
             <Route path="/booking" element={<Booking />} />
             <Route path="/payment" element={<Payment />} />
+            <Route path="/blog/:id" element={<BlogDetail />} />
+
+            
 
             {/* Auth routes */}
             <Route path="/login" element={<Login />} />
@@ -56,6 +60,10 @@ function App() {
 
             {/* Staff routes */}
             <Route path="/staff" element={<StaffDashboard />} />
+            
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:id" element={<BlogDetail />} />
+
 
             {/* Admin routes */}
             <Route path="/admin" element={<AdminLayout />}>
