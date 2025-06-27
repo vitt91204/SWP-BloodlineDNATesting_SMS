@@ -230,7 +230,7 @@
     "Parameters": [
       {
         "Name": "feedbackDto",
-        "Type": "Services.FeedbackDTO.FeedbackDto",
+        "Type": "Services.FeedbackDTO.CreateFeedbackRequest",
         "IsRequired": true
       }
     ],
@@ -267,7 +267,7 @@
       },
       {
         "Name": "feedbackDto",
-        "Type": "Services.FeedbackDTO.FeedbackDto",
+        "Type": "Services.FeedbackDTO.CreateFeedbackRequest",
         "IsRequired": true
       }
     ],
@@ -284,6 +284,27 @@
       {
         "Name": "feedbackId",
         "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.FeedbackController",
+    "Method": "RespondToFeedback",
+    "RelativePath": "api/Feedback/{feedbackId}/respond",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "feedbackId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "responseDto",
+        "Type": "Services.FeedbackDTO.ResponseFeedback",
         "IsRequired": true
       }
     ],

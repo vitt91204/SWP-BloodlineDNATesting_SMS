@@ -7,11 +7,8 @@ using System.Threading.Tasks;
 
 namespace Services.FeedbackDTO
 {
-    public class FeedbackDto
+    public class CreateFeedbackRequest
     {
-        [Required]
-        public int FeedbackId { get; set; }
-
         [Required]
         public int UserId { get; set; }
 
@@ -25,10 +22,8 @@ namespace Services.FeedbackDTO
         public string? Comment { get; set; }
 
         [StringLength(1000, ErrorMessage = "Response cannot exceed 1000 characters.")]
-        public string? Response { get; set; }
 
         public DateTime? CreatedAt { get; set; }
 
-        public DateTime? RespondedAt { get; set; }
     }
 }

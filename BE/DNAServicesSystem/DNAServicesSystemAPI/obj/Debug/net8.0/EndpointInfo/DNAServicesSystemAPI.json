@@ -413,17 +413,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/FeedbackDto"
+                "$ref": "#/components/schemas/CreateFeedbackRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/FeedbackDto"
+                "$ref": "#/components/schemas/CreateFeedbackRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/FeedbackDto"
+                "$ref": "#/components/schemas/CreateFeedbackRequest"
               }
             }
           }
@@ -465,17 +465,59 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/FeedbackDto"
+                "$ref": "#/components/schemas/CreateFeedbackRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/FeedbackDto"
+                "$ref": "#/components/schemas/CreateFeedbackRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/FeedbackDto"
+                "$ref": "#/components/schemas/CreateFeedbackRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Feedback/{feedbackId}/respond": {
+      "post": {
+        "tags": [
+          "Feedback"
+        ],
+        "parameters": [
+          {
+            "name": "feedbackId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResponseFeedback"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResponseFeedback"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResponseFeedback"
               }
             }
           }
@@ -1756,6 +1798,44 @@
         },
         "additionalProperties": false
       },
+      "CreateFeedbackRequest": {
+        "required": [
+          "requestId",
+          "userId"
+        ],
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "requestId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "rating": {
+            "maximum": 5,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "comment": {
+            "maxLength": 1000,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "maxLength": 1000,
+            "minLength": 0,
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "CreateUserRequest": {
         "required": [
           "password",
@@ -1796,58 +1876,6 @@
             "maxLength": 20,
             "minLength": 0,
             "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "FeedbackDto": {
-        "required": [
-          "feedbackId",
-          "requestId",
-          "userId"
-        ],
-        "type": "object",
-        "properties": {
-          "feedbackId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "userId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "requestId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "rating": {
-            "maximum": 5,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "comment": {
-            "maxLength": 1000,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          },
-          "response": {
-            "maxLength": 1000,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "respondedAt": {
-            "type": "string",
-            "format": "date-time",
             "nullable": true
           }
         },
@@ -1901,6 +1929,21 @@
             "nullable": true
           },
           "paidAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ResponseFeedback": {
+        "type": "object",
+        "properties": {
+          "response": {
+            "type": "string",
+            "nullable": true
+          },
+          "responseAt": {
             "type": "string",
             "format": "date-time",
             "nullable": true
