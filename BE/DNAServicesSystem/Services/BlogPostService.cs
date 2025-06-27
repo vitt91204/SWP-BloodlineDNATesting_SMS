@@ -13,17 +13,23 @@ namespace Services
             _repository = repository;
         }
 
-        public async Task<List<BlogPostDto>> GetAllAsync()
+        public async Task<List<BlogPost>> GetAllAsync()
         {
             var posts = await _repository.GetAllAsync();
-            return posts.Select(p => new BlogPostDto
-            {
-                AuthorId = p.AuthorId ?? 0, // Explicitly handle nullable value
-                Title = p.Title,
-                Content = p.Content,
-                CreatedAt = p.CreatedAt ?? DateTime.MinValue
-            }).ToList();
+            return posts;
         }
+
+        //public async Task<List<BlogPostDto>> GetAllAsync()
+        //{
+        //    var posts = await _repository.GetAllAsync();
+        //    return posts.Select(p => new BlogPostDto
+        //    {
+        //        AuthorId = p.AuthorId ?? 0, // Explicitly handle nullable value
+        //        Title = p.Title,
+        //        Content = p.Content,
+        //        CreatedAt = p.CreatedAt ?? DateTime.MinValue
+        //    }).ToList();
+        //}
 
         //public async Task<BlogPostDto?> GetByIdAsync(int id)
         //{
