@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { testRequestAPI } from '@/api/axios';
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -197,20 +198,63 @@ export default function Booking() {
   };
 
   // Hàm xử lý khi nhấn "Xác nhận đặt lịch" - chuyển đến trang thanh toán
-  const handleConfirmBooking = () => {
+  const handleConfirmBooking = async () => {
+  try {
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    const userId = userData?.id || userData?.userId;
+    const serviceIdMap = { civil: 1, legal: 2 };
+    const serviceId = serviceIdMap[selectedService] || 0;
+
+    if (!userId || !serviceId) {
+      alert('Vui lòng đăng nhập và chọn dịch vụ hợp lệ trước khi đặt lịch!');
+      return;
+    }
+
+    // Đảm bảo collectionType đúng định dạng enum backend: 'AtClinic', 'AtHome', 'Self'
+    let collectionType = 'At Clinic';
+    if (selectedLocation === 'home') {
+      collectionType = selectedHomeOption === 'At Clinic ' ? 'Self' : 'At Home';
+    }
+
     const bookingData = {
-      service: services.find(s => s.id === selectedService),
-      relationship: relationships.find(r => r.id === selectedRelationship),
-      location: locations.find(l => l.id === selectedLocation),
-      homeOption: selectedLocation === 'home' ? homeOptions.find(opt => opt.id === selectedHomeOption) : null,
-      date: selectedDate,
-      timeSlot: selectedTimeSlot ? timeSlots.find(slot => slot.id === selectedTimeSlot) : null,
-      formData: formData
+      userId,
+      serviceId,
+      collectionType,
+      status: 'Pending',
+      appointmentDate: selectedDate || new Date().toISOString().split('T')[0],
+      slotTime: selectedTimeSlot || '',
+      staffId: 0,
+      fullName: formData.fullName,
+      phone: formData.phone,
+      email: formData.email,
+      address: formData.address,
+      numberOfPeople: formData.numberOfPeople,
+      notes: formData.notes
     };
-    
-    localStorage.setItem('bookingData', JSON.stringify(bookingData));
-    navigate('/payment');
-  };
+
+    console.log('📦 Gửi booking:', bookingData);
+    const response = await testRequestAPI.create(bookingData);
+    console.log('✅ Booking thành công:', response);
+
+    const bookingId = response?.id || response?.bookingId;
+    if (bookingId) {
+      localStorage.setItem('bookingId', bookingId);
+      navigate(`/payment?bookingId=${bookingId}`);
+    } else {
+      navigate('/payment');
+    }
+  } catch (error) {
+    let message = 'Đặt lịch thất bại. Vui lòng thử lại!';
+    if (error?.response?.data?.message) {
+      message = `Đặt lịch thất bại: ${error.response.data.message}`;
+    } else if (error?.message) {
+      message = `Đặt lịch thất bại: ${error.message}`;
+    }
+    alert(message);
+    console.error('❌ Booking lỗi:', error);
+  }
+};
+
 
   const BookingSteps = () => {
     const steps = [
@@ -248,6 +292,24 @@ export default function Booking() {
       </div>
     );
   };
+
+  // Gọi API để lấy thông tin người dùng (nếu có) và thiết lập dữ liệu ban đầu cho form
+  useEffect(() => {
+    // Lấy thông tin user từ localStorage nếu có
+    const userData = localStorage.getItem('userData');
+    if (userData) {
+      try {
+        const user = JSON.parse(userData);
+        setFormData(prev => ({
+          ...prev,
+          fullName: user.fullName || user.name || "",
+          phone: user.phone || "",
+          email: user.email || "",
+          address: user.address || ""
+        }));
+      } catch (e) {}
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -914,4 +976,3 @@ export default function Booking() {
     </div>
   );
 }
-  
