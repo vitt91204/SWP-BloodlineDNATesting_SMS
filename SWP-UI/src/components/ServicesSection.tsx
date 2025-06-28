@@ -39,7 +39,7 @@ export const ServicesSection = () => {
       price: "3.500.000 - 6.000.000 VNĐ",
       timeframe: "7-10 ngày",
       accuracy: "99.99%",
-      sampleOptions: ["Chỉ thu mẫu tại cơ sở"],
+      sampleOptions: ["Thu mẫu tại cơ sở"],
       color: "green"
     }
   ];

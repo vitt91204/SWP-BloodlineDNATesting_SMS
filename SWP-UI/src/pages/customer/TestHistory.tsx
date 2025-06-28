@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,8 @@ type StatusType = "Hoàn thành" | "Đang xử lý" | "Đã lấy mẫu" | "Hủ
 type ResultType = "Có kết quả" | "Chờ kết quả" | "Đang phân tích";
 
 export default function TestHistory() {
+  const navigate = useNavigate();
+
   // Dữ liệu lịch sử xét nghiệm mẫu
   const [testHistory] = useState<TestHistory[]>([
     {
@@ -102,7 +105,11 @@ export default function TestHistory() {
                   </div>
                   
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => navigate('/results')}
+                    >
                       <Eye className="w-4 h-4 mr-2" />
                       Xem chi tiết
                     </Button>
