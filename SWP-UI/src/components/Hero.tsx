@@ -1,10 +1,12 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 import { TestTube, Shield, Clock, Award, ChevronRight } from "lucide-react";
 
 export const Hero = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="relative pt-16 pb-24 overflow-hidden">
       {/* Background gradient */}
@@ -49,7 +51,11 @@ export const Hero = () => {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-lg px-8">
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-lg px-8"
+                onClick={() => navigate('/booking')}
+              >
                 Đặt lịch xét nghiệm
                 <ChevronRight className="w-5 h-5 ml-2" />
               </Button>
