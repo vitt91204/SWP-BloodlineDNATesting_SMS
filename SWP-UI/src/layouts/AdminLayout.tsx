@@ -19,6 +19,7 @@ import {
   Calendar,
   LogOut,
   Home,
+  Package,
 } from "lucide-react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -48,6 +49,11 @@ const navigation = [
     name: "Quản lý loại dịch vụ",
     href: "/admin/test-services",
     icon: Settings
+  },
+  {
+    name: "Quản lý bộ kit",
+    href: "/admin/test-kits",
+    icon: Package
   },
 ];
 

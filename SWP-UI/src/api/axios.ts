@@ -434,6 +434,39 @@ export const testServiceAPI = {
   }
 };
 
+// Thêm API cho TestKit
+export const testKitAPI = {
+  // Lấy tất cả các bộ kit xét nghiệm
+  getAll: async () => {
+    const response = await api.get('/api/TestKit');
+    return response.data;
+  },
+
+  // Lấy bộ kit theo ID
+  getById: async (id: number) => {
+    const response = await api.get(`/api/TestKit/${id}`);
+    return response.data;
+  },
+
+  // Tạo bộ kit mới (cho admin)
+  create: async (kitData: any) => {
+    const response = await api.post('/api/TestKit', kitData);
+    return response.data;
+  },
+
+  // Cập nhật bộ kit (cho admin)
+  update: async (id: number, kitData: any) => {
+    const response = await api.put(`/api/TestKit/${id}`, kitData);
+    return response.data;
+  },
+
+  // Xóa bộ kit (cho admin)
+  delete: async (id: number) => {
+    const response = await api.delete(`/api/TestKit/${id}`);
+    return response.data;
+  }
+};
+
 // Cuối file axios.ts
 export const blogAPI = {
   // GET all bài viết
