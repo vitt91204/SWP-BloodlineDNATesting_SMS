@@ -104,14 +104,28 @@ export default function TestServiceManagement() {
             ) : (
               <div className="space-y-4">
                 {services.map((s) => (
-                  <div key={s.service_id || s.id} className="p-4 border rounded-lg bg-white">
-                    <div className="font-semibold text-lg">{s.name}</div>
-                    <div className="text-gray-600 text-sm mb-1">{s.description}</div>
-                    <div className="flex flex-wrap gap-4 text-sm">
-                      <span>Giá: <b>{s.price ? `${s.price.toLocaleString('vi-VN')} VNĐ` : '---'}</b></span>
-                      <span>Kit: <b>{s.kit_id || '---'}</b></span>
-                      <span>Kích hoạt: <b>{s.is_active ? 'Có' : 'Không'}</b></span>
+                  <div key={s.service_id || s.id} className="p-4 border rounded-lg bg-white flex justify-between items-center">
+                    <div>
+                      <div className="font-semibold text-lg">{s.name}</div>
+                      <div className="text-gray-600 text-sm mb-1">{s.description}</div>
+                      <div className="flex flex-wrap gap-4 text-sm">
+                        <span>Giá: <b>{s.price ? `${s.price.toLocaleString('vi-VN')} VNĐ` : '---'}</b></span>
+                        <span>Kit: <b>{s.kit_id || '---'}</b></span>
+                        <span>Kích hoạt: <b>{s.is_active ? 'Có' : 'Không'}</b></span>
+                      </div>
                     </div>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={async () => {
+                        if (window.confirm("Bạn có chắc chắn muốn xóa dịch vụ này?")) {
+                          await testServiceAPI.delete(s.service_id || s.id);
+                          fetchServices();
+                        }
+                      }}
+                    >
+                      Xóa
+                    </Button>
                   </div>
                 ))}
               </div>

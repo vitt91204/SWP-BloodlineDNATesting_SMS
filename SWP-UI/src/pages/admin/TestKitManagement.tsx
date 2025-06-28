@@ -88,13 +88,27 @@ export default function TestKitManagement() {
             ) : (
               <div className="space-y-4">
                 {kits.map((kit) => (
-                  <div key={kit.kit_id || kit.id} className="p-4 border rounded-lg bg-white">
-                    <div className="font-semibold text-lg">{kit.name}</div>
-                    <div className="text-gray-600 text-sm mb-1">{kit.description}</div>
-                    <div className="flex flex-wrap gap-4 text-sm">
-                      <span>Số lượng: <b>{kit.stock_quantity || 0}</b></span>
-                      <span>Kích hoạt: <b>{kit.is_active ? 'Có' : 'Không'}</b></span>
+                  <div key={kit.kit_id || kit.id} className="p-4 border rounded-lg bg-white flex justify-between items-center">
+                    <div>
+                      <div className="font-semibold text-lg">{kit.name}</div>
+                      <div className="text-gray-600 text-sm mb-1">{kit.description}</div>
+                      <div className="flex flex-wrap gap-4 text-sm">
+                        <span>Số lượng: <b>{kit.stock_quantity || 0}</b></span>
+                        <span>Kích hoạt: <b>{kit.is_active ? 'Có' : 'Không'}</b></span>
+                      </div>
                     </div>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={async () => {
+                        if (window.confirm("Bạn có chắc chắn muốn xóa bộ kit này?")) {
+                          await testKitAPI.delete(kit.kit_id || kit.id);
+                          fetchKits();
+                        }
+                      }}
+                    >
+                      Xóa
+                    </Button>
                   </div>
                 ))}
               </div>

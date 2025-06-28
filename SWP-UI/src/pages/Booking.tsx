@@ -66,27 +66,20 @@ export default function Booking() {
       try {
         setIsLoadingServices(true);
         const data = await testServiceAPI.getAll();
-        console.log('Test Services from API:', data);
         setTestServices(data);
       } catch (error) {
-        console.error('Error loading test services:', error);
-        toast({
-          variant: "destructive",
-          title: "Lỗi tải dữ liệu",
-          description: "Không thể tải danh sách dịch vụ xét nghiệm. Vui lòng thử lại.",
-        });
+        setTestServices([]);
       } finally {
         setIsLoadingServices(false);
       }
     };
-
     loadTestServices();
-  }, [toast]);
+  }, []);
 
   // Cập nhật selectedServiceData khi selectedRelationship thay đổi
   useEffect(() => {
     if (selectedRelationship && testServices.length > 0) {
-      const service = testServices.find(s => s.id?.toString() === selectedRelationship);
+      const service = testServices.find(s => s.service_id?.toString() === selectedRelationship);
       setSelectedServiceData(service);
     }
   }, [selectedRelationship, testServices]);
@@ -241,8 +234,8 @@ export default function Booking() {
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     const userId = userData?.id || userData?.userId;
     
-    // Sử dụng serviceId từ API thay vì mapping cứng
-    const serviceId = selectedServiceData?.id || selectedRelationship;
+    // Sử dụng service_id từ API thay vì mapping cứng
+    const serviceId = selectedServiceData?.service_id || selectedRelationship;
 
     if (!userId || !serviceId) {
       alert('Vui lòng đăng nhập và chọn dịch vụ hợp lệ trước khi đặt lịch!');
@@ -481,26 +474,26 @@ export default function Booking() {
                   <div className="grid gap-4">
                     {testServices.map((service) => (
                       <div
-                        key={service.id}
+                        key={service.service_id}
                         className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                          selectedRelationship === service.id?.toString()
+                          selectedRelationship === service.service_id?.toString()
                             ? 'border-blue-500 bg-blue-50'
                             : 'border-gray-200 hover:border-gray-300'
                         }`}
-                        onClick={() => setSelectedRelationship(service.id?.toString() || '')}
+                        onClick={() => setSelectedRelationship(service.service_id?.toString() || '')}
                       >
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-2">
                               <h3 className="text-lg font-semibold text-gray-900">
-                                {service.serviceName || service.name || 'Dịch vụ xét nghiệm'}
+                                {service.name || 'Dịch vụ xét nghiệm'}
                               </h3>
                               <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 ml-4 ${
-                                selectedRelationship === service.id?.toString()
+                                selectedRelationship === service.service_id?.toString()
                                   ? 'border-blue-500 bg-blue-500'
                                   : 'border-gray-300'
                               }`}>
-                                {selectedRelationship === service.id?.toString() && (
+                                {selectedRelationship === service.service_id?.toString() && (
                                   <CheckCircle className="w-5 h-5 text-white" />
                                 )}
                               </div>
@@ -519,22 +512,9 @@ export default function Booking() {
                               </div>
                               <div className="flex items-center">
                                 <Clock className="w-4 h-4 mr-1" />
-                                {service.duration || service.timeFrame || '5-7 ngày'}
+                                {service.duration || '5-7 ngày'}
                               </div>
-                              {service.accuracy && (
-                                <div className="flex items-center">
-                                  <CheckCircle className="w-4 h-4 mr-1 text-green-500" />
-                                  Độ chính xác: {service.accuracy}
-                                </div>
-                              )}
                             </div>
-
-                            {/* Hiển thị thông tin bổ sung nếu có */}
-                            {service.additionalInfo && (
-                              <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                                <p className="text-sm text-gray-700">{service.additionalInfo}</p>
-                              </div>
-                            )}
                           </div>
                         </div>
                       </div>
@@ -952,7 +932,7 @@ export default function Booking() {
                     <div className="flex justify-between">
                       <span className="text-gray-600">Loại quan hệ:</span>
                       <span className="font-medium">
-                        {selectedServiceData?.serviceName || selectedServiceData?.name || 'Dịch vụ xét nghiệm'}
+                        {selectedServiceData?.name || 'Dịch vụ xét nghiệm'}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -977,7 +957,7 @@ export default function Booking() {
                     <div className="flex justify-between">
                       <span className="text-gray-600">Thời gian hoàn thành:</span>
                       <span className="font-medium">
-                        {selectedServiceData?.duration || selectedServiceData?.timeFrame || '5-7 ngày'}
+                        {selectedServiceData?.duration || '5-7 ngày'}
                       </span>
                     </div>
                     <div className="flex justify-between">
