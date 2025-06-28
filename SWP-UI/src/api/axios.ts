@@ -400,6 +400,40 @@ export const testRequestAPI = {
     return response.data;
   },
 };
+
+// Thêm API cho TestService
+export const testServiceAPI = {
+  // Lấy tất cả các loại dịch vụ xét nghiệm
+  getAll: async () => {
+    const response = await api.get('/api/TestService');
+    return response.data;
+  },
+
+  // Lấy dịch vụ theo ID
+  getById: async (id: number) => {
+    const response = await api.get(`/api/TestService/${id}`);
+    return response.data;
+  },
+
+  // Tạo dịch vụ mới (cho admin)
+  create: async (serviceData: any) => {
+    const response = await api.post('/api/TestService', serviceData);
+    return response.data;
+  },
+
+  // Cập nhật dịch vụ (cho admin)
+  update: async (id: number, serviceData: any) => {
+    const response = await api.put(`/api/TestService/${id}`, serviceData);
+    return response.data;
+  },
+
+  // Xóa dịch vụ (cho admin)
+  delete: async (id: number) => {
+    const response = await api.delete(`/api/TestService/${id}`);
+    return response.data;
+  }
+};
+
 // Cuối file axios.ts
 export const blogAPI = {
   // GET all bài viết

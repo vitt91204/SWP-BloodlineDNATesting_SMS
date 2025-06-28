@@ -24,6 +24,7 @@ import { AdminDashboard } from "@/pages/admin/Dashboard";
 import Customers from "@/pages/admin/account/Customer";
 import Tests from "@/pages/admin/Tests";
 import Appointments from "@/pages/admin/Appointments";
+import TestServiceManagement from "@/pages/admin/TestServiceManagement";
 
 // Staff pages
 import StaffDashboard from "@/pages/staff/Dashboard";
@@ -74,6 +75,7 @@ function App() {
               <Route path="customers/:id" element={<CustomerProfile />} />
               <Route path="tests" element={<Tests />} />
               <Route path="appointments" element={<Appointments />} />
+              <Route path="test-services" element={<TestServiceManagement />} />
             </Route>
           </Routes>
         </Router>

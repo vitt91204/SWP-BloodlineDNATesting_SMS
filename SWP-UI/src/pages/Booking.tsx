@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { testRequestAPI } from '@/api/axios';
+import { testRequestAPI, testServiceAPI } from '@/api/axios';
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,10 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, MapPin, Home, Users, TestTube, Clock, CheckCircle, ArrowRight, Package } from "lucide-react";
+import { Calendar, MapPin, Home, Users, TestTube, Clock, CheckCircle, ArrowRight, Package, Loader2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function Booking() { 
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [selectedService, setSelectedService] = useState("");
   const [selectedRelationship, setSelectedRelationship] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
@@ -34,6 +36,11 @@ export default function Booking() {
   // Thêm state để theo dõi khi nào hiển thị validation
   const [showValidation, setShowValidation] = useState(false);
 
+  // Thêm state cho API data
+  const [testServices, setTestServices] = useState([]);
+  const [isLoadingServices, setIsLoadingServices] = useState(true);
+  const [selectedServiceData, setSelectedServiceData] = useState(null);
+
   const services = [
     {
       id: "civil",
@@ -52,6 +59,37 @@ export default function Booking() {
       description: "Xét nghiệm ADN có giá trị pháp lý, được thực hiện tại cơ sở"
     }
   ];
+
+  // Load test services từ API
+  useEffect(() => {
+    const loadTestServices = async () => {
+      try {
+        setIsLoadingServices(true);
+        const data = await testServiceAPI.getAll();
+        console.log('Test Services from API:', data);
+        setTestServices(data);
+      } catch (error) {
+        console.error('Error loading test services:', error);
+        toast({
+          variant: "destructive",
+          title: "Lỗi tải dữ liệu",
+          description: "Không thể tải danh sách dịch vụ xét nghiệm. Vui lòng thử lại.",
+        });
+      } finally {
+        setIsLoadingServices(false);
+      }
+    };
+
+    loadTestServices();
+  }, [toast]);
+
+  // Cập nhật selectedServiceData khi selectedRelationship thay đổi
+  useEffect(() => {
+    if (selectedRelationship && testServices.length > 0) {
+      const service = testServices.find(s => s.id?.toString() === selectedRelationship);
+      setSelectedServiceData(service);
+    }
+  }, [selectedRelationship, testServices]);
 
   // Thêm danh sách các loại quan hệ
   const relationships = [
@@ -202,8 +240,9 @@ export default function Booking() {
   try {
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     const userId = userData?.id || userData?.userId;
-    const serviceIdMap = { civil: 1, legal: 2 };
-    const serviceId = serviceIdMap[selectedService] || 0;
+    
+    // Sử dụng serviceId từ API thay vì mapping cứng
+    const serviceId = selectedServiceData?.id || selectedRelationship;
 
     if (!userId || !serviceId) {
       alert('Vui lòng đăng nhập và chọn dịch vụ hợp lệ trước khi đặt lịch!');
@@ -213,7 +252,7 @@ export default function Booking() {
     // Đảm bảo collectionType đúng định dạng enum backend: 'AtClinic', 'AtHome', 'Self'
     let collectionType = 'At Clinic';
     if (selectedLocation === 'home') {
-      collectionType = selectedHomeOption === 'At Clinic ' ? 'Self' : 'At Home';
+      collectionType = selectedHomeOption === 'diy_kit' ? 'Self' : 'At Home';
     }
 
     const bookingData = {
@@ -428,59 +467,80 @@ export default function Booking() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid gap-4">
-                  {relationships.map((relationship) => (
-                    <div
-                      key={relationship.id}
-                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                        selectedRelationship === relationship.id
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => setSelectedRelationship(relationship.id)}
-                    >
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-2">
-                            <h3 className="text-lg font-semibold text-gray-900">
-                              {relationship.name}
-                            </h3>
-                            <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 ml-4 ${
-                              selectedRelationship === relationship.id
-                                ? 'border-blue-500 bg-blue-500'
-                                : 'border-gray-300'
-                            }`}>
-                              {selectedRelationship === relationship.id && (
-                                <CheckCircle className="w-5 h-5 text-white" />
+                {isLoadingServices ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-8 h-8 animate-spin text-blue-600 mr-3" />
+                    <span className="text-gray-600">Đang tải danh sách dịch vụ...</span>
+                  </div>
+                ) : testServices.length === 0 ? (
+                  <div className="text-center py-8">
+                    <TestTube className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600">Không có dịch vụ xét nghiệm nào khả dụng</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-4">
+                    {testServices.map((service) => (
+                      <div
+                        key={service.id}
+                        className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                          selectedRelationship === service.id?.toString()
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => setSelectedRelationship(service.id?.toString() || '')}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-2">
+                              <h3 className="text-lg font-semibold text-gray-900">
+                                {service.serviceName || service.name || 'Dịch vụ xét nghiệm'}
+                              </h3>
+                              <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 ml-4 ${
+                                selectedRelationship === service.id?.toString()
+                                  ? 'border-blue-500 bg-blue-500'
+                                  : 'border-gray-300'
+                              }`}>
+                                {selectedRelationship === service.id?.toString() && (
+                                  <CheckCircle className="w-5 h-5 text-white" />
+                                )}
+                              </div>
+                            </div>
+                            
+                            <p className="text-gray-600 text-sm mb-3">
+                              {service.description || 'Mô tả dịch vụ xét nghiệm'}
+                            </p>
+                            
+                            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                              <div className="flex items-center">
+                                <TestTube className="w-4 h-4 mr-1" />
+                                <span className="font-medium text-blue-600">
+                                  {service.price ? `${service.price.toLocaleString('vi-VN')} VNĐ` : 'Liên hệ để biết giá'}
+                                </span>
+                              </div>
+                              <div className="flex items-center">
+                                <Clock className="w-4 h-4 mr-1" />
+                                {service.duration || service.timeFrame || '5-7 ngày'}
+                              </div>
+                              {service.accuracy && (
+                                <div className="flex items-center">
+                                  <CheckCircle className="w-4 h-4 mr-1 text-green-500" />
+                                  Độ chính xác: {service.accuracy}
+                                </div>
                               )}
                             </div>
-                          </div>
-                          
-                          <p className="text-gray-600 text-sm mb-3">
-                            {relationship.description}
-                          </p>
-                          
-                          <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                            <div className="flex items-center">
-                              <TestTube className="w-4 h-4 mr-1" />
-                              <span className="font-medium text-blue-600">
-                                {selectedService === 'civil' ? relationship.civilPrice : relationship.legalPrice}
-                              </span>
-                            </div>
-                            <div className="flex items-center">
-                              <Clock className="w-4 h-4 mr-1" />
-                              {relationship.duration}
-                            </div>
-                            <div className="flex items-center">
-                              <CheckCircle className="w-4 h-4 mr-1 text-green-500" />
-                              Độ chính xác: {relationship.accuracy}
-                            </div>
+
+                            {/* Hiển thị thông tin bổ sung nếu có */}
+                            {service.additionalInfo && (
+                              <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                                <p className="text-sm text-gray-700">{service.additionalInfo}</p>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
                 
                 <div className="flex space-x-4">
                   <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
@@ -488,7 +548,7 @@ export default function Booking() {
                   </Button>
                   <Button 
                     className="flex-1" 
-                    disabled={!selectedRelationship}
+                    disabled={!selectedRelationship || isLoadingServices}
                     onClick={() => setStep(3)}
                   >
                     Tiếp tục
@@ -892,7 +952,7 @@ export default function Booking() {
                     <div className="flex justify-between">
                       <span className="text-gray-600">Loại quan hệ:</span>
                       <span className="font-medium">
-                        {relationships.find(r => r.id === selectedRelationship)?.name}
+                        {selectedServiceData?.serviceName || selectedServiceData?.name || 'Dịch vụ xét nghiệm'}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -917,17 +977,25 @@ export default function Booking() {
                     <div className="flex justify-between">
                       <span className="text-gray-600">Thời gian hoàn thành:</span>
                       <span className="font-medium">
-                        {relationships.find(r => r.id === selectedRelationship)?.duration}
+                        {selectedServiceData?.duration || selectedServiceData?.timeFrame || '5-7 ngày'}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Giá dự kiến:</span>
                       <span className="font-medium text-lg text-blue-600">
-                        {selectedService === 'civil' 
-                          ? relationships.find(r => r.id === selectedRelationship)?.civilPrice
-                          : relationships.find(r => r.id === selectedRelationship)?.legalPrice}
+                        {selectedServiceData?.price 
+                          ? `${selectedServiceData.price.toLocaleString('vi-VN')} VNĐ`
+                          : 'Liên hệ để biết giá'}
                       </span>
                     </div>
+                    {selectedServiceData?.accuracy && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Độ chính xác:</span>
+                        <span className="font-medium text-green-600">
+                          {selectedServiceData.accuracy}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
 

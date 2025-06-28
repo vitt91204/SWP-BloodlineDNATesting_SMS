@@ -44,7 +44,11 @@ const navigation = [
     href: "/admin/appointments",
     icon: Calendar
   },
-  
+  {
+    name: "Quản lý loại dịch vụ",
+    href: "/admin/test-services",
+    icon: Settings
+  },
 ];
 
 export const AdminLayout = () => {
