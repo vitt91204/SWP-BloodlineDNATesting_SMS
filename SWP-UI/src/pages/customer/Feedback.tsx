@@ -1,105 +1,86 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { Star, MessageSquare, Send } from "lucide-react";
+import { Star, MessageSquare, Send, Pencil } from "lucide-react";
+import { feedbackAPI } from "@/api/axios";
 
-interface Feedback {
-  id: string;
-  serviceType: string;
-  rating: number;
-  comment: string;
-  date: string;
-  status: "Đã gửi" | "Đã phản hồi";
-  adminReply?: string;
-}
-
-export default function Feedback() {
+export default function FeedbackPage() {
   const { toast } = useToast();
-  
-  // Feedback states
-  const [feedbacks, setFeedbacks] = useState<Feedback[]>([
-    {
-      id: "FB001",
-      serviceType: "Xét nghiệm huyết thống dân sự",
-      rating: 5,
-      comment: "Dịch vụ rất tốt, nhân viên chu đáo và kết quả nhanh chóng. Tôi rất hài lòng với chất lượng dịch vụ.",
-      date: "2024-02-15",
-      status: "Đã phản hồi",
-      adminReply: "Cảm ơn bạn đã đánh giá. Chúng tôi sẽ tiếp tục cải thiện chất lượng dịch vụ."
-    },
-    {
-      id: "FB002", 
-      serviceType: "Xét nghiệm huyết thống pháp y",
-      rating: 4,
-      comment: "Dịch vụ tốt nhưng thời gian chờ kết quả hơi lâu.",
-      date: "2024-03-10",
-      status: "Đã gửi"
-    }
-  ]);
-  
+  const [feedbacks, setFeedbacks] = useState<any[]>([]);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [newFeedback, setNewFeedback] = useState({
     serviceType: "",
     rating: 0,
     comment: ""
   });
 
-  // Feedback functions
-  const renderStars = (rating: number, interactive: boolean = false, onRatingChange?: (rating: number) => void) => {
-    return (
-      <div className="flex space-x-1">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Star
-            key={star}
-            className={`w-5 h-5 ${
-              star <= rating 
-                ? 'text-yellow-400 fill-yellow-400' 
-                : 'text-gray-300'
-            } ${interactive ? 'cursor-pointer hover:text-yellow-400' : ''}`}
-            onClick={() => interactive && onRatingChange && onRatingChange(star)}
-          />
-        ))}
-      </div>
-    );
+  const userId = JSON.parse(localStorage.getItem("userData") || "{}")?.id;
+
+  const fetchFeedbacks = async () => {
+    try {
+      const data = await feedbackAPI.getByUserId(userId);
+      setFeedbacks(data);
+    } catch (err) {
+      console.error("Lỗi khi tải feedback:", err);
+    }
   };
 
-  const handleSubmitFeedback = () => {
+  useEffect(() => {
+    fetchFeedbacks();
+  }, []);
+
+  const renderStars = (rating: number, interactive = false, onRate?: (r: number) => void) => (
+    <div className="flex space-x-1">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <Star
+          key={i}
+          className={`w-5 h-5 ${i <= rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"} ${interactive ? "cursor-pointer" : ""}`}
+          onClick={() => interactive && onRate && onRate(i)}
+        />
+      ))}
+    </div>
+  );
+
+  const handleSubmit = async () => {
     if (!newFeedback.serviceType || !newFeedback.rating || !newFeedback.comment.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Vui lòng điền đầy đủ thông tin",
-        description: "Hãy chọn dịch vụ, đánh giá sao và viết nhận xét.",
-      });
-      return;
+      return toast({ variant: "destructive", title: "Vui lòng nhập đầy đủ thông tin" });
     }
 
-    const feedback: Feedback = {
-      id: `FB${String(feedbacks.length + 1).padStart(3, '0')}`,
-      serviceType: newFeedback.serviceType,
-      rating: newFeedback.rating,
-      comment: newFeedback.comment,
-      date: new Date().toISOString().split('T')[0],
-      status: "Đã gửi"
-    };
-
-    setFeedbacks(prev => [feedback, ...prev]);
-    setNewFeedback({ serviceType: "", rating: 0, comment: "" });
-    
-    toast({
-      title: "Gửi đánh giá thành công",
-      description: "Cảm ơn bạn đã đánh giá dịch vụ của chúng tôi!",
-    });
+    try {
+      const now = new Date().toISOString();
+      await feedbackAPI.create({
+        userId,
+        requestId: 0,
+        rating: newFeedback.rating,
+        comment: newFeedback.comment,
+        response: "",
+        createdAt: now,
+        respondedAt: now
+      });
+      toast({ title: "Đánh giá đã được gửi" });
+      setNewFeedback({ serviceType: "", rating: 0, comment: "" });
+      fetchFeedbacks();
+    } catch (err) {
+      toast({ variant: "destructive", title: "Gửi thất bại" });
+    }
   };
 
-  const getFeedbackStatusBadge = (status: string) => {
-    return status === "Đã phản hồi" ? (
-      <Badge className="bg-green-100 text-green-700">Đã phản hồi</Badge>
-    ) : (
-      <Badge className="bg-blue-100 text-blue-700">Đã gửi</Badge>
-    );
+  const handleUpdate = async (fb: any) => {
+    try {
+      await feedbackAPI.update(fb.feedbackId, {
+        ...fb,
+        respondedAt: fb.respondedAt || new Date().toISOString()
+      });
+      toast({ title: "Đã cập nhật đánh giá" });
+      setEditingId(null);
+      fetchFeedbacks();
+    } catch (err) {
+      toast({ variant: "destructive", title: "Không thể cập nhật" });
+    }
   };
 
   return (
@@ -111,53 +92,38 @@ export default function Feedback() {
             <MessageSquare className="w-5 h-5" />
             Gửi đánh giá dịch vụ
           </CardTitle>
-          <CardDescription>
-            Chia sẻ trải nghiệm của bạn để chúng tôi cải thiện dịch vụ
-          </CardDescription>
+          <CardDescription>Chia sẻ trải nghiệm của bạn để chúng tôi cải thiện dịch vụ</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="serviceType">Loại dịch vụ</Label>
+          <div>
+            <Label>Loại dịch vụ</Label>
             <select
-              id="serviceType"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={newFeedback.serviceType}
-              onChange={(e) => setNewFeedback(prev => ({ ...prev, serviceType: e.target.value }))}
+              onChange={(e) => setNewFeedback((prev) => ({ ...prev, serviceType: e.target.value }))}
+              className="w-full border rounded-md px-3 py-2"
             >
               <option value="">Chọn loại dịch vụ</option>
               <option value="Xét nghiệm huyết thống dân sự">Xét nghiệm huyết thống dân sự</option>
               <option value="Xét nghiệm huyết thống pháp y">Xét nghiệm huyết thống pháp y</option>
-              <option value="Xét nghiệm ADN xác định giới tính thai nhi">Xét nghiệm ADN xác định giới tính thai nhi</option>
               <option value="Xét nghiệm ADN xác định tổ tiên">Xét nghiệm ADN xác định tổ tiên</option>
               <option value="Dịch vụ tư vấn">Dịch vụ tư vấn</option>
-              <option value="Dịch vụ lấy mẫu tại nhà">Dịch vụ lấy mẫu tại nhà</option>
             </select>
           </div>
-
-          <div className="space-y-2">
+          <div>
             <Label>Đánh giá</Label>
-            <div className="flex items-center gap-2">
-              {renderStars(newFeedback.rating, true, (rating) => 
-                setNewFeedback(prev => ({ ...prev, rating }))
-              )}
-              <span className="text-sm text-gray-600 ml-2">
-                {newFeedback.rating > 0 ? `${newFeedback.rating} sao` : 'Chưa đánh giá'}
-              </span>
-            </div>
+            {renderStars(newFeedback.rating, true, (r) =>
+              setNewFeedback((prev) => ({ ...prev, rating: r }))
+            )}
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="comment">Nhận xét</Label>
+          <div>
+            <Label>Nhận xét</Label>
             <Textarea
-              id="comment"
-              placeholder="Chia sẻ trải nghiệm của bạn về dịch vụ..."
-              value={newFeedback.comment}
-              onChange={(e) => setNewFeedback(prev => ({ ...prev, comment: e.target.value }))}
               rows={4}
+              value={newFeedback.comment}
+              onChange={(e) => setNewFeedback((prev) => ({ ...prev, comment: e.target.value }))}
             />
           </div>
-
-          <Button onClick={handleSubmitFeedback} className="w-full">
+          <Button onClick={handleSubmit}>
             <Send className="w-4 h-4 mr-2" />
             Gửi đánh giá
           </Button>
@@ -165,66 +131,66 @@ export default function Feedback() {
       </Card>
 
       {/* Danh sách feedback đã gửi */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="w-5 h-5" />
-            Đánh giá đã gửi
-          </CardTitle>
-          <CardDescription>
-            Lịch sử các đánh giá dịch vụ của bạn
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {feedbacks.map((feedback) => (
-              <Card key={feedback.id} className="border-l-4 border-l-green-500">
-                <CardContent className="pt-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="font-semibold text-lg">{feedback.serviceType}</h3>
-                      <p className="text-sm text-gray-600 mt-1">Mã: {feedback.id}</p>
-                      <div className="flex items-center gap-2 mt-2">
-                        {renderStars(feedback.rating)}
-                        <span className="text-sm text-gray-600">{feedback.rating} sao</span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      {getFeedbackStatusBadge(feedback.status)}
-                      <p className="text-sm text-gray-500 mt-1">
-                        {new Date(feedback.date).toLocaleDateString('vi-VN')}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-sm font-medium text-gray-700 mb-1">Nhận xét:</p>
-                      <p className="text-gray-900 bg-gray-50 p-3 rounded-md">{feedback.comment}</p>
-                    </div>
-                    
-                    {feedback.adminReply && (
-                      <div>
-                        <p className="text-sm font-medium text-blue-700 mb-1">Phản hồi từ quản trị viên:</p>
-                        <p className="text-gray-900 bg-blue-50 p-3 rounded-md border-l-4 border-blue-500">
-                          {feedback.adminReply}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {feedbacks.length === 0 && (
-            <div className="text-center py-8">
-              <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Chưa có đánh giá nào</p>
+      {feedbacks.map((fb) => (
+        <Card key={fb.feedbackId} className="border-l-4 border-l-blue-500">
+          <CardContent className="pt-6 space-y-3">
+            <div className="flex justify-between">
+              <div>
+                <h3 className="font-semibold">{fb.serviceType || "Không rõ"}</h3>
+                <p className="text-sm text-gray-500">Mã: {fb.feedbackId}</p>
+              </div>
+              <div className="text-right">
+                <Badge className={fb.response ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}>
+                  {fb.response ? "Đã phản hồi" : "Đã gửi"}
+                </Badge>
+                <p className="text-sm text-gray-400">{fb.createdAt?.slice(0, 10)}</p>
+              </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+
+            {editingId === fb.feedbackId && !fb.response ? (
+              <>
+                <Label>Sửa nhận xét</Label>
+                <Textarea
+                  value={fb.comment}
+                  onChange={(e) =>
+                    setFeedbacks((prev) =>
+                      prev.map((f) => (f.feedbackId === fb.feedbackId ? { ...f, comment: e.target.value } : f))
+                    )
+                  }
+                />
+                {renderStars(fb.rating, true, (r) =>
+                  setFeedbacks((prev) =>
+                    prev.map((f) => (f.feedbackId === fb.feedbackId ? { ...f, rating: r } : f))
+                  )
+                )}
+                <Button onClick={() => handleUpdate(fb)}>Lưu thay đổi</Button>
+              </>
+            ) : (
+              <>
+                <p className="bg-gray-100 rounded-md p-3">{fb.comment}</p>
+                {renderStars(fb.rating)}
+                {fb.response && (
+                  <div className="mt-2 bg-blue-50 p-3 rounded border-l-4 border-blue-400">
+                    <strong>Phản hồi từ quản trị:</strong>
+                    <p>{fb.response}</p>
+                  </div>
+                )}
+                {!fb.response && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setEditingId(fb.feedbackId)}
+                    className="mt-2"
+                  >
+                    <Pencil className="w-4 h-4 mr-2" />
+                    Chỉnh sửa
+                  </Button>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
-} 
+}

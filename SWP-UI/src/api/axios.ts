@@ -424,6 +424,32 @@ export const blogAPI = {
     return response.data;
   },
 };
+export const feedbackAPI = {
+  create: async (data: any) => {
+    const response = await api.post('/api/Feedback', data);
+    return response.data;
+  },
+
+  getByUserId: async (userId: number) => {
+    const response = await api.get(`/api/Feedback/user/${userId}`);
+    return response.data;
+  },
+
+  getById: async (feedbackId: number) => {
+    const response = await api.get(`/api/Feedback/${feedbackId}`);
+    return response.data;
+  },
+
+  update: async (feedbackId: number, data: any) => {
+    const response = await api.put(`/api/Feedback/${feedbackId}`, data);
+    return response.data;
+  },
+
+  delete: async (feedbackId: number) => {
+    const response = await api.delete(`/api/Feedback/${feedbackId}`);
+    return response.data;
+  },
+};
 
 
 
