@@ -1,45 +1,16 @@
-
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Microscope, MapPin, Phone, Mail, Facebook, Youtube, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export const Footer = () => {
-  const footerSections = [
-    {
-      title: "Dịch vụ",
-      links: [
-        { name: "Xét nghiệm huyết thống dân sự", href: "/services/civil" },
-        { name: "Xét nghiệm huyết thống hành chính", href: "/services/legal" },
-      ]
-    },
-    {
-      title: "Hỗ trợ",
-      links: [
-        { name: "Hướng dẫn thu mẫu", href: "/guide/sampling" },
-        { name: "Tra cứu kết quả", href: "/results" },
-        { name: "Câu hỏi thường gặp", href: "/faq" },
-        { name: "Chính sách bảo mật", href: "/privacy" },
-      ]
-    },
-    {
-      title: "Về chúng tôi",
-      links: [
-        { name: "Giới thiệu", href: "/about" },
-        { name: "Đội ngũ chuyên gia", href: "/team" },
-        { name: "Chứng nhận chất lượng", href: "/certifications" },
-        { name: "Tuyển dụng", href: "/careers" },
-      ]
-    }
-  ];
-
   return (
     <footer className="bg-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Footer Content */}
-        <div className="py-16 grid lg:grid-cols-5 gap-12">
+        <div className="py-16">
           {/* Brand Section */}
-          <div className="lg:col-span-2">
+          <div className="max-w-2xl">
             <Link to="/" className="flex items-center space-x-3 mb-6">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-green-500 rounded-lg flex items-center justify-center">
                 <Microscope className="w-7 h-7 text-white" />
@@ -84,27 +55,6 @@ export const Footer = () => {
               </Button>
             </div>
           </div>
-
-          {/* Footer Links */}
-          {footerSections.map((section, index) => (
-            <div key={index}>
-              <h3 className="text-lg font-semibold text-white mb-6">
-                {section.title}
-              </h3>
-              <ul className="space-y-4">
-                {section.links.map((link, linkIndex) => (
-                  <li key={linkIndex}>
-                    <Link 
-                      to={link.href}
-                      className="text-gray-400 hover:text-white transition-colors duration-200"
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
         </div>
 
         <Separator className="bg-gray-700" />

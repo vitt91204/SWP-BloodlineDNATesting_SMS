@@ -82,7 +82,7 @@ export const ContactSection = () => {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-2 gap-8">
           {/* Contact Information */}
           <Card className="shadow-lg border-gray-200">
             <CardHeader>
@@ -147,24 +147,6 @@ export const ContactSection = () => {
               );
             })}
           </div>
-
-          {/* Map Section */}
-          <Card className="shadow-lg border-gray-200">
-            <CardHeader>
-              <CardTitle className="text-lg text-gray-900">
-                Bản đồ
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-                <div className="text-center text-gray-500">
-                  <MapPin className="w-8 h-8 mx-auto mb-2" />
-                  <p className="text-sm">Bản đồ vị trí</p>
-                  <p className="text-xs">123 Đường ABC, Quận 1, TP.HCM</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </section>

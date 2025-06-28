@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
+import { useNavigate } from "react-router-dom";
 import { 
   Calendar, 
   Package, 
@@ -18,6 +19,8 @@ import {
 } from "lucide-react";
 
 export const ProcessSection = () => {
+  const navigate = useNavigate();
+
   const homeTestingSteps = [
     {
       step: 1,
@@ -279,7 +282,11 @@ export const ProcessSection = () => {
                 Đăng ký ngay hôm nay để nhận được tư vấn miễn phí và bắt đầu quy trình xét nghiệm
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="bg-gradient-to-r from-blue-600 to-green-600">
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-blue-600 to-green-600"
+                  onClick={() => navigate('/booking')}
+                >
                   Đăng ký xét nghiệm
                 </Button>
                 <Button size="lg" variant="outline">
