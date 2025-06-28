@@ -103,14 +103,14 @@ export default function TestServiceManagement() {
               <div className="text-gray-500 py-8 text-center">Chưa có loại dịch vụ nào.</div>
             ) : (
               <div className="space-y-4">
-                {services.map((s) => (
-                  <div key={s.service_id || s.id} className="p-4 border rounded-lg bg-white flex justify-between items-center">
+                {services.filter(s => s.is_active).map((s) => (
+                  <div key={s.service_id || s.serviceId || s.id} className="p-4 border rounded-lg bg-white flex justify-between items-center">
                     <div>
                       <div className="font-semibold text-lg">{s.name}</div>
                       <div className="text-gray-600 text-sm mb-1">{s.description}</div>
                       <div className="flex flex-wrap gap-4 text-sm">
                         <span>Giá: <b>{s.price ? `${s.price.toLocaleString('vi-VN')} VNĐ` : '---'}</b></span>
-                        <span>Kit: <b>{s.kit_id || '---'}</b></span>
+                        <span>Kit: <b>{s.kit_id || s.kitId || s.id || '---'}</b></span>
                         <span>Kích hoạt: <b>{s.is_active ? 'Có' : 'Không'}</b></span>
                       </div>
                     </div>
@@ -118,10 +118,13 @@ export default function TestServiceManagement() {
                       variant="destructive"
                       size="sm"
                       onClick={async () => {
-                        if (window.confirm("Bạn có chắc chắn muốn xóa dịch vụ này?")) {
-                          await testServiceAPI.delete(s.service_id || s.id);
-                          fetchServices();
+                        const id = s.service_id || s.serviceId || s.id;
+                        if (!id) {
+                          alert('Không tìm thấy serviceId!');
+                          return;
                         }
+                        await testServiceAPI.delete(id);
+                        fetchServices();
                       }}
                     >
                       Xóa

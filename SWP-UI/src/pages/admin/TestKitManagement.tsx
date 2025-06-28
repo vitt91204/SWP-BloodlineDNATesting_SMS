@@ -87,8 +87,8 @@ export default function TestKitManagement() {
               <div className="text-gray-500 py-8 text-center">Chưa có bộ kit nào.</div>
             ) : (
               <div className="space-y-4">
-                {kits.map((kit) => (
-                  <div key={kit.kit_id || kit.id} className="p-4 border rounded-lg bg-white flex justify-between items-center">
+                {kits.filter(kit => kit.is_active).map((kit) => (
+                  <div key={kit.kit_id || kit.kitId || kit.id} className="p-4 border rounded-lg bg-white flex justify-between items-center">
                     <div>
                       <div className="font-semibold text-lg">{kit.name}</div>
                       <div className="text-gray-600 text-sm mb-1">{kit.description}</div>
@@ -101,10 +101,13 @@ export default function TestKitManagement() {
                       variant="destructive"
                       size="sm"
                       onClick={async () => {
-                        if (window.confirm("Bạn có chắc chắn muốn xóa bộ kit này?")) {
-                          await testKitAPI.delete(kit.kit_id || kit.id);
-                          fetchKits();
+                        const id = kit.kit_id || kit.kitId || kit.id;
+                        if (!id) {
+                          alert('Không tìm thấy kitId!');
+                          return;
                         }
+                        await testKitAPI.delete(id);
+                        await fetchKits();
                       }}
                     >
                       Xóa
