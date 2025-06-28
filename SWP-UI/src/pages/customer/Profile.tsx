@@ -30,6 +30,7 @@ import { Footer } from "@/components/Footer";
 import TestHistory from "./TestHistory";
 import Feedback from "./Feedback";
 import AddressTab from "./Address"; // ✅ Thêm Address tab
+import { userAPI } from "@/api/axios";
 
 import {
   User,
@@ -57,7 +58,6 @@ const genderDisplayMap: Record<string, string> = {
   "Male": "Nam",
   "Female": "Nữ", 
   "Other": "Khác",
-  "": "Chưa xác định"
 };
 
 // Gender options cho select
@@ -119,72 +119,71 @@ export default function CustomerProfile() {
   const [editData, setEditData] = useState<ProfileData>({ ...profileData });
 
   useEffect(() => {
-    // Get userId first
     const userId = getUserIdFromLocalStorage();
-    console.log('Current userId from localStorage:', userId);
     setCurrentUserId(userId);
-    
-    loadProfile(userId);
+    if (userId) {
+      loadProfile(userId);
+    } else {
+      setIsLoading(false);
+      toast({
+        variant: "destructive",
+        title: "Lỗi",
+        description: "Không tìm thấy User ID. Vui lòng đăng nhập lại.",
+      });
+    }
   }, []);
 
-  const loadProfile = (userId?: string) => {
+  const loadProfile = async (userId: string) => {
     try {
       setIsLoading(true);
       
-      // Get user data from localStorage only
-      const localUserData = localStorage.getItem("userData");
-      const localUser = localUserData ? JSON.parse(localUserData) : null;
-      console.log('Loading profile from localStorage:', localUser);
+      const userData = await userAPI.getProfile(userId);
 
-      if (!localUser) {
-        toast({
-          variant: "destructive",
-          title: "Không tìm thấy dữ liệu",
-          description: "Vui lòng đăng nhập lại để tải thông tin.",
-        });
-        return;
+      if (userData) {
+        // Normalize gender value to be capitalized to match the display map and select options.
+        const normalizedUserData = {
+            ...userData,
+            gender: userData.gender 
+                ? userData.gender.charAt(0).toUpperCase() + userData.gender.slice(1)
+                : ""
+        };
+
+        console.log("Profile data loaded:", normalizedUserData);
+        setProfileData(normalizedUserData);
+        setEditData(normalizedUserData);
+      } else {
+        // Handle case where profile does not exist for the user
+        const basicUserInfo = await userAPI.getUserInfo(userId);
+        if (basicUserInfo) {
+          const newProfileData = {
+            id: basicUserInfo.id || userId,
+            fullName: basicUserInfo.fullName || basicUserInfo.username || "",
+            email: basicUserInfo.email || "",
+            phone: basicInfo.phone || "",
+            dateOfBirth: basicInfo.dateOfBirth || "",
+            gender: basicInfo.gender || "",
+            notes: basicInfo.notes || "",
+          };
+          setProfileData(newProfileData);
+          setEditData(newProfileData);
+          toast({
+            title: "Chào mừng bạn",
+            description: "Hãy cập nhật thông tin cá nhân của bạn.",
+          });
+        } else {
+            toast({
+              variant: "destructive",
+              title: "Không tìm thấy dữ liệu",
+              description: "Không thể tải thông tin người dùng.",
+            });
+        }
       }
-
-      // Normalize gender value
-      const normalizeGender = (gender: any) => {
-        if (!gender) return "";
-        const genderStr = String(gender).toLowerCase();
-        if (genderStr === "male" || genderStr === "nam") return "Male";
-        if (genderStr === "female" || genderStr === "nữ" || genderStr === "nu") return "Female";
-        if (genderStr === "other" || genderStr === "khác" || genderStr === "khac") return "Other";
-        return String(gender); // Keep original if no match
-      };
-
-      // Extract user ID
-      const extractId = () => {
-        return String(localUser?.id || localUser?.userId || localUser?.user_id || "");
-      };
-
-      const profileId = extractId();
-      console.log('Profile ID from localStorage:', profileId);
-      setCurrentUserId(profileId);
-
-      // Build empty profile
-      const profile: ProfileData = {
-        id: profileId,
-        fullName: "",
-        email: "",
-        phone: "",
-        dateOfBirth: "",
-        gender: "",
-        notes: "",
-      };
-
-      console.log("Profile data from localStorage:", profile);
-      setProfileData(profile);
-      setEditData(profile);
-
     } catch (error) {
-      console.error("Error loading profile from localStorage:", error);
+      console.error("Error loading profile:", error);
       toast({
         variant: "destructive",
         title: "Lỗi tải dữ liệu",
-        description: "Không thể tải thông tin từ bộ nhớ local.",
+        description: "Không thể tải thông tin từ máy chủ.",
       });
     } finally {
       setIsLoading(false);
@@ -195,7 +194,7 @@ export default function CustomerProfile() {
     setEditData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     try {
       setIsLoading(true);
       
@@ -206,7 +205,6 @@ export default function CustomerProfile() {
           title: "Lỗi validation",
           description: "Họ và tên không được để trống.",
         });
-        setIsLoading(false);
         return;
       }
 
@@ -216,26 +214,14 @@ export default function CustomerProfile() {
           title: "Lỗi validation", 
           description: "Email không được để trống.",
         });
-        setIsLoading(false);
         return;
       }
 
-      // Get current userData from localStorage
-      const localUserData = localStorage.getItem("userData");
-      const localUser = localUserData ? JSON.parse(localUserData) : {};
-
-      // Update userData with new profile data
-      const updatedUserData = {
-        ...localUser,
+      // Use updateProfile function from userAPI
+      await userAPI.updateProfile({
         ...editData,
-        // Ensure gender is properly formatted
         gender: editData.gender || "Other"
-      };
-      
-      console.log("Updating localStorage with:", updatedUserData);
-      
-      // Save to localStorage
-      localStorage.setItem('userData', JSON.stringify(updatedUserData));
+      }, currentUserId);
       
       setProfileData({ ...editData });
       setIsEditing(false);
@@ -243,6 +229,10 @@ export default function CustomerProfile() {
         title: "Cập nhật thành công",
         description: "Thông tin cá nhân đã được cập nhật.",
       });
+
+      // Reload profile to get latest data
+      loadProfile(currentUserId);
+
     } catch (error) {
       console.error("Error updating profile:", error);
       toast({
