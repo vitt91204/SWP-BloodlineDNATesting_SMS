@@ -27,7 +27,6 @@ namespace DNAServicesSystemAPI
 
             builder.Services.AddScoped<UserService>();
             builder.Services.AddScoped<AddressService>();
-            builder.Services.AddScoped<ProfileService>();
             builder.Services.AddScoped<TestRequestService>();
             builder.Services.AddScoped<TestKitService>();
             builder.Services.AddScoped<FeedbackService>();

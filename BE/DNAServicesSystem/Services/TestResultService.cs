@@ -17,7 +17,6 @@ namespace Services
                 ResultId = r.ResultId,
                 SampleId = r.SampleId,
                 RequestId = r.RequestId ?? 0, // Explicitly handle nullable value
-                ResultData = r.ResultData,
                 UploadedBy = r.UploadedBy,
                 ApprovedBy = r.ApprovedBy,
                 UploadedTime = r.UploadedTime,
@@ -35,7 +34,6 @@ namespace Services
                 ResultId = r.ResultId,
                 SampleId = r.SampleId,
                 RequestId = r.RequestId ?? 0, // Explicitly handle nullable value
-                ResultData = r.ResultData,
                 UploadedBy = r.UploadedBy,
                 ApprovedBy = r.ApprovedBy,
                 UploadedTime = r.UploadedTime,
@@ -50,7 +48,6 @@ namespace Services
             {
                 SampleId = dto.SampleId,
                 RequestId = dto.RequestId,
-                ResultData = dto.ResultData,
                 UploadedBy = dto.UploadedBy,
                 ApprovedBy = dto.ApprovedBy,
                 UploadedTime = dto.UploadedTime,
@@ -67,7 +64,6 @@ namespace Services
 
             entity.SampleId = dto.SampleId;
             entity.RequestId = dto.RequestId;
-            entity.ResultData = dto.ResultData;
             entity.UploadedBy = dto.UploadedBy;
             entity.ApprovedBy = dto.ApprovedBy;
             entity.UploadedTime = dto.UploadedTime;

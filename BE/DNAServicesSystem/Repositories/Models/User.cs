@@ -17,6 +17,12 @@ public partial class User
 
     public string? Role { get; set; }
 
+    public string? FullName { get; set; }
+
+    public DateOnly? DateOfBirth { get; set; }
+
+    public string? Gender { get; set; }
+
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
@@ -26,8 +32,6 @@ public partial class User
     public virtual ICollection<BlogPost> BlogPosts { get; set; } = new List<BlogPost>();
 
     public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
-
-    public virtual ICollection<Profile> Profiles { get; set; } = new List<Profile>();
 
     public virtual ICollection<Sample> Samples { get; set; } = new List<Sample>();
 

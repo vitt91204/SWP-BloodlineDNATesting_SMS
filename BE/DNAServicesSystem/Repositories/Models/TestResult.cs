@@ -11,8 +11,6 @@ public partial class TestResult
 
     public int? RequestId { get; set; }
 
-    public string? ResultData { get; set; }
-
     public int? UploadedBy { get; set; }
 
     public int? ApprovedBy { get; set; }
@@ -23,9 +21,13 @@ public partial class TestResult
 
     public int? StaffId { get; set; }
 
+    public int? ResultDataId { get; set; }
+
     public virtual User? ApprovedByNavigation { get; set; }
 
     public virtual TestRequest? Request { get; set; }
+
+    public virtual ResultDatum? ResultData { get; set; }
 
     public virtual Sample Sample { get; set; } = null!;
 

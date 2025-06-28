@@ -23,6 +23,10 @@ public partial class TestRequest
 
     public int? StaffId { get; set; }
 
+    public int? AddressId { get; set; }
+
+    public virtual Address? Address { get; set; }
+
     public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
 
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
