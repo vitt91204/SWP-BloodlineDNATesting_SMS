@@ -15,13 +15,19 @@ import {
   Phone,
   ArrowRight,
   Shield,
-  UserPlus
+  UserPlus,
+  Calendar,
+  Users
 } from "lucide-react";
 import { authAPI } from "@/api/axios";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function Register() {
   const [formData, setFormData] = useState({
     username: "",
+    fullName: "",
+    dateOfBirth: "",
+    gender: "",
     email: "",
     password: "",
     repeatPassword: "",
@@ -43,6 +49,13 @@ export default function Register() {
     }));
   };
 
+  const handleGenderChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      gender: value
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -60,6 +73,9 @@ export default function Register() {
     try {
       await authAPI.register({
         username: formData.username,
+        fullName: formData.fullName,
+        dateOfBirth: formData.dateOfBirth,
+        gender: formData.gender,
         email: formData.email,
         password: formData.password,
         repeatPassword: formData.repeatPassword,
@@ -176,6 +192,79 @@ export default function Register() {
                           required
                           className="pl-10 bg-white/50 backdrop-blur-sm border-gray-200 focus:border-emerald-300 focus:ring-emerald-300/20 transition-all duration-200 hover:bg-white/70"
                         />
+                      </div>
+                    </div>
+
+                    {/* Full Name Field */}
+                    <div className="relative">
+                      <Label htmlFor="fullName" className="text-gray-700 font-medium">
+                        Họ và tên
+                      </Label>
+                      <div className="relative mt-2">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <User className={`w-5 h-5 transition-colors duration-200 ${
+                            focusedField === 'fullName' ? 'text-emerald-400' : 'text-gray-400'
+                          }`} />
+                        </div>
+                        <Input
+                          id="fullName"
+                          name="fullName"
+                          type="text"
+                          value={formData.fullName}
+                          onChange={handleChange}
+                          onFocus={() => setFocusedField('fullName')}
+                          onBlur={() => setFocusedField(null)}
+                          placeholder="Nhập họ và tên"
+                          required
+                          className="pl-10 bg-white/50 backdrop-blur-sm border-gray-200 focus:border-emerald-300 focus:ring-emerald-300/20 transition-all duration-200 hover:bg-white/70"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Date of Birth Field */}
+                    <div className="relative">
+                      <Label htmlFor="dateOfBirth" className="text-gray-700 font-medium">
+                        Ngày sinh
+                      </Label>
+                      <div className="relative mt-2">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Calendar className={`w-5 h-5 transition-colors duration-200 ${
+                            focusedField === 'dateOfBirth' ? 'text-emerald-400' : 'text-gray-400'
+                          }`} />
+                        </div>
+                        <Input
+                          id="dateOfBirth"
+                          name="dateOfBirth"
+                          type="date"
+                          value={formData.dateOfBirth}
+                          onChange={handleChange}
+                          onFocus={() => setFocusedField('dateOfBirth')}
+                          onBlur={() => setFocusedField(null)}
+                          required
+                          className="pl-10 bg-white/50 backdrop-blur-sm border-gray-200 focus:border-emerald-300 focus:ring-emerald-300/20 transition-all duration-200 hover:bg-white/70"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Gender Field */}
+                    <div className="relative">
+                      <Label htmlFor="gender" className="text-gray-700 font-medium">
+                        Giới tính
+                      </Label>
+                      <div className="relative mt-2">
+                        <Select value={formData.gender} onValueChange={handleGenderChange}>
+                          <SelectTrigger className="w-full bg-white/50 backdrop-blur-sm border-gray-200 focus:border-emerald-300 focus:ring-emerald-300/20 transition-all duration-200 hover:bg-white/70">
+                            <div className="flex items-center">
+                              <Users className="w-5 h-5 mr-2 text-gray-400" />
+                              <SelectValue placeholder="Chọn giới tính" />
+                            </div>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="male">Nam</SelectItem>
+                            <SelectItem value="female">Nữ</SelectItem>
+                            <SelectItem value="other">Khác</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
 

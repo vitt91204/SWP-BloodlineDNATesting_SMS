@@ -199,7 +199,7 @@ export const userAPI = {
   getProfile: async (userId?: string) => {
     // Get userId from localStorage if not provided
     const currentUserId = userId || getUserIdFromLocalStorage();
-    console.log('Calling /api/Profile with userId:', currentUserId);
+    console.log('Fetching all users to find profile for userId:', currentUserId);
     
     if (!currentUserId) {
       console.error('No userId available for profile request');
@@ -207,15 +207,29 @@ export const userAPI = {
     }
     
     try {
-      const response = await api.get(`/api/Profile/${currentUserId}`);
-      console.log('Profile API Response:', response);
-      console.log('Profile API Response Data:', response.data);
-      return response.data;
+      // API returns 405 for GET /api/User/{id}, so fetch all and find the one we need.
+      const response = await api.get('/api/User');
+      
+      if (Array.isArray(response.data)) {
+        const user = response.data.find(u => u.id?.toString() === currentUserId.toString() || u.userId?.toString() === currentUserId.toString());
+        
+        if (user) {
+          console.log('Found user profile:', user);
+          return user;
+        }
+        
+        console.log('User with specified ID not found in the list.');
+        return null; // User not found
+      }
+
+      console.error('Expected an array of users, but received:', response.data);
+      throw new Error('Invalid data format from user API.');
+
     } catch (error) {
       console.error('Profile API Error:', error);
-      // If profile doesn't exist, return empty profile
+      // If the main /api/User endpoint itself fails
       if (error.response?.status === 404) {
-        console.log('Profile not found, returning empty profile');
+        console.log('User endpoint not found, returning null.');
         return null;
       }
       throw error;
@@ -252,40 +266,18 @@ export const userAPI = {
 
   // Create new profile using POST
   createProfile: async (userData: any, userId?: string) => {
-    console.log('Creating new profile with data:', userData);
+    console.log('Creating new profile by updating user with data:', userData);
     
-    // Get user info from localStorage
-    const localUserData = localStorage.getItem('userData');
-    const localUser = localUserData ? JSON.parse(localUserData) : null;
-    const currentUserId = userId || localUser?.id || getUserIdFromLocalStorage();
+    const currentUserId = userId || getUserIdFromLocalStorage();
     
     if (!currentUserId) {
       console.error('No userId available for profile creation');
       throw new Error('User ID is required to create profile');
     }
     
-    // Format request body for new profile
-    const requestBody = {
-      User: {
-        id: parseInt(currentUserId),
-        username: localUser?.username || '',
-        email: userData.email || localUser?.email || '',
-        phone: userData.phone || localUser?.phone || ''
-      },
-      id: null, // New profile, no ID yet
-      fullName: userData.fullName,
-      email: userData.email,
-      phone: userData.phone,
-      address: userData.address,
-      dateOfBirth: userData.dateOfBirth,
-      gender: userData.gender,
-      notes: userData.notes
-    };
-    
-    console.log('Creating profile with request body:', requestBody);
-    
     try {
-      const response = await api.post('/api/Profile', requestBody);
+      // "Creating a profile" for an existing user is just updating their data.
+      const response = await api.put(`/api/User/${currentUserId}`, userData);
       console.log('Create Profile Response:', response);
       console.log('Create Profile Response Data:', response.data);
       return response.data;
@@ -298,64 +290,19 @@ export const userAPI = {
   updateProfile: async (userData: any, userId?: string) => {
     console.log('Updating profile with data:', userData);
     
-    // Get user info from localStorage
-    const localUserData = localStorage.getItem('userData');
-    const localUser = localUserData ? JSON.parse(localUserData) : null;
-    const currentUserId = userId || localUser?.id || getUserIdFromLocalStorage();
+    const currentUserId = userId || getUserIdFromLocalStorage();
     
     if (!currentUserId) {
       console.error('No userId available for profile update');
       throw new Error('User ID is required to update profile');
     }
     
-    // Format request body according to API requirements
-    const requestBody = {
-      User: {
-        id: parseInt(currentUserId),
-        username: localUser?.username || '',
-        email: userData.email || localUser?.email || '',
-        phone: userData.phone || localUser?.phone || ''
-      },
-      id: userData.id ? parseInt(userData.id) : null,
-      fullName: userData.fullName,
-      email: userData.email,
-      phone: userData.phone,
-      address: userData.address,
-      dateOfBirth: userData.dateOfBirth,
-      gender: userData.gender,
-      notes: userData.notes
-    };
-    
-    console.log('Formatted request body:', requestBody);
-    
     try {
-      // Try PUT first for existing profile
-      if (userData.id) {
-        console.log('Trying PUT /api/Profile for existing profile...');
-        const response = await api.put(`/api/Profile/${userData.id}`, requestBody);
-        console.log('PUT Profile Response:', response);
-        return response.data;
-      } else {
-        // Use POST for new profile
-        console.log('Trying POST /api/Profile for new profile...');
-        const response = await api.post('/api/Profile', requestBody);
-        console.log('POST Profile Response:', response);
-        return response.data;
-      }
+      const response = await api.put(`/api/User/${currentUserId}`, userData);
+      console.log('Update Profile Response:', response);
+      return response.data;
     } catch (error) {
       console.error('Profile update error:', error);
-      // If PUT fails, try POST
-      if (error.response?.status === 404 && userData.id) {
-        console.log('PUT failed, trying POST for profile creation...');
-        try {
-          const response = await api.post('/api/Profile', requestBody);
-          console.log('POST Profile Response (fallback):', response);
-          return response.data;
-        } catch (postError) {
-          console.error('Both PUT and POST failed:', postError);
-          throw postError;
-        }
-      }
       throw error;
     }
   },
