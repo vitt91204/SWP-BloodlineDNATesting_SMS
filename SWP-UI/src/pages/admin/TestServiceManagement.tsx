@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
-import { testServiceAPI, testKitAPI } from "@/api/axios";
+import { testServiceAPI, testKitAPI, TestServiceUpdatePayload } from "@/api/axios";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, PlusCircle, AlertCircle, Info } from "lucide-react";
+import { Loader2, PlusCircle, AlertCircle, Info, Edit, Trash2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface TestService {
   serviceId: number;
@@ -42,6 +45,7 @@ export default function TestServiceManagement() {
     isActive: true,
   });
   const [submitting, setSubmitting] = useState(false);
+  const [editingService, setEditingService] = useState<TestService | null>(null);
 
   const fetchServices = async () => {
     setLoading(true);
@@ -153,6 +157,46 @@ export default function TestServiceManagement() {
         const errorMessage = err.response?.data?.message || err.message || "Xóa thất bại!";
         alert(`Lỗi xóa dịch vụ: ${errorMessage}`);
       }
+    }
+  };
+
+  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    if (!editingService) return;
+    const { name, value, type } = e.target;
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setEditingService({ ...editingService, [name]: checked });
+    } else {
+      setEditingService({ ...editingService, [name]: value });
+    }
+  };
+  
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingService) return;
+
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const updateData: TestServiceUpdatePayload = {
+        name: editingService.name.trim(),
+        description: editingService.description.trim(),
+        price: parseFloat(editingService.price.toString()),
+        isActive: editingService.isActive,
+      };
+      
+      await testServiceAPI.update(editingService.serviceId, updateData, editingService.kitId);
+      
+      setEditingService(null);
+      fetchServices();
+      alert("Cập nhật dịch vụ thành công!");
+    } catch (err: any) {
+      console.error("Error updating service:", err);
+      const errorMessage = err.response?.data?.message || err.message || "Cập nhật thất bại!";
+      setError(`Lỗi cập nhật: ${errorMessage}`);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -314,13 +358,24 @@ export default function TestServiceManagement() {
                             </span>
                           </div>
                         </div>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDelete(service)}
-                        >
-                          Xóa
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setEditingService(service)}
+                          >
+                            <Edit className="w-4 h-4 mr-2" />
+                            Sửa
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(service)}
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Xóa
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   );
@@ -330,6 +385,53 @@ export default function TestServiceManagement() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Edit Service Dialog */}
+      <Dialog open={!!editingService} onOpenChange={() => setEditingService(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Chỉnh sửa dịch vụ: {editingService?.name}</DialogTitle>
+            <DialogDescription>
+              Cập nhật thông tin chi tiết cho dịch vụ xét nghiệm.
+            </DialogDescription>
+          </DialogHeader>
+          {editingService && (
+            <form onSubmit={handleUpdate} className="space-y-4 pt-4">
+              <div>
+                <Label htmlFor="name">Tên dịch vụ *</Label>
+                <Input id="name" name="name" value={editingService.name} onChange={handleEditChange} required disabled={submitting} />
+              </div>
+              <div>
+                <Label htmlFor="description">Mô tả</Label>
+                <Textarea id="description" name="description" value={editingService.description} onChange={handleEditChange} disabled={submitting} rows={3}/>
+              </div>
+              <div>
+                <Label htmlFor="price">Giá (VNĐ) *</Label>
+                <Input id="price" name="price" value={editingService.price} onChange={handleEditChange} type="number" min="0" required disabled={submitting}/>
+              </div>
+              <div>
+                <Label htmlFor="kitId">Bộ kit *</Label>
+                <select id="kitId" name="kitId" value={editingService.kitId} onChange={handleEditChange} required disabled={submitting} className="w-full border border-gray-300 rounded-md px-3 py-2">
+                  {kits.map(kit => (
+                    <option key={kit.kitId} value={kit.kitId}>{kit.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch id="isActive" name="isActive" checked={editingService.isActive} onCheckedChange={(checked) => setEditingService({...editingService, isActive: checked})} disabled={submitting}/>
+                <Label htmlFor="isActive">Kích hoạt</Label>
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setEditingService(null)} disabled={submitting}>Hủy</Button>
+                <Button type="submit" disabled={submitting}>
+                  {submitting ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : null}
+                  Lưu thay đổi
+                </Button>
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 } 

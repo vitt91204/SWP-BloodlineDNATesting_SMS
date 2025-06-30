@@ -383,7 +383,7 @@ export default function Booking() {
     // Chuyển đến trang thanh toán sau 1 giây
     setTimeout(() => {
       if (bookingId) {
-        localStorage.setItem('bookingId', bookingId);
+        localStorage.setItem('bookingId', bookingId.toString());
         navigate(`/payment?bookingId=${bookingId}`);
       } else {
         navigate('/payment');

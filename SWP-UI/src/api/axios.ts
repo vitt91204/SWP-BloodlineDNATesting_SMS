@@ -402,6 +402,13 @@ export const testRequestAPI = {
 };
 
 // Thêm API cho TestService
+export interface TestServiceUpdatePayload {
+  name: string;
+  description: string;
+  price: number;
+  isActive: boolean;
+}
+
 export const testServiceAPI = {
   // Lấy tất cả các loại dịch vụ xét nghiệm
   getAll: async () => {
@@ -428,14 +435,15 @@ export const testServiceAPI = {
   },
 
   // Cập nhật dịch vụ (cho admin)
-  update: async (id: number, serviceData: any) => {
-    const response = await api.put(`/api/TestService/${id}`, serviceData);
+  update: async (serviceId: number, serviceData: Partial<TestServiceUpdatePayload>, kitId: number) => {
+    // The API requires kitId as a query parameter
+    const response = await api.put(`/api/TestService/${serviceId}?kitId=${kitId}`, serviceData);
     return response.data;
   },
 
   // Xóa dịch vụ (cho admin)
-  delete: async (id: number) => {
-    const response = await api.delete(`/api/TestService/${id}`);
+  delete: async (serviceId: number) => {
+    const response = await api.delete(`/api/TestService/${serviceId}`);
     return response.data;
   }
 };
