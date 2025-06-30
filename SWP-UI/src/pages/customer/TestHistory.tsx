@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TestTube, Download, Eye } from "lucide-react";
+import axios from '@/api/axios';
 
 interface TestHistory {
   id: string;
@@ -19,34 +20,26 @@ type ResultType = "Có kết quả" | "Chờ kết quả" | "Đang phân tích";
 
 export default function TestHistory() {
   const navigate = useNavigate();
+  const [testHistory, setTestHistory] = useState<TestHistory[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Dữ liệu lịch sử xét nghiệm mẫu
-  const [testHistory] = useState<TestHistory[]>([
-    {
-      id: "XN001",
-      testName: "Xét nghiệm huyết thống dân sự",
-      date: "2024-01-15",
-      status: "Hoàn thành",
-      result: "Có kết quả",
-      price: "3,500,000 VNĐ"
-    },
-    {
-      id: "XN002", 
-      testName: "Xét nghiệm huyết thống pháp y",
-      date: "2024-02-20",
-      status: "Đang xử lý",
-      result: "Chờ kết quả",
-      price: "5,000,000 VNĐ"
-    },
-    {
-      id: "XN003",
-      testName: "Xét nghiệm ADN xác định giới tính thai nhi",
-      date: "2024-03-10",
-      status: "Đã lấy mẫu",
-      result: "Đang phân tích",
-      price: "2,500,000 VNĐ"
-    }
-  ]);
+  useEffect(() => {
+    const fetchTestHistory = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // Thay đổi endpoint cho đúng với API backend của bạn
+        const response = await axios.get('/api/customer/test-history');
+        setTestHistory(response.data);
+      } catch (err: any) {
+        setError('Không thể tải dữ liệu lịch sử xét nghiệm');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTestHistory();
+  }, []);
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<StatusType, { variant: string; className: string }> = {
@@ -81,6 +74,11 @@ export default function TestHistory() {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {loading ? (
+          <div className="text-center py-8 text-gray-500">Đang tải dữ liệu...</div>
+        ) : error ? (
+          <div className="text-center py-8 text-red-500">{error}</div>
+        ) : (
         <div className="space-y-4">
           {testHistory.map((test) => (
             <Card key={test.id} className="border-l-4 border-l-blue-500">
@@ -124,13 +122,13 @@ export default function TestHistory() {
               </CardContent>
             </Card>
           ))}
+          {testHistory.length === 0 && (
+            <div className="text-center py-8">
+              <TestTube className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">Chưa có lịch sử xét nghiệm nào</p>
+            </div>
+          )}
         </div>
-
-        {testHistory.length === 0 && (
-          <div className="text-center py-8">
-            <TestTube className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">Chưa có lịch sử xét nghiệm nào</p>
-          </div>
         )}
       </CardContent>
     </Card>

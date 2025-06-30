@@ -86,13 +86,10 @@ export default function TestServiceManagement() {
               <select name="kit_id" value={form.kit_id} onChange={handleChange} required className="w-full border rounded px-3 py-2">
                 <option value="">Chọn bộ kit</option>
                 {kits.map(kit => (
-                  <option key={kit.kit_id} value={kit.kit_id}>{kit.name}</option>
+                  <option key={kit.kit_id || kit.kitId || kit.id} value={kit.kit_id || kit.kitId || kit.id}>{kit.name}</option>
                 ))}
               </select>
-              <label className="flex items-center gap-2">
-                <input type="checkbox" name="is_active" checked={form.is_active} onChange={handleChange} />
-                Kích hoạt
-              </label>
+              <input type="hidden" name="is_active" value="true" />
               <Button type="submit" disabled={submitting}>{submitting ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : null}Tạo dịch vụ</Button>
             </form>
           )}

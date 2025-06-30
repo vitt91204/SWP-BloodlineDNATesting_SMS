@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,35 +6,29 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Download, Mail, CheckCircle, FileText, Calendar, User, Microscope } from "lucide-react";
+import axios from '@/api/axios';
 
 export default function Results() {
-  // Sample result data - in real app this would come from props or API
-  const searchResult = {
-    id: "DNA001",
-    service: "Xét nghiệm huyết thống dân sự",
-    date: "15/11/2024",
-    status: "completed",
-    participants: [
-      { name: "Nguyễn Văn A", relationship: "Cha", sampleId: "S001" },
-      { name: "Nguyễn Thị B", relationship: "Con", sampleId: "S002" }
-    ],
-    result: {
-      conclusion: "Có quan hệ huyết thống",
-      probability: "99.99%",
-      details: [
-        { marker: "D3S1358", value1: "15,16", value2: "15,17" },
-        { marker: "vWA", value1: "17,18", value2: "16,17" },
-        { marker: "D16S539", value1: "11,12", value2: "11,13" },
-        { marker: "CSF1PO", value1: "10,12", value2: "10,11" },
-        { marker: "TPOX", value1: "8,11", value2: "8,9" }
-      ]
-    },
-    labInfo: {
-      technician: "KTV. Trần Văn C",
-      reviewer: "BS. Nguyễn Thị D",
-      completedDate: "15/11/2024 14:30"
-    }
-  };
+  const [searchResult, setSearchResult] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchResult = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // Thay đổi endpoint cho đúng với API backend của bạn
+        const response = await axios.get('/api/customer/result-detail');
+        setSearchResult(response.data);
+      } catch (err: any) {
+        setError('Không thể tải dữ liệu kết quả xét nghiệm');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchResult();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -53,6 +47,11 @@ export default function Results() {
           </div>
 
           {/* Results Display */}
+          {loading ? (
+            <div className="text-center py-8 text-gray-500">Đang tải dữ liệu...</div>
+          ) : error ? (
+            <div className="text-center py-8 text-red-500">{error}</div>
+          ) : searchResult ? (
           <div className="space-y-6">
             {/* Result Header */}
             <Card>
@@ -233,6 +232,9 @@ export default function Results() {
               </CardContent>
             </Card>
           </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">Không có dữ liệu kết quả xét nghiệm</div>
+          )}
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
@@ -12,6 +12,7 @@ import {
   Send,
   Eye
 } from 'lucide-react';
+import axios from '@/api/axios';
 
 interface TestResult {
   id: string;
@@ -24,35 +25,28 @@ interface TestResult {
 }
 
 export default function ResultsDelivery() {
-  const [testResults, setTestResults] = useState<TestResult[]>([
-    {
-      id: 'TR001',
-      testName: 'Xét nghiệm huyết thống dân sự',
-      customerName: 'Nguyễn Văn A',
-      testDate: '2024-01-05',
-      status: 'Ready',
-      resultFile: 'result_tr001.pdf'
-    },
-    {
-      id: 'TR002',
-      testName: 'Xét nghiệm ADN xác định tổ tiên',
-      customerName: 'Trần Thị B',
-      testDate: '2024-01-08',
-      status: 'Delivered',
-      resultFile: 'result_tr002.pdf',
-      deliveryDate: '2024-01-10'
-    },
-    {
-      id: 'TR003',
-      testName: 'Xét nghiệm huyết thống pháp y',
-      customerName: 'Lê Văn C',
-      testDate: '2024-01-12',
-      status: 'Pending Upload'
-    }
-  ]);
-
+  const [testResults, setTestResults] = useState<TestResult[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isUploadMode, setIsUploadMode] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  useEffect(() => {
+    const fetchTestResults = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // Thay đổi endpoint cho đúng với API backend của bạn
+        const response = await axios.get('/api/test-results');
+        setTestResults(response.data);
+      } catch (err: any) {
+        setError('Không thể tải dữ liệu kết quả xét nghiệm');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTestResults();
+  }, []);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -129,48 +123,11 @@ export default function ResultsDelivery() {
         </div>
       </CardHeader>
       <CardContent>
-        {isUploadMode && (
-          <Card className="mb-6 border-dashed border-2">
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="resultFile">Tải lên file kết quả</Label>
-                  <Input
-                    id="resultFile"
-                    type="file"
-                    accept=".pdf,.doc,.docx"
-                    onChange={handleFileUpload}
-                    className="mt-1"
-                  />
-                </div>
-                {selectedFile && (
-                  <div className="flex items-center justify-between p-3 bg-blue-50 rounded-md">
-                    <span className="text-sm text-blue-700">
-                      Đã chọn: {selectedFile.name}
-                    </span>
-                    <div className="flex gap-2">
-                      <Button size="sm" onClick={() => handleUploadResult('TR003')}>
-                        <Upload className="w-4 h-4 mr-1" />
-                        Tải lên
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        onClick={() => {
-                          setSelectedFile(null);
-                          setIsUploadMode(false);
-                        }}
-                      >
-                        Hủy
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
+        {loading ? (
+          <div className="text-center py-8 text-gray-500">Đang tải dữ liệu...</div>
+        ) : error ? (
+          <div className="text-center py-8 text-red-500">{error}</div>
+        ) : (
         <div className="space-y-4">
           {testResults.map((result) => (
             <Card key={result.id} className="border-l-4 border-l-orange-500">
@@ -243,15 +200,14 @@ export default function ResultsDelivery() {
               </CardContent>
             </Card>
           ))}
-          
           {testResults.length === 0 && (
-            <div className="text-center py-12">
-              <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">Chưa có kết quả nào</h3>
-              <p className="text-gray-500 mb-6">Chưa có kết quả xét nghiệm nào cần xử lý</p>
+            <div className="text-center py-8">
+              <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">Không có kết quả xét nghiệm nào</p>
             </div>
           )}
         </div>
+        )}
       </CardContent>
     </Card>
   );

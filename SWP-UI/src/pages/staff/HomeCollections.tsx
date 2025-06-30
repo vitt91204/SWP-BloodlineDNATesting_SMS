@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
@@ -10,6 +10,7 @@ import {
   Phone,
   CheckCircle
 } from 'lucide-react';
+import axios from '@/api/axios';
 
 interface HomeCollection {
   id: string;
@@ -23,39 +24,26 @@ interface HomeCollection {
 }
 
 export default function HomeCollections() {
-  // Sample data for home collections
-  const [homeCollections, setHomeCollections] = useState<HomeCollection[]>([
-    {
-      id: 'HC001',
-      customerName: 'Nguyễn Văn A',
-      phone: '0901234567',
-      address: '123 Đường ABC, Quận 1, TP.HCM',
-      date: '2024-01-15',
-      timeSlot: '09:00 - 10:00',
-      status: 'Confirmed',
-      testType: 'Xét nghiệm huyết thống dân sự'
-    },
-    {
-      id: 'HC002',
-      customerName: 'Trần Thị B',
-      phone: '0912345678',
-      address: '456 Đường DEF, Quận 3, TP.HCM',
-      date: '2024-01-15',
-      timeSlot: '14:00 - 15:00',
-      status: 'Pending',
-      testType: 'Xét nghiệm ADN xác định giới tính thai nhi'
-    },
-    {
-      id: 'HC003',
-      customerName: 'Lê Văn C',
-      phone: '0923456789',
-      address: '789 Đường GHI, Quận 7, TP.HCM',
-      date: '2024-01-16',
-      timeSlot: '10:30 - 11:30',
-      status: 'Confirmed',
-      testType: 'Xét nghiệm huyết thống pháp y'
-    }
-  ]);
+  const [homeCollections, setHomeCollections] = useState<HomeCollection[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchHomeCollections = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // Thay đổi endpoint cho đúng với API backend của bạn
+        const response = await axios.get('/api/home-collections');
+        setHomeCollections(response.data);
+      } catch (err: any) {
+        setError('Không thể tải dữ liệu lịch lấy mẫu tại nhà');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchHomeCollections();
+  }, []);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -87,6 +75,11 @@ export default function HomeCollections() {
         </CardTitle>
       </CardHeader>
       <CardContent>
+        {loading ? (
+          <div className="text-center py-8 text-gray-500">Đang tải dữ liệu...</div>
+        ) : error ? (
+          <div className="text-center py-8 text-red-500">{error}</div>
+        ) : (
         <div className="space-y-4">
           {homeCollections.map((collection) => (
             <Card key={collection.id} className="border-l-4 border-l-blue-500">
@@ -146,6 +139,7 @@ export default function HomeCollections() {
             </div>
           )}
         </div>
+        )}
       </CardContent>
     </Card>
   );

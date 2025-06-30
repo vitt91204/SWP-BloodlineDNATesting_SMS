@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
@@ -7,6 +7,7 @@ import {
   Edit, 
   FileText
 } from 'lucide-react';
+import axios from '@/api/axios';
 
 interface TestProgress {
   id: string;
@@ -18,19 +19,26 @@ interface TestProgress {
 }
 
 export default function TestProgress() {
-  // Sample data for test progress
-  const [testProgress, setTestProgress] = useState<TestProgress[]>([
-    {
-      id: 'TP001',
-      testName: 'Xét nghiệm huyết thống dân sự',
-      customerName: 'Nguyễn Văn D',
-      sampleDate: '2024-01-10',
-      currentStatus: 'Analysis',
-      progress: 65
-    },
-    
-    
-  ]);
+  const [testProgress, setTestProgress] = useState<TestProgress[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchTestProgress = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // Thay đổi endpoint cho đúng với API backend của bạn
+        const response = await axios.get('/api/test-progress');
+        setTestProgress(response.data);
+      } catch (err: any) {
+        setError('Không thể tải dữ liệu tiến độ xét nghiệm');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTestProgress();
+  }, []);
 
   const getProgressColor = (progress: number) => {
     if (progress < 30) return 'bg-red-500';
@@ -70,6 +78,11 @@ export default function TestProgress() {
         </CardTitle>
       </CardHeader>
       <CardContent>
+        {loading ? (
+          <div className="text-center py-8 text-gray-500">Đang tải dữ liệu...</div>
+        ) : error ? (
+          <div className="text-center py-8 text-red-500">{error}</div>
+        ) : (
         <div className="space-y-4">
           {testProgress.map((test) => (
             <Card key={test.id} className="border-l-4 border-l-green-500">
@@ -128,6 +141,7 @@ export default function TestProgress() {
             </div>
           )}
         </div>
+        )}
       </CardContent>
     </Card>
   );
