@@ -341,11 +341,60 @@ export const bookingAPI = {
 };
 
 export default api; 
+// Interface for TestRequest
+export interface TestRequest {
+  userId: number;
+  serviceId: number;
+  collectionType: string; // 'At Clinic' | 'At Home' | 'Self'
+  status: string; // 'Pending' | 'Confirmed' | 'In Progress' | 'Completed' | 'Cancelled'
+  appointmentDate: string; // ISO date string (YYYY-MM-DD)
+  slotTime: string;
+  staffId: number;
+}
+
+export interface TestRequestResponse extends TestRequest {
+  id?: number;
+  requestId?: number;
+  testRequestId?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export const testRequestAPI = {
-  create: async (requestData: any) => {
+  create: async (requestData: TestRequest) => {
     const response = await api.post('/api/TestRequest/api/testrequest', requestData);
-    return response.data;
+    return response.data as TestRequestResponse;
   },
+
+  // Lấy tất cả test requests
+  getAll: async () => {
+    const response = await api.get('/api/TestRequest');
+    return response.data as TestRequestResponse[];
+  },
+
+  // Lấy test request theo ID
+  getById: async (id: number) => {
+    const response = await api.get(`/api/TestRequest/${id}`);
+    return response.data as TestRequestResponse;
+  },
+
+  // Lấy test requests theo userId
+  getByUserId: async (userId: number) => {
+    const response = await api.get(`/api/TestRequest/user/${userId}`);
+    return response.data as TestRequestResponse[];
+  },
+
+  // Cập nhật test request
+  update: async (id: number, requestData: Partial<TestRequest>) => {
+    const response = await api.put(`/api/TestRequest/${id}`, requestData);
+    return response.data as TestRequestResponse;
+  },
+
+  // Xóa test request
+  delete: async (id: number) => {
+    const response = await api.delete(`/api/TestRequest/${id}`);
+    return response.data;
+  }
 };
 
 // Thêm API cho TestService
@@ -469,6 +518,39 @@ export const feedbackAPI = {
     const response = await api.delete(`/api/Feedback/${feedbackId}`);
     return response.data;
   },
+};
+
+// API cho Address
+export const addressAPI = {
+  // Tạo địa chỉ mới cho user
+  create: async (userId: number, addressData: any) => {
+    const response = await api.post(`/api/Address/${userId}`, addressData);
+    return response.data;
+  },
+
+  // Lấy tất cả địa chỉ của user
+  getByUserId: async (userId: number) => {
+    const response = await api.get(`/api/Address/user/${userId}`);
+    return response.data;
+  },
+
+  // Lấy địa chỉ theo ID
+  getById: async (addressId: number) => {
+    const response = await api.get(`/api/Address/${addressId}`);
+    return response.data;
+  },
+
+  // Cập nhật địa chỉ
+  update: async (addressId: number, addressData: any) => {
+    const response = await api.put(`/api/Address/${addressId}`, addressData);
+    return response.data;
+  },
+
+  // Xóa địa chỉ
+  delete: async (addressId: number) => {
+    const response = await api.delete(`/api/Address/${addressId}`);
+    return response.data;
+  }
 };
 
 

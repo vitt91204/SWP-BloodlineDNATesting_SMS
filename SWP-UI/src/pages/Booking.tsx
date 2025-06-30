@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { testRequestAPI, testServiceAPI } from '@/api/axios';
+import { testRequestAPI, testServiceAPI, addressAPI, TestRequest } from '@/api/axios';
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +15,50 @@ import { useToast } from "@/components/ui/use-toast";
 export default function Booking() { 
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  // Debug function để test API
+  const testAPI = async () => {
+    try {
+      console.log('🧪 Testing TestRequest API...');
+      
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const userId = userData?.id || userData?.userId;
+
+      if (!userId) {
+        toast({
+          title: "API Test thất bại!",
+          description: "Không tìm thấy User ID. Vui lòng đăng nhập.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      const testData: TestRequest = {
+        userId: parseInt(userId),
+        serviceId: 7, // Service ID tồn tại
+        collectionType: 'At Clinic',
+        status: 'Pending',
+        appointmentDate: '2025-07-01',
+        slotTime: '09:00',
+        staffId: 0
+      };
+      
+      console.log('📤 Sending test request:', testData);
+      const response = await testRequestAPI.create(testData);
+      console.log('✅ Test request successful:', response);
+      toast({
+        title: "API Test thành công!",
+        description: `TestRequest ID: ${response.id || response.requestId || 'Unknown'}`,
+      });
+    } catch (error) {
+      console.error('❌ Test request failed:', error);
+      toast({
+        title: "API Test thất bại!",
+        description: error?.response?.data?.message || error?.message || 'Unknown error',
+        variant: "destructive"
+      });
+    }
+  };
   const [selectedService, setSelectedService] = useState("");
   const [selectedRelationship, setSelectedRelationship] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
@@ -28,9 +72,15 @@ export default function Booking() {
     fullName: "",
     phone: "",
     email: "",
-    address: "",
-    numberOfPeople: "",
-    notes: ""
+    notes: "",
+    // Address fields theo API structure
+    addressLabel: "",
+    addressLine: "",
+    city: "",
+    province: "",
+    postalCode: "",
+    country: "Việt Nam",
+    isPrimary: false
   });
 
   // Thêm state để theo dõi khi nào hiển thị validation
@@ -40,6 +90,7 @@ export default function Booking() {
   const [testServices, setTestServices] = useState([]);
   const [isLoadingServices, setIsLoadingServices] = useState(true);
   const [selectedServiceData, setSelectedServiceData] = useState(null);
+  const [isSubmittingBooking, setIsSubmittingBooking] = useState(false);
 
   const services = [
     {
@@ -66,8 +117,10 @@ export default function Booking() {
       try {
         setIsLoadingServices(true);
         const data = await testServiceAPI.getAll();
+        console.log('Loaded test services:', data);
         setTestServices(data);
       } catch (error) {
+        console.error('Error loading test services:', error);
         setTestServices([]);
       } finally {
         setIsLoadingServices(false);
@@ -78,8 +131,11 @@ export default function Booking() {
 
   // Cập nhật selectedServiceData khi selectedRelationship thay đổi
   useEffect(() => {
+    console.log('selectedRelationship changed:', selectedRelationship); // Debug log
+    console.log('testServices count:', testServices.length); // Debug log
     if (selectedRelationship && testServices.length > 0) {
-      const service = testServices.find(s => s.service_id?.toString() === selectedRelationship);
+      const service = testServices.find(s => s.serviceId?.toString() === selectedRelationship);
+      console.log('Found service:', service); // Debug log
       setSelectedServiceData(service);
     }
   }, [selectedRelationship, testServices]);
@@ -195,19 +251,20 @@ export default function Booking() {
     { id: "19:00", time: "19:00", label: "19:00 - 20:00", available: true },
   ];
 
-  // Hàm kiểm tra validation các trường bắt buộc
-  const isStep3Valid = () => {
-    const requiredFields = formData.fullName && formData.phone && formData.numberOfPeople && formData.address;
-    
-    if (selectedLocation === 'home') {
-      const homeOptionData = homeOptions.find(opt => opt.id === selectedHomeOption);
-      if (homeOptionData?.requiresSchedule) {
-        return requiredFields && selectedDate && selectedTimeSlot;
-      }
-      return requiredFields;
+  // Hàm kiểm tra validation các trường bắt buộc của Step 4
+  const isStep4Valid = () => {
+    const requiredFields = formData.fullName && formData.phone && 
+                          formData.addressLine && formData.city && formData.province;
+
+    if (!requiredFields) return false;
+
+    const needsAppointmentSchedule = (selectedLocation === 'home' && selectedHomeOption === 'staff_visit') || selectedLocation === 'facility';
+
+    if (needsAppointmentSchedule) {
+      return !!(selectedDate && selectedTimeSlot);
     }
     
-    return requiredFields;
+    return true; // For 'diy_kit' case, no appointment needed
   };
 
   // Hàm cập nhật form data
@@ -220,8 +277,8 @@ export default function Booking() {
 
   // Hàm xử lý khi nhấn "Tiếp tục" ở step 3
   const handleStep3Continue = () => {
-    if (isStep3Valid()) {
-      setStep(4);
+    if (isStep4Valid()) {
+      setStep(5);
       setShowValidation(false); // Reset validation state
     } else {
       setShowValidation(true); // Hiển thị validation errors
@@ -231,59 +288,123 @@ export default function Booking() {
   // Hàm xử lý khi nhấn "Xác nhận đặt lịch" - chuyển đến trang thanh toán
   const handleConfirmBooking = async () => {
   try {
+    setIsSubmittingBooking(true);
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     const userId = userData?.id || userData?.userId;
     
-    // Sử dụng service_id từ API thay vì mapping cứng
-    const serviceId = selectedServiceData?.service_id || selectedRelationship;
+    // Sử dụng serviceId từ API thay vì mapping cứng
+    const serviceId = parseInt(selectedServiceData?.serviceId || selectedRelationship);
 
     if (!userId || !serviceId) {
-      alert('Vui lòng đăng nhập và chọn dịch vụ hợp lệ trước khi đặt lịch!');
+      toast({
+        title: "Lỗi đặt lịch",
+        description: "Vui lòng đăng nhập và chọn dịch vụ hợp lệ trước khi đặt lịch!",
+        variant: "destructive"
+      });
       return;
     }
 
-    // Đảm bảo collectionType đúng định dạng enum backend: 'AtClinic', 'AtHome', 'Self'
+    // Tạo địa chỉ mới trước (optional, để lưu thông tin địa chỉ của khách hàng)
+    let addressId = null;
+    try {
+      if (formData.addressLine && formData.city && formData.province) {
+        const addressData = {
+          label: formData.addressLabel || 'Địa chỉ booking',
+          addressLine: formData.addressLine,
+          city: formData.city,
+          province: formData.province,
+          postalCode: formData.postalCode || '',
+          country: formData.country,
+          isPrimary: formData.isPrimary
+        };
+        
+        console.log('📍 Tạo địa chỉ:', addressData);
+        const addressResponse = await addressAPI.create(userId, addressData);
+        addressId = addressResponse?.id || addressResponse?.addressId;
+        console.log('✅ Địa chỉ đã tạo:', addressResponse);
+      }
+    } catch (addressError) {
+      console.warn('⚠️ Không thể tạo địa chỉ:', addressError);
+      // Vẫn tiếp tục với booking ngay cả khi tạo địa chỉ thất bại
+    }
+
+    // Đảm bảo collectionType đúng định dạng theo API
     let collectionType = 'At Clinic';
     if (selectedLocation === 'home') {
       collectionType = selectedHomeOption === 'diy_kit' ? 'Self' : 'At Home';
     }
 
-    const bookingData = {
-      userId,
-      serviceId,
-      collectionType,
+    // Tạo booking data theo đúng API schema
+    const bookingData: TestRequest = {
+      userId: parseInt(userId),
+      serviceId: serviceId,
+      collectionType: collectionType,
       status: 'Pending',
       appointmentDate: selectedDate || new Date().toISOString().split('T')[0],
       slotTime: selectedTimeSlot || '',
-      staffId: 0,
-      fullName: formData.fullName,
-      phone: formData.phone,
-      email: formData.email,
-      address: formData.address,
-      numberOfPeople: formData.numberOfPeople,
-      notes: formData.notes
+      staffId: 0
     };
 
-    console.log('📦 Gửi booking:', bookingData);
+    console.log('📦 Gửi booking theo API schema:', bookingData);
     const response = await testRequestAPI.create(bookingData);
     console.log('✅ Booking thành công:', response);
 
-    const bookingId = response?.id || response?.bookingId;
-    if (bookingId) {
-      localStorage.setItem('bookingId', bookingId);
-      navigate(`/payment?bookingId=${bookingId}`);
-    } else {
-      navigate('/payment');
-    }
+    // Lưu thông tin booking và user info để sử dụng sau
+    const bookingInfo = {
+      ...response,
+      userInfo: {
+        fullName: formData.fullName,
+        phone: formData.phone,
+        email: formData.email,
+        addressId: addressId,
+        fullAddress: [
+          formData.addressLine,
+          formData.city,
+          formData.province,
+          formData.postalCode,
+          formData.country
+        ].filter(Boolean).join(', '),
+        notes: formData.notes
+      },
+      serviceInfo: selectedServiceData
+    };
+
+    // Lưu vào localStorage để sử dụng ở payment page
+    localStorage.setItem('currentBooking', JSON.stringify(bookingInfo));
+    
+    const bookingId = response?.id || response?.requestId || response?.testRequestId;
+    
+    // Hiển thị thông báo thành công
+    toast({
+      title: "Đặt lịch thành công! 🎉",
+      description: `Mã đặt lịch: ${bookingId || 'N/A'}. Đang chuyển đến trang thanh toán...`,
+    });
+
+    // Chuyển đến trang thanh toán sau 1 giây
+    setTimeout(() => {
+      if (bookingId) {
+        localStorage.setItem('bookingId', bookingId);
+        navigate(`/payment?bookingId=${bookingId}`);
+      } else {
+        navigate('/payment');
+      }
+    }, 1000);
   } catch (error) {
     let message = 'Đặt lịch thất bại. Vui lòng thử lại!';
     if (error?.response?.data?.message) {
-      message = `Đặt lịch thất bại: ${error.response.data.message}`;
+      message = error.response.data.message;
     } else if (error?.message) {
-      message = `Đặt lịch thất bại: ${error.message}`;
+      message = error.message;
     }
-    alert(message);
+    
+    toast({
+      title: "Đặt lịch thất bại!",
+      description: message,
+      variant: "destructive"
+    });
     console.error('❌ Booking lỗi:', error);
+  } finally {
+    setIsSubmittingBooking(false);
   }
 };
 
@@ -327,20 +448,50 @@ export default function Booking() {
 
   // Gọi API để lấy thông tin người dùng (nếu có) và thiết lập dữ liệu ban đầu cho form
   useEffect(() => {
-    // Lấy thông tin user từ localStorage nếu có
-    const userData = localStorage.getItem('userData');
-    if (userData) {
-      try {
-        const user = JSON.parse(userData);
-        setFormData(prev => ({
-          ...prev,
-          fullName: user.fullName || user.name || "",
-          phone: user.phone || "",
-          email: user.email || "",
-          address: user.address || ""
-        }));
-      } catch (e) {}
-    }
+    const loadUserData = async () => {
+      // Lấy thông tin user từ localStorage nếu có
+      const userData = localStorage.getItem('userData');
+      if (userData) {
+        try {
+          const user = JSON.parse(userData);
+          const userId = user?.id || user?.userId;
+          
+          setFormData(prev => ({
+            ...prev,
+            fullName: user.fullName || user.name || "",
+            phone: user.phone || "",
+            email: user.email || ""
+          }));
+
+          // Load địa chỉ của user nếu có userId
+          if (userId) {
+            try {
+              const addresses = await addressAPI.getByUserId(userId);
+              if (addresses && addresses.length > 0) {
+                // Chọn địa chỉ primary hoặc địa chỉ đầu tiên
+                const primaryAddress = addresses.find(addr => addr.isPrimary) || addresses[0];
+                setFormData(prev => ({
+                  ...prev,
+                  addressLabel: primaryAddress.label || "",
+                  addressLine: primaryAddress.addressLine || "",
+                  city: primaryAddress.city || "",
+                  province: primaryAddress.province || "",
+                  postalCode: primaryAddress.postalCode || "",
+                  country: primaryAddress.country || "Việt Nam",
+                  isPrimary: false // Không set làm primary cho booking address
+                }));
+              }
+            } catch (addressError) {
+              console.log('Không thể load địa chỉ user:', addressError);
+            }
+          }
+        } catch (e) {
+          console.error('Error parsing user data:', e);
+        }
+      }
+    };
+    
+    loadUserData();
   }, []);
 
   return (
@@ -351,9 +502,22 @@ export default function Booking() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="text-center mb-12">
-            <Badge className="bg-green-100 text-green-700 mb-4">
-              Đặt lịch xét nghiệm
-            </Badge>
+            <div className="flex justify-center items-center gap-4 mb-4">
+              <Badge className="bg-green-100 text-green-700">
+                Đặt lịch xét nghiệm
+              </Badge>
+              {/* Debug button - chỉ hiển thị trong development */}
+              {process.env.NODE_ENV === 'development' && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={testAPI}
+                  className="text-xs"
+                >
+                  🧪 Test API
+                </Button>
+              )}
+            </div>
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
               Đặt lịch xét nghiệm ADN
             </h1>
@@ -465,22 +629,25 @@ export default function Booking() {
                     <Loader2 className="w-8 h-8 animate-spin text-blue-600 mr-3" />
                     <span className="text-gray-600">Đang tải danh sách dịch vụ...</span>
                   </div>
-                ) : testServices.length === 0 ? (
+                ) : testServices.filter(service => service.isActive).length === 0 ? (
                   <div className="text-center py-8">
                     <TestTube className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-600">Không có dịch vụ xét nghiệm nào khả dụng</p>
                   </div>
                 ) : (
                   <div className="grid gap-4">
-                    {testServices.map((service) => (
+                    {testServices.filter(service => service.isActive).map((service) => (
                       <div
-                        key={service.service_id}
+                        key={service.serviceId}
                         className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                          selectedRelationship === service.service_id?.toString()
+                          selectedRelationship === service.serviceId?.toString()
                             ? 'border-blue-500 bg-blue-50'
                             : 'border-gray-200 hover:border-gray-300'
                         }`}
-                        onClick={() => setSelectedRelationship(service.service_id?.toString() || '')}
+                        onClick={() => {
+                          console.log('Clicking service:', service.serviceId, service.name); // Debug log
+                          setSelectedRelationship(service.serviceId?.toString() || '');
+                        }}
                       >
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
@@ -489,11 +656,11 @@ export default function Booking() {
                                 {service.name || 'Dịch vụ xét nghiệm'}
                               </h3>
                               <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 ml-4 ${
-                                selectedRelationship === service.service_id?.toString()
+                                selectedRelationship === service.serviceId?.toString()
                                   ? 'border-blue-500 bg-blue-500'
                                   : 'border-gray-300'
                               }`}>
-                                {selectedRelationship === service.service_id?.toString() && (
+                                {selectedRelationship === service.serviceId?.toString() && (
                                   <CheckCircle className="w-5 h-5 text-white" />
                                 )}
                               </div>
@@ -528,7 +695,7 @@ export default function Booking() {
                   </Button>
                   <Button 
                     className="flex-1" 
-                    disabled={!selectedRelationship || isLoadingServices}
+                    disabled={!selectedRelationship || isLoadingServices || testServices.filter(service => service.isActive).length === 0}
                     onClick={() => setStep(3)}
                   >
                     Tiếp tục
@@ -746,46 +913,113 @@ export default function Booking() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Địa chỉ  {selectedLocation === 'home' ? 'thu mẫu' : 'liên hệ'} *
-                  </label>
-                  <Textarea 
-                    placeholder="Nhập địa chỉ chi tiết..." 
-                    rows={3} 
-                    value={formData.address}
-                    onChange={(e) => updateFormData('address', e.target.value)}
-                    className={showValidation && !formData.address ? 'border-red-300 focus:border-red-500' : ''}
-                  />
-                  {showValidation && !formData.address && (
-                    <p className="text-red-500 text-xs mt-1">Vui lòng nhập địa chỉ</p>
-                  )}
+                {/* Address fields */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                    Địa chỉ {selectedLocation === 'home' ? 'thu mẫu' : 'liên hệ'} *
+                  </h3>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Nhãn địa chỉ
+                    </label>
+                    <Input 
+                      placeholder="Ví dụ: Nhà riêng, Văn phòng, Địa chỉ booking..." 
+                      value={formData.addressLabel}
+                      onChange={(e) => updateFormData('addressLabel', e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Địa chỉ chi tiết *
+                    </label>
+                    <Textarea 
+                      placeholder="Số nhà, tên đường, phường/xã..." 
+                      rows={2} 
+                      value={formData.addressLine}
+                      onChange={(e) => updateFormData('addressLine', e.target.value)}
+                      className={showValidation && !formData.addressLine ? 'border-red-300 focus:border-red-500' : ''}
+                    />
+                    {showValidation && !formData.addressLine && (
+                      <p className="text-red-500 text-xs mt-1">Vui lòng nhập địa chỉ chi tiết</p>
+                    )}
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Thành phố/Quận/Huyện *
+                      </label>
+                      <Input 
+                        placeholder="Nhập thành phố hoặc quận/huyện" 
+                        value={formData.city}
+                        onChange={(e) => updateFormData('city', e.target.value)}
+                        className={showValidation && !formData.city ? 'border-red-300 focus:border-red-500' : ''}
+                      />
+                      {showValidation && !formData.city && (
+                        <p className="text-red-500 text-xs mt-1">Vui lòng nhập thành phố</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Tỉnh/Thành phố *
+                      </label>
+                      <Input 
+                        placeholder="Nhập tỉnh/thành phố" 
+                        value={formData.province}
+                        onChange={(e) => updateFormData('province', e.target.value)}
+                        className={showValidation && !formData.province ? 'border-red-300 focus:border-red-500' : ''}
+                      />
+                      {showValidation && !formData.province && (
+                        <p className="text-red-500 text-xs mt-1">Vui lòng nhập tỉnh/thành phố</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Mã bưu điện
+                      </label>
+                      <Input 
+                        placeholder="Mã bưu điện (không bắt buộc)" 
+                        value={formData.postalCode}
+                        onChange={(e) => updateFormData('postalCode', e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Quốc gia
+                      </label>
+                      <Input 
+                        placeholder="Quốc gia" 
+                        value={formData.country}
+                        onChange={(e) => updateFormData('country', e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <input 
+                      type="checkbox" 
+                      id="isPrimary"
+                      checked={formData.isPrimary}
+                      onChange={(e) => updateFormData('isPrimary', e.target.checked)}
+                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <label htmlFor="isPrimary" className="text-sm text-gray-700">
+                      Đặt làm địa chỉ chính của tôi
+                    </label>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Số người tham gia xét nghiệm *
-                  </label>
-                  <select 
-                    className={`w-full px-3 py-2 border rounded-md ${
-                      showValidation && !formData.numberOfPeople ? 'border-red-300 focus:border-red-500' : 'border-gray-300'
-                    }`}
-                    value={formData.numberOfPeople}
-                    onChange={(e) => updateFormData('numberOfPeople', e.target.value)}
-                  >
-                    <option value="">Chọn số người</option>
-                    <option value="2">2 người</option>
-                    <option value="3">3 người</option>
-                    <option value="4">4 người</option>
-                    <option value="5">5 người trở lên</option>
-                  </select>
-                  {showValidation && !formData.numberOfPeople && (
-                    <p className="text-red-500 text-xs mt-1">Vui lòng chọn số người tham gia</p>
-                  )}
-                </div>
-
-                {selectedLocation === 'home' && selectedHomeOption === 'staff_visit' && (
-                  <div className="space-y-4">
+                {/* Appointment scheduling fields */}
+                {((selectedLocation === 'home' && selectedHomeOption === 'staff_visit') || selectedLocation === 'facility') && (
+                  <div className="space-y-4 pt-4 border-t border-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Lên lịch hẹn
+                    </h3>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Chọn ngày mong muốn *
@@ -893,7 +1127,7 @@ export default function Booking() {
                   <Button 
                     className="flex-1" 
                     onClick={() => {
-                      if (isStep3Valid()) {
+                      if (isStep4Valid()) {
                         setStep(5);
                         setShowValidation(false);
                       } else {
@@ -960,6 +1194,18 @@ export default function Booking() {
                         {selectedServiceData?.duration || '5-7 ngày'}
                       </span>
                     </div>
+                    <div className="flex justify-between items-start">
+                      <span className="text-gray-600">Địa chỉ:</span>
+                      <div className="text-right font-medium max-w-md">
+                        <div>{formData.addressLine}</div>
+                        <div className="text-sm text-gray-500">
+                          {[formData.city, formData.province, formData.country].filter(Boolean).join(', ')}
+                        </div>
+                        {formData.postalCode && (
+                          <div className="text-sm text-gray-500">Mã BĐ: {formData.postalCode}</div>
+                        )}
+                      </div>
+                    </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Giá dự kiến:</span>
                       <span className="font-medium text-lg text-blue-600">
@@ -1006,12 +1252,25 @@ export default function Booking() {
                 </div>
 
                 <div className="flex space-x-4">
-                  <Button variant="outline" onClick={() => setStep(4)} className="flex-1">
+                  <Button variant="outline" onClick={() => setStep(4)} className="flex-1" disabled={isSubmittingBooking}>
                     Quay lại
                   </Button>
-                  <Button className="flex-1 bg-gradient-to-r from-blue-600 to-green-600" onClick={handleConfirmBooking}>
-                    Xác nhận đặt lịch
-                    <CheckCircle className="w-4 h-4 ml-2" />
+                  <Button 
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-green-600" 
+                    onClick={handleConfirmBooking}
+                    disabled={isSubmittingBooking}
+                  >
+                    {isSubmittingBooking ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Đang xử lý...
+                      </>
+                    ) : (
+                      <>
+                        Xác nhận đặt lịch
+                        <CheckCircle className="w-4 h-4 ml-2" />
+                      </>
+                    )}
                   </Button>
                 </div>
               </CardContent>
