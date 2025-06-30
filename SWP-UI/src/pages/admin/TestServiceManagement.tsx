@@ -1,31 +1,57 @@
 import { useEffect, useState } from "react";
-import { testServiceAPI } from "@/api/axios";
+import { testServiceAPI, testKitAPI } from "@/api/axios";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, PlusCircle } from "lucide-react";
+import { Loader2, PlusCircle, AlertCircle, Info } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+
+interface TestService {
+  serviceId: number;
+  name: string;
+  description: string;
+  price: number;
+  kitId: number;
+  isActive: boolean;
+  kit?: any;
+  testRequests?: any[];
+}
+
+interface TestKit {
+  kitId: number;
+  name: string;
+  description: string;
+  stockQuantity: number;
+  isActive: boolean;
+  testServices?: any[];
+}
 
 export default function TestServiceManagement() {
-  const [services, setServices] = useState([]);
-  const [kits, setKits] = useState([]);
+  const [services, setServices] = useState<TestService[]>([]);
+  const [kits, setKits] = useState<TestKit[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [apiLimitations, setApiLimitations] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: "",
     description: "",
     price: "",
-    kit_id: "",
-    is_active: true,
+    kitId: "",
+    isActive: true,
   });
   const [submitting, setSubmitting] = useState(false);
 
   const fetchServices = async () => {
     setLoading(true);
+    setError(null);
     try {
       const data = await testServiceAPI.getAll();
-      setServices(data);
-    } catch (e) {
+      setServices(Array.isArray(data) ? data : []);
+    } catch (e: any) {
+      console.error("Error fetching services:", e);
+      setError(`Không thể tải danh sách dịch vụ: ${e.message || 'Lỗi kết nối API'}`);
       setServices([]);
     } finally {
       setLoading(false);
@@ -34,10 +60,11 @@ export default function TestServiceManagement() {
 
   const fetchKits = async () => {
     try {
-      const res = await fetch("/api/TestKit");
-      const data = await res.json();
-      setKits(data);
-    } catch {
+      const data = await testKitAPI.getAll();
+      setKits(Array.isArray(data) ? data : []);
+    } catch (e: any) {
+      console.error("Error fetching kits:", e);
+      // Don't set error for kits as it's not critical for viewing services
       setKits([]);
     }
   };
@@ -47,87 +74,257 @@ export default function TestServiceManagement() {
     fetchKits();
   }, []);
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
     setForm({ ...form, [name]: type === "checkbox" ? checked : value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Basic validation
+    if (!form.name.trim()) {
+      alert("Vui lòng nhập tên dịch vụ");
+      return;
+    }
+    if (!form.kitId) {
+      alert("Vui lòng chọn bộ kit");
+      return;
+    }
+    if (!form.price || parseFloat(form.price) <= 0) {
+      alert("Vui lòng nhập giá hợp lệ");
+      return;
+    }
+
     setSubmitting(true);
+    setError(null);
+    setApiLimitations(null);
+    
     try {
-      await testServiceAPI.create(form);
-      setForm({ name: "", description: "", price: "", kit_id: "", is_active: true });
+      // Prepare data without kitId since it's now a path parameter
+      const submitData = {
+        name: form.name.trim(),
+        description: form.description.trim(),
+        price: parseFloat(form.price),
+        isActive: form.isActive, // Use isActive to match backend
+      };
+      
+      // Pass kitId as separate parameter for the new API endpoint
+      const kitId = parseInt(form.kitId);
+      console.log("Creating service with data:", submitData, "for kitId:", kitId);
+      
+      await testServiceAPI.create(submitData, kitId);
+      setForm({ name: "", description: "", price: "", kitId: "", isActive: true });
       setShowForm(false);
       fetchServices();
       alert("Tạo dịch vụ xét nghiệm thành công!");
-    } catch (err) {
-      alert("Tạo thất bại!");
+    } catch (err: any) {
+      console.error("Error creating service:", err);
+      
+      // Handle 405 Method Not Allowed specifically
+      if (err.response?.status === 405) {
+        setApiLimitations("🚫 Chức năng tạo dịch vụ mới chưa được triển khai trên backend API. Vui lòng liên hệ nhà phát triển để thêm phương thức POST cho endpoint /api/TestService/kit/{kitId}.");
+      } else {
+        const errorMessage = err.response?.data?.message || err.message || "Tạo thất bại!";
+        setError(`Lỗi tạo dịch vụ: ${errorMessage}`);
+      }
     } finally {
       setSubmitting(false);
     }
   };
 
+  const handleDelete = async (service: TestService) => {
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa dịch vụ "${service.name}"?`)) {
+      return;
+    }
+
+    try {
+      await testServiceAPI.delete(service.serviceId);
+      fetchServices();
+      alert("Xóa dịch vụ thành công!");
+    } catch (err: any) {
+      console.error("Error deleting service:", err);
+      
+      // Handle 405 Method Not Allowed specifically
+      if (err.response?.status === 405) {
+        setApiLimitations("🚫 Chức năng xóa dịch vụ chưa được triển khai trên backend API. Vui lòng liên hệ nhà phát triển để thêm phương thức DELETE cho endpoint /api/TestService.");
+      } else {
+        const errorMessage = err.response?.data?.message || err.message || "Xóa thất bại!";
+        alert(`Lỗi xóa dịch vụ: ${errorMessage}`);
+      }
+    }
+  };
+
   return (
-    <div className="max-w-3xl mx-auto py-8">
+    <div className="max-w-4xl mx-auto py-8 px-4">
       <Card>
         <CardHeader>
           <CardTitle>Quản lý loại dịch vụ xét nghiệm</CardTitle>
         </CardHeader>
         <CardContent>
-          <Button onClick={() => setShowForm((v) => !v)} className="mb-4" variant="outline">
-            <PlusCircle className="w-4 h-4 mr-2" /> Thêm loại dịch vụ mới
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {apiLimitations && (
+            <Alert className="mb-4 border-amber-200 bg-amber-50">
+              <Info className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-amber-800">
+                {apiLimitations}
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          <Button 
+            onClick={() => setShowForm((v) => !v)} 
+            className="mb-4" 
+            variant="outline"
+            disabled={loading}
+          >
+            <PlusCircle className="w-4 h-4 mr-2" /> 
+            {showForm ? "Ẩn form" : "Thêm loại dịch vụ mới"}
           </Button>
+          
           {showForm && (
-            <form onSubmit={handleSubmit} className="space-y-3 mb-6 p-4 border rounded-lg bg-gray-50">
-              <Input name="name" placeholder="Tên dịch vụ" value={form.name} onChange={handleChange} required />
-              <Textarea name="description" placeholder="Mô tả" value={form.description} onChange={handleChange} />
-              <Input name="price" placeholder="Giá (VNĐ)" value={form.price} onChange={handleChange} type="number" min="0" />
-              <select name="kit_id" value={form.kit_id} onChange={handleChange} required className="w-full border rounded px-3 py-2">
-                <option value="">Chọn bộ kit</option>
-                {kits.map(kit => (
-                  <option key={kit.kit_id || kit.kitId || kit.id} value={kit.kit_id || kit.kitId || kit.id}>{kit.name}</option>
-                ))}
-              </select>
-              <input type="hidden" name="is_active" value="true" />
-              <Button type="submit" disabled={submitting}>{submitting ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : null}Tạo dịch vụ</Button>
+            <form onSubmit={handleSubmit} className="space-y-4 mb-6 p-4 border rounded-lg bg-gray-50">
+              <div>
+                <Input 
+                  name="name" 
+                  placeholder="Tên dịch vụ *" 
+                  value={form.name} 
+                  onChange={handleChange} 
+                  required 
+                  disabled={submitting}
+                />
+              </div>
+              
+              <div>
+                <Textarea 
+                  name="description" 
+                  placeholder="Mô tả" 
+                  value={form.description} 
+                  onChange={handleChange}
+                  disabled={submitting}
+                  rows={3}
+                />
+              </div>
+              
+              <div>
+                <Input 
+                  name="price" 
+                  placeholder="Giá (VNĐ) *" 
+                  value={form.price} 
+                  onChange={handleChange} 
+                  type="number" 
+                  min="0" 
+                  step="1000"
+                  required
+                  disabled={submitting}
+                />
+              </div>
+              
+              <div>
+                <select 
+                  name="kitId" 
+                  value={form.kitId} 
+                  onChange={handleChange} 
+                  required 
+                  disabled={submitting}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Chọn bộ kit *</option>
+                  {kits.filter(kit => kit.isActive).map(kit => (
+                    <option key={kit.kitId} value={kit.kitId}>
+                      {kit.name}
+                    </option>
+                  ))}
+                </select>
+                {kits.filter(kit => kit.isActive).length === 0 && (
+                  <p className="text-sm text-amber-600 mt-1">
+                    ⚠️ Không có bộ kit hoạt động nào. Vui lòng kích hoạt kit trước.
+                  </p>
+                )}
+              </div>
+              
+              <div className="flex gap-2">
+                <Button type="submit" disabled={submitting || kits.filter(kit => kit.isActive).length === 0}>
+                  {submitting ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : null}
+                  Tạo dịch vụ
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setShowForm(false)}
+                  disabled={submitting}
+                >
+                  Hủy
+                </Button>
+              </div>
             </form>
           )}
+          
           <div>
             {loading ? (
-              <div className="flex items-center py-8 justify-center"><Loader2 className="animate-spin w-6 h-6 mr-2" /> Đang tải...</div>
+              <div className="flex items-center py-8 justify-center">
+                <Loader2 className="animate-spin w-6 h-6 mr-2" /> 
+                Đang tải...
+              </div>
             ) : services.length === 0 ? (
-              <div className="text-gray-500 py-8 text-center">Chưa có loại dịch vụ nào.</div>
+              <div className="text-gray-500 py-8 text-center">
+                {error ? "Không thể tải dữ liệu dịch vụ." : "Chưa có loại dịch vụ nào."}
+              </div>
             ) : (
               <div className="space-y-4">
-                {services.filter(s => s.is_active).map((s) => (
-                  <div key={s.service_id || s.serviceId || s.id} className="p-4 border rounded-lg bg-white flex justify-between items-center">
-                    <div>
-                      <div className="font-semibold text-lg">{s.name}</div>
-                      <div className="text-gray-600 text-sm mb-1">{s.description}</div>
-                      <div className="flex flex-wrap gap-4 text-sm">
-                        <span>Giá: <b>{s.price ? `${s.price.toLocaleString('vi-VN')} VNĐ` : '---'}</b></span>
-                        <span>Kit: <b>{s.kit_id || s.kitId || s.id || '---'}</b></span>
-                        <span>Kích hoạt: <b>{s.is_active ? 'Có' : 'Không'}</b></span>
+                <h3 className="text-lg font-semibold mb-3">
+                  Danh sách dịch vụ ({services.filter(s => s.isActive).length} hoạt động / {services.length} tổng)
+                </h3>
+                {services.map((service) => {
+                  const kitName = kits.find(k => k.kitId === service.kitId)?.name || `Kit ID: ${service.kitId}`;
+                  
+                  return (
+                    <div key={service.serviceId} className={`p-4 border rounded-lg shadow-sm ${service.isActive ? 'bg-white' : 'bg-gray-50 opacity-75'}`}>
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="font-semibold text-lg text-gray-900 mb-1 flex items-center gap-2">
+                            {service.name}
+                            {!service.isActive && (
+                              <span className="text-xs px-2 py-1 bg-gray-200 text-gray-600 rounded">
+                                Không hoạt động
+                              </span>
+                            )}
+                          </div>
+                          {service.description && (
+                            <div className="text-gray-600 text-sm mb-2">
+                              {service.description}
+                            </div>
+                          )}
+                          <div className="flex flex-wrap gap-4 text-sm">
+                            <span className="inline-flex items-center px-2 py-1 rounded bg-green-100 text-green-800">
+                              💰 {service.price ? `${service.price.toLocaleString('vi-VN')} VNĐ` : 'Chưa có giá'}
+                            </span>
+                            <span className="inline-flex items-center px-2 py-1 rounded bg-blue-100 text-blue-800">
+                              🧪 {kitName}
+                            </span>
+                            <span className="inline-flex items-center px-2 py-1 rounded bg-purple-100 text-purple-800">
+                              ID: {service.serviceId}
+                            </span>
+                          </div>
+                        </div>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDelete(service)}
+                        >
+                          Xóa
+                        </Button>
                       </div>
                     </div>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={async () => {
-                        const id = s.service_id || s.serviceId || s.id;
-                        if (!id) {
-                          alert('Không tìm thấy serviceId!');
-                          return;
-                        }
-                        await testServiceAPI.delete(id);
-                        fetchServices();
-                      }}
-                    >
-                      Xóa
-                    </Button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

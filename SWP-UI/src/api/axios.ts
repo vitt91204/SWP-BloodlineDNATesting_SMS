@@ -362,8 +362,14 @@ export const testServiceAPI = {
     return response.data;
   },
 
-  // Tạo dịch vụ mới (cho admin)
-  create: async (serviceData: any) => {
+  // Tạo dịch vụ mới với kitId (cho admin) - sử dụng endpoint mới
+  create: async (serviceData: any, kitId: number) => {
+    const response = await api.post(`/api/TestService/kit/${kitId}`, serviceData);
+    return response.data;
+  },
+
+  // Tạo dịch vụ mới - phương thức cũ (legacy support)
+  createLegacy: async (serviceData: any) => {
     const response = await api.post('/api/TestService', serviceData);
     return response.data;
   },
