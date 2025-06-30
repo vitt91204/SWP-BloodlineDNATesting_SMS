@@ -349,7 +349,7 @@ export interface TestRequest {
   status: string; // 'Pending' | 'Confirmed' | 'In Progress' | 'Completed' | 'Cancelled'
   appointmentDate: string; // ISO date string (YYYY-MM-DD)
   slotTime: string;
-  staffId: number;
+  staffId: number | null;
 }
 
 export interface TestRequestResponse extends TestRequest {
@@ -358,6 +358,10 @@ export interface TestRequestResponse extends TestRequest {
   testRequestId?: number;
   createdAt?: string;
   updatedAt?: string;
+  user?: any; 
+  service?: any;
+  staff?: any;
+  address?: any;
 }
 
 export const testRequestAPI = {

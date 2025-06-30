@@ -40,7 +40,7 @@ export default function Booking() {
         status: 'Pending',
         appointmentDate: '2025-07-01',
         slotTime: '09:00',
-        staffId: 0
+        staffId: null
       };
       
       console.log('📤 Sending test request:', testData);
@@ -342,7 +342,7 @@ export default function Booking() {
       status: 'Pending',
       appointmentDate: selectedDate || new Date().toISOString().split('T')[0],
       slotTime: selectedTimeSlot || '',
-      staffId: 0
+      staffId: null
     };
 
     console.log('📦 Gửi booking theo API schema:', bookingData);

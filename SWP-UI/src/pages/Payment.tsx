@@ -18,24 +18,62 @@ import {
   Copy,
   QrCode
 } from "lucide-react";
-import api from "@/api/axios";
+import { testRequestAPI } from "@/api/axios";
 
 export default function Payment() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderInfo, setOrderInfo] = useState(null);
   const [bookingId, setBookingId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Lấy bookingId từ URL hoặc localStorage
-    const urlParams = new URLSearchParams(window.location.search);
-    const idFromUrl = urlParams.get('bookingId');
-    const id = idFromUrl || localStorage.getItem('bookingId');
-    setBookingId(id);
-    if (id) {
-      api.get(`/api/booking/${id}`)
-        .then(res => setOrderInfo(res.data))
-        .catch(() => setOrderInfo(null));
+    try {
+      // Lấy thông tin booking từ localStorage
+      const storedBooking = localStorage.getItem('currentBooking');
+      if (storedBooking) {
+        const bookingData = JSON.parse(storedBooking);
+        console.log("Loaded booking data from localStorage:", bookingData);
+        setOrderInfo(bookingData);
+        setBookingId(bookingData.id || bookingData.requestId || bookingData.testRequestId);
+      } else {
+        // Fallback: nếu không có trong localStorage, thử lấy từ URL và gọi API
+        const urlParams = new URLSearchParams(window.location.search);
+        const idFromUrl = urlParams.get('bookingId');
+        setBookingId(idFromUrl);
+
+        if (idFromUrl) {
+          console.log(`Fetching booking data for ID: ${idFromUrl} from API...`);
+          testRequestAPI.getById(idFromUrl)
+            .then(res => {
+              console.log("Loaded booking data from API:", res);
+              // Cấu trúc lại dữ liệu để khớp với cấu trúc từ localStorage
+              const formattedData = {
+                ...res,
+                serviceInfo: {
+                  name: res.service?.name,
+                  price: res.service?.price,
+                  // Thêm các trường serviceInfo khác nếu cần
+                },
+                userInfo: {
+                  // Giả định hoặc để trống nếu API không trả về
+                  fullName: 'N/A',
+                  phone: 'N/A'
+                }
+              };
+              setOrderInfo(formattedData);
+            })
+            .catch(err => {
+              console.error("Failed to load booking data from API:", err);
+              setOrderInfo(null)
+            });
+        }
+      }
+    } catch (error) {
+      console.error("Error processing booking data:", error);
+      setOrderInfo(null);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -88,11 +126,11 @@ export default function Payment() {
         paymentId: 0,
         requestId: bookingId,
         method: selectedPaymentMethod,
-        amount: orderInfo?.service?.id === 'civil' ? 3500000 : 5000000,
+        amount: orderInfo?.serviceInfo?.price || 0,
         status: "paid",
         paidAt: new Date().toISOString()
       };
-      await api.post('/api/Payment/create', payload);
+      await testRequestAPI.post('/api/Payment/create', payload);
       setIsProcessing(false);
       alert("Thanh toán thành công! Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất.");
       // Có thể chuyển sang trang kết quả hoặc trang cảm ơn
@@ -103,7 +141,7 @@ export default function Payment() {
     }
   };
 
-  if (!orderInfo) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div>Đang tải thông tin đơn hàng...</div>
@@ -144,25 +182,25 @@ export default function Payment() {
                   <div className="space-y-3">
                     <div>
                       <div className="text-sm text-gray-600">Dịch vụ</div>
-                      <div className="font-medium">{orderInfo?.service?.name || "Xét nghiệm huyết thống dân sự"}</div>
+                      <div className="font-medium">{orderInfo?.serviceInfo?.name || "Không có thông tin"}</div>
                     </div>
                     
                     <div>
-                      <div className="text-sm text-gray-600">Hình thức</div>
-                      <div className="font-medium">{orderInfo?.location?.name || "Thu mẫu tại nhà"}</div>
+                      <div className="text-sm text-gray-600">Loại hình</div>
+                      <div className="font-medium">{orderInfo?.collectionType || "Không có thông tin"}</div>
                     </div>
                     
                     <div>
-                      <div className="text-sm text-gray-600">Số người</div>
-                      <div className="font-medium">{orderInfo?.formData?.numberOfPeople || "2"} người</div>
+                      <div className="text-sm text-gray-600">Khách hàng</div>
+                      <div className="font-medium">{orderInfo?.userInfo?.fullName || "Không có thông tin"}</div>
                     </div>
                     
-                    {orderInfo?.date && orderInfo?.timeSlot?.label && (
+                    {orderInfo?.appointmentDate && (
                        <div>
-                         <div className="text-sm text-gray-600">Thời gian</div>
+                         <div className="text-sm text-gray-600">Thời gian hẹn</div>
                          <div className="font-medium flex items-center">
                            <Clock className="w-4 h-4 mr-1" />
-                           {orderInfo.timeSlot.label}, {orderInfo.date}
+                           {orderInfo.slotTime}, {new Date(orderInfo.appointmentDate).toLocaleDateString('vi-VN')}
                          </div>
                        </div>
                      )}
@@ -173,7 +211,7 @@ export default function Payment() {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span>Giá dịch vụ</span>
-                      <span>{formatPrice(orderInfo?.service?.id === 'civil' ? 3500000 : 5000000)}</span>
+                      <span>{formatPrice(orderInfo?.serviceInfo?.price || 0)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Phí thanh toán</span>
@@ -182,7 +220,7 @@ export default function Payment() {
                     <Separator />
                     <div className="flex justify-between text-lg font-semibold">
                       <span>Tổng cộng</span>
-                      <span className="text-blue-600">{formatPrice(orderInfo?.service?.id === 'civil' ? 3500000 : 5000000)}</span>
+                      <span className="text-blue-600">{formatPrice(orderInfo?.serviceInfo?.price || 0)}</span>
                     </div>
                   </div>
 
@@ -309,7 +347,7 @@ export default function Payment() {
                           <div className="flex justify-between items-center p-3 bg-white rounded border">
                             <div>
                               <div className="text-sm text-gray-600">Số tiền</div>
-                              <div className="font-medium text-blue-600">{formatPrice(orderInfo?.service?.id === 'civil' ? 3500000 : 5000000)}</div>
+                              <div className="font-medium text-blue-600">{formatPrice(orderInfo?.serviceInfo?.price || 0)}</div>
                             </div>
                             <Button size="sm" variant="outline" className="ml-2">
                               <Copy className="w-4 h-4" />
