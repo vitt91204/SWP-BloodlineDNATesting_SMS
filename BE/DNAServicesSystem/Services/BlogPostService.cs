@@ -56,7 +56,7 @@ namespace Services
                 AuthorId = dto.AuthorId,
                 Title = dto.Title,
                 Content = dto.Content,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"))
             };
             return await _repository.CreateAsync(post);
         }
@@ -69,7 +69,7 @@ namespace Services
             post.Title = dto.Title;
             post.Content = dto.Content;
             post.AuthorId = dto.AuthorId;
-            post.UpdatedAt = DateTime.UtcNow;
+            post.UpdatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
 
             await _repository.UpdateAsync(post);
             return true;

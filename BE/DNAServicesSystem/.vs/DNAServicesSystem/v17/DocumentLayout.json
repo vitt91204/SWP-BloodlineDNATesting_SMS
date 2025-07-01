@@ -3,32 +3,44 @@
   "WorkspaceRootPath": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\be\\dnaservicessystem\\services\\testresultservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|solutionrelative:services\\testresultservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\be\\dnaservicessystem\\services\\blogpostservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|solutionrelative:services\\blogpostservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\be\\dnaservicessystem\\services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|solutionrelative:services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{EE56B4D8-D35D-4E69-A4BB-6F67C13C9AE8}|DNAServicesSystemAPI\\DNAServicesSystemAPI.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\be\\dnaservicessystem\\dnaservicessystemapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{EE56B4D8-D35D-4E69-A4BB-6F67C13C9AE8}|DNAServicesSystemAPI\\DNAServicesSystemAPI.csproj|solutionrelative:dnaservicessystemapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{33A30782-440B-4B65-8A14-EFFC7459E34D}|Repositories\\Repositories.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\be\\dnaservicessystem\\repositories\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{33A30782-440B-4B65-8A14-EFFC7459E34D}|Repositories\\Repositories.csproj|solutionrelative:repositories\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{EE56B4D8-D35D-4E69-A4BB-6F67C13C9AE8}|DNAServicesSystemAPI\\DNAServicesSystemAPI.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\be\\dnaservicessystem\\dnaservicessystemapi\\controllers\\paymentcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EE56B4D8-D35D-4E69-A4BB-6F67C13C9AE8}|DNAServicesSystemAPI\\DNAServicesSystemAPI.csproj|solutionrelative:dnaservicessystemapi\\controllers\\paymentcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{EE56B4D8-D35D-4E69-A4BB-6F67C13C9AE8}|DNAServicesSystemAPI\\DNAServicesSystemAPI.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\be\\dnaservicessystem\\dnaservicessystemapi\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{EE56B4D8-D35D-4E69-A4BB-6F67C13C9AE8}|DNAServicesSystemAPI\\DNAServicesSystemAPI.csproj|solutionrelative:dnaservicessystemapi\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{33A30782-440B-4B65-8A14-EFFC7459E34D}|Repositories\\Repositories.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\be\\dnaservicessystem\\repositories\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{33A30782-440B-4B65-8A14-EFFC7459E34D}|Repositories\\Repositories.csproj|solutionrelative:repositories\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\be\\dnaservicessystem\\services\\paymentdto\\paymentdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|solutionrelative:services\\paymentdto\\paymentdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\be\\dnaservicessystem\\services\\paymentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|solutionrelative:services\\paymentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{33A30782-440B-4B65-8A14-EFFC7459E34D}|Repositories\\Repositories.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\be\\dnaservicessystem\\repositories\\externallibs\\vnpaylibs.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{33A30782-440B-4B65-8A14-EFFC7459E34D}|Repositories\\Repositories.csproj|solutionrelative:repositories\\externallibs\\vnpaylibs.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\be\\dnaservicessystem\\services\\vnpayservice\\ivnpayservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|solutionrelative:services\\vnpayservice\\ivnpayservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{33A30782-440B-4B65-8A14-EFFC7459E34D}|Repositories\\Repositories.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\be\\dnaservicessystem\\repositories\\models\\payment.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{33A30782-440B-4B65-8A14-EFFC7459E34D}|Repositories\\Repositories.csproj|solutionrelative:repositories\\models\\payment.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EE56B4D8-D35D-4E69-A4BB-6F67C13C9AE8}|DNAServicesSystemAPI\\DNAServicesSystemAPI.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\be\\dnaservicessystem\\dnaservicessystemapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EE56B4D8-D35D-4E69-A4BB-6F67C13C9AE8}|DNAServicesSystemAPI\\DNAServicesSystemAPI.csproj|solutionrelative:dnaservicessystemapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{33A30782-440B-4B65-8A14-EFFC7459E34D}|Repositories\\Repositories.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\be\\dnaservicessystem\\repositories\\models\\vnpay\\paymentresponsemodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{33A30782-440B-4B65-8A14-EFFC7459E34D}|Repositories\\Repositories.csproj|solutionrelative:repositories\\models\\vnpay\\paymentresponsemodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\be\\dnaservicessystem\\services\\paymentdto\\paymentrequestmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|solutionrelative:services\\paymentdto\\paymentrequestmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -38,7 +50,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 6,
           "Children": [
             {
               "$type": "Bookmark",
@@ -46,93 +58,132 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "IVnPayService.cs",
+              "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\VNPayService\\IVnPayService.cs",
+              "RelativeDocumentMoniker": "Services\\VNPayService\\IVnPayService.cs",
+              "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\VNPayService\\IVnPayService.cs",
+              "RelativeToolTip": "Services\\VNPayService\\IVnPayService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAzAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-01T14:16:27.204Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "PaymentRequestModel.cs",
+              "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\PaymentDTO\\PaymentRequestModel.cs",
+              "RelativeDocumentMoniker": "Services\\PaymentDTO\\PaymentRequestModel.cs",
+              "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\PaymentDTO\\PaymentRequestModel.cs",
+              "RelativeToolTip": "Services\\PaymentDTO\\PaymentRequestModel.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAABMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-01T14:14:25.72Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "PaymentResponseModel.cs",
+              "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Repositories\\Models\\VnPay\\PaymentResponseModel.cs",
+              "RelativeDocumentMoniker": "Repositories\\Models\\VnPay\\PaymentResponseModel.cs",
+              "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Repositories\\Models\\VnPay\\PaymentResponseModel.cs",
+              "RelativeToolTip": "Repositories\\Models\\VnPay\\PaymentResponseModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAuwAoAAAAWAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-01T13:51:36.93Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "UserService.cs",
-              "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\UserService.cs",
-              "RelativeDocumentMoniker": "Services\\UserService.cs",
-              "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\UserService.cs",
-              "RelativeToolTip": "Services\\UserService.cs",
-              "ViewState": "AgIAADAAAAAAAAAAAAAAADwAAAAYAAAAAAAAAA==",
+              "Title": "PaymentDto.cs",
+              "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\PaymentDTO\\PaymentDto.cs",
+              "RelativeDocumentMoniker": "Services\\PaymentDTO\\PaymentDto.cs",
+              "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\PaymentDTO\\PaymentDto.cs",
+              "RelativeToolTip": "Services\\PaymentDTO\\PaymentDto.cs",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAUwA8AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-28T09:16:57.078Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "BlogPostService.cs",
-              "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\BlogPostService.cs",
-              "RelativeDocumentMoniker": "Services\\BlogPostService.cs",
-              "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\BlogPostService.cs",
-              "RelativeToolTip": "Services\\BlogPostService.cs",
-              "ViewState": "AgIAACcAAAAAAAAAAAAuwAoAAAA6AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-28T09:16:51.627Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "TestResultService.cs",
-              "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\TestResultService.cs",
-              "RelativeDocumentMoniker": "Services\\TestResultService.cs",
-              "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\TestResultService.cs",
-              "RelativeToolTip": "Services\\TestResultService.cs",
-              "ViewState": "AgIAACQAAAAAAAAAAAAAAEEAAAAtAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-28T09:14:38.773Z",
+              "WhenOpened": "2025-07-01T13:32:01.645Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
+              "Title": "PaymentService.cs",
+              "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\PaymentService.cs",
+              "RelativeDocumentMoniker": "Services\\PaymentService.cs",
+              "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\PaymentService.cs",
+              "RelativeToolTip": "Services\\PaymentService.cs",
+              "ViewState": "AgIAAD4AAAAAAAAAAAAkwDYAAAA1AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-01T08:55:45.376Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "PaymentController.cs",
+              "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\DNAServicesSystemAPI\\Controllers\\PaymentController.cs",
+              "RelativeDocumentMoniker": "DNAServicesSystemAPI\\Controllers\\PaymentController.cs",
+              "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\DNAServicesSystemAPI\\Controllers\\PaymentController.cs",
+              "RelativeToolTip": "DNAServicesSystemAPI\\Controllers\\PaymentController.cs",
+              "ViewState": "AgIAADUAAAAAAAAAAAAUwEQAAABhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-01T08:46:48.301Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Payment.cs",
+              "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Repositories\\Models\\Payment.cs",
+              "RelativeDocumentMoniker": "Repositories\\Models\\Payment.cs",
+              "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Repositories\\Models\\Payment.cs",
+              "RelativeToolTip": "Repositories\\Models\\Payment.cs",
+              "ViewState": "AgIAAAUAAAAAAAAAAAA0wAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-01T04:58:26.708Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
               "Title": "Program.cs",
               "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\DNAServicesSystemAPI\\Program.cs",
               "RelativeDocumentMoniker": "DNAServicesSystemAPI\\Program.cs",
               "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\DNAServicesSystemAPI\\Program.cs",
               "RelativeToolTip": "DNAServicesSystemAPI\\Program.cs",
-              "ViewState": "AgIAABkAAAAAAAAAAAAkwBwAAAA5AAAAAAAAAA==",
+              "ViewState": "AgIAACMAAAAAAAAAAAAewCgAAAA5AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-06-28T09:14:20.183Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "User.cs",
-              "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Repositories\\Models\\User.cs",
-              "RelativeDocumentMoniker": "Repositories\\Models\\User.cs",
-              "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Repositories\\Models\\User.cs",
-              "RelativeToolTip": "Repositories\\Models\\User.cs",
-              "ViewState": "AgIAABAAAAAAAAAAAAAkwAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-28T09:13:43.44Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 1,
               "Title": "appsettings.json",
               "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\DNAServicesSystemAPI\\appsettings.json",
               "RelativeDocumentMoniker": "DNAServicesSystemAPI\\appsettings.json",
               "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\DNAServicesSystemAPI\\appsettings.json",
               "RelativeToolTip": "DNAServicesSystemAPI\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAB8AAAAAAAAAA==",
+              "ViewState": "AgIAABIAAAAAAAAAAAAAABwAAABoAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-06-28T08:58:47.416Z",
+              "WhenOpened": "2025-06-28T13:01:09.645Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "AppDbContext.cs",
-              "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Repositories\\Data\\AppDbContext.cs",
-              "RelativeDocumentMoniker": "Repositories\\Data\\AppDbContext.cs",
-              "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Repositories\\Data\\AppDbContext.cs",
-              "RelativeToolTip": "Repositories\\Data\\AppDbContext.cs",
-              "ViewState": "AgIAACgAAAAAAAAAAAAkwDYAAABNAAAAAAAAAA==",
+              "DocumentIndex": 4,
+              "Title": "VnPayLibs.cs",
+              "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Repositories\\ExternalLibs\\VnPayLibs.cs",
+              "RelativeDocumentMoniker": "Repositories\\ExternalLibs\\VnPayLibs.cs",
+              "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Repositories\\ExternalLibs\\VnPayLibs.cs",
+              "RelativeToolTip": "Repositories\\ExternalLibs\\VnPayLibs.cs",
+              "ViewState": "AgIAALIAAAAAAAAAAAAkwIkAAABCAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-28T08:57:04.605Z",
+              "WhenOpened": "2025-07-01T08:30:51.529Z",
               "EditorCaption": ""
             }
           ]

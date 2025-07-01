@@ -27,6 +27,7 @@ namespace Services.PaymentDTO
         [StringLength(20)]
         public string? Status { get; set; }
 
-        public DateTime? PaidAt { get; set; }
+        [StringLength(100)]
+        public string? Token { get; set; }
     }
 }

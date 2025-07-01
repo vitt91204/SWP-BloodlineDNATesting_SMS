@@ -529,7 +529,7 @@
         }
       }
     },
-    "/api/Payment": {
+    "/api/Payment/all-payments": {
       "get": {
         "tags": [
           "Payment"
@@ -541,7 +541,7 @@
         }
       }
     },
-    "/api/Payment/payment/{paymentId}": {
+    "/api/Payment/{paymentId}": {
       "get": {
         "tags": [
           "Payment"
@@ -564,7 +564,7 @@
         }
       }
     },
-    "/api/Payment/create": {
+    "/api/Payment/create-payment-url": {
       "post": {
         "tags": [
           "Payment"
@@ -573,17 +573,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PaymentDto"
+                "$ref": "#/components/schemas/PaymentRequestModel"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/PaymentDto"
+                "$ref": "#/components/schemas/PaymentRequestModel"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/PaymentDto"
+                "$ref": "#/components/schemas/PaymentRequestModel"
               }
             }
           }
@@ -595,104 +595,11 @@
         }
       }
     },
-    "/api/Payment/update/{paymentId}": {
-      "put": {
+    "/api/Payment/payment-callback-vnpay": {
+      "get": {
         "tags": [
           "Payment"
         ],
-        "parameters": [
-          {
-            "name": "paymentId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateStatusRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateStatusRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateStatusRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/Profile/{userId}": {
-      "get": {
-        "tags": [
-          "Profile"
-        ],
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Profile"
-        ],
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateProfileRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateProfileRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateProfileRequest"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "OK"
@@ -1343,29 +1250,27 @@
           }
         }
       },
-      "post": {
+      "put": {
         "tags": [
           "TestService"
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TestServiceDto"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TestServiceDto"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/TestServiceDto"
-              }
+        "parameters": [
+          {
+            "name": "serviceId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "isActive",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
             }
           }
-        },
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -1422,6 +1327,14 @@
         ],
         "parameters": [
           {
+            "name": "kitId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
             "name": "serviceId",
             "in": "path",
             "required": true,
@@ -1457,21 +1370,41 @@
         }
       }
     },
-    "/api/TestService/name/{name}": {
-      "get": {
+    "/api/TestService/kit/{kitId}": {
+      "post": {
         "tags": [
           "TestService"
         ],
         "parameters": [
           {
-            "name": "name",
+            "name": "kitId",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestServiceDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestServiceDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestServiceDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK"
@@ -1491,38 +1424,28 @@
         }
       }
     },
-    "/api/User/register": {
-      "post": {
+    "/api/User/{userId}": {
+      "get": {
         "tags": [
           "User"
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUserRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUserRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUserRequest"
-              }
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
-        },
+        ],
         "responses": {
           "200": {
             "description": "OK"
           }
         }
-      }
-    },
-    "/api/User/{userId}": {
+      },
       "delete": {
         "tags": [
           "User"
@@ -1574,6 +1497,37 @@
             "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/UpdateUserRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/User/register": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserRequest"
               }
             }
           }
@@ -1877,6 +1831,19 @@
             "minLength": 0,
             "type": "string",
             "nullable": true
+          },
+          "gender": {
+            "type": "string",
+            "nullable": true
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "fullname": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -1895,43 +1862,21 @@
         },
         "additionalProperties": false
       },
-      "PaymentDto": {
+      "PaymentRequestModel": {
         "required": [
           "amount",
-          "method",
-          "paymentId",
           "requestId"
         ],
         "type": "object",
         "properties": {
-          "paymentId": {
-            "type": "integer",
-            "format": "int32"
-          },
           "requestId": {
             "type": "integer",
             "format": "int32"
-          },
-          "method": {
-            "maxLength": 50,
-            "minLength": 0,
-            "type": "string"
           },
           "amount": {
             "minimum": 0.01,
             "type": "number",
             "format": "double"
-          },
-          "status": {
-            "maxLength": 20,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          },
-          "paidAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -2140,7 +2085,6 @@
       },
       "TestServiceDto": {
         "required": [
-          "kitId",
           "name"
         ],
         "type": "object",
@@ -2165,47 +2109,6 @@
           "isActive": {
             "type": "boolean",
             "nullable": true
-          },
-          "kitId": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "UpdateProfileRequest": {
-        "type": "object",
-        "properties": {
-          "fullName": {
-            "type": "string",
-            "nullable": true
-          },
-          "dateOfBirth": {
-            "type": "string",
-            "format": "date",
-            "nullable": true
-          },
-          "gender": {
-            "type": "string",
-            "nullable": true
-          },
-          "address": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "UpdateStatusRequest": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "string",
-            "nullable": true
-          },
-          "paidAt": {
-            "type": "string",
-            "format": "date-time"
           }
         },
         "additionalProperties": false
@@ -2238,6 +2141,21 @@
           "role": {
             "maxLength": 20,
             "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "fullname": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "gender": {
             "type": "string",
             "nullable": true
           }

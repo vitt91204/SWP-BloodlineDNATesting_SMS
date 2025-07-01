@@ -17,5 +17,7 @@ public partial class Payment
 
     public DateTime? PaidAt { get; set; }
 
+    public string? Token { get; set; }
+
     public virtual TestRequest Request { get; set; } = null!;
 }

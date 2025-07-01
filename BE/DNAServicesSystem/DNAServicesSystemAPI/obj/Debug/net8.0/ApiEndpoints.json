@@ -344,8 +344,24 @@
   },
   {
     "ContainingType": "DNAServicesSystemAPI.Controllers.PaymentController",
-    "Method": "GetAllPayment",
-    "RelativePath": "api/Payment",
+    "Method": "GetPaymentById",
+    "RelativePath": "api/Payment/{paymentId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "paymentId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.PaymentController",
+    "Method": "GetAllPayments",
+    "RelativePath": "api/Payment/all-payments",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -354,15 +370,15 @@
   },
   {
     "ContainingType": "DNAServicesSystemAPI.Controllers.PaymentController",
-    "Method": "CreatePayment",
-    "RelativePath": "api/Payment/create",
+    "Method": "CreatePaymentUrl",
+    "RelativePath": "api/Payment/create-payment-url",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "paymentDTO",
-        "Type": "Services.PaymentDTO.PaymentDto",
+        "Name": "model",
+        "Type": "Services.PaymentDTO.PaymentRequestModel",
         "IsRequired": true
       }
     ],
@@ -370,76 +386,12 @@
   },
   {
     "ContainingType": "DNAServicesSystemAPI.Controllers.PaymentController",
-    "Method": "GetPayment",
-    "RelativePath": "api/Payment/payment/{paymentId}",
+    "Method": "PaymentCallbackVnpay",
+    "RelativePath": "api/Payment/payment-callback-vnpay",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [
-      {
-        "Name": "paymentId",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DNAServicesSystemAPI.Controllers.PaymentController",
-    "Method": "UpdatePaymentStatus",
-    "RelativePath": "api/Payment/update/{paymentId}",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "paymentId",
-        "Type": "System.Int32",
-        "IsRequired": true
-      },
-      {
-        "Name": "updateStatusRequest",
-        "Type": "Services.PaymentDTO.UpdateStatusRequest",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DNAServicesSystemAPI.Controllers.ProfileController",
-    "Method": "GetProfile",
-    "RelativePath": "api/Profile/{userId}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "userId",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DNAServicesSystemAPI.Controllers.ProfileController",
-    "Method": "UpdateProfile",
-    "RelativePath": "api/Profile/{userId}",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "userId",
-        "Type": "System.Int32",
-        "IsRequired": true
-      },
-      {
-        "Name": "updateProfileRequest",
-        "Type": "Services.ProfileDTO.UpdateProfileRequest",
-        "IsRequired": true
-      }
-    ],
+    "Parameters": [],
     "ReturnTypes": []
   },
   {
@@ -849,16 +801,21 @@
   },
   {
     "ContainingType": "DNAServicesSystemAPI.Controllers.TestServiceController",
-    "Method": "CreateTestingService",
+    "Method": "UpdateTestingServiceStatus",
     "RelativePath": "api/TestService",
-    "HttpMethod": "POST",
+    "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "testServiceDto",
-        "Type": "Services.TestServiceDTO.TestServiceDto",
-        "IsRequired": true
+        "Name": "serviceId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "isActive",
+        "Type": "System.Boolean",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
@@ -904,6 +861,11 @@
     "Order": 0,
     "Parameters": [
       {
+        "Name": "kitId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
         "Name": "serviceId",
         "Type": "System.Int32",
         "IsRequired": true
@@ -918,15 +880,20 @@
   },
   {
     "ContainingType": "DNAServicesSystemAPI.Controllers.TestServiceController",
-    "Method": "GetTestingServiceByName",
-    "RelativePath": "api/TestService/name/{name}",
-    "HttpMethod": "GET",
+    "Method": "CreateTestingService",
+    "RelativePath": "api/TestService/kit/{kitId}",
+    "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "name",
-        "Type": "System.String",
+        "Name": "kitId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "testServiceDto",
+        "Type": "Services.TestServiceDTO.TestServiceDto",
         "IsRequired": true
       }
     ],
@@ -940,6 +907,22 @@
     "IsController": true,
     "Order": 0,
     "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.UserController",
+    "Method": "GetUserById",
+    "RelativePath": "api/User/{userId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": []
   },
   {

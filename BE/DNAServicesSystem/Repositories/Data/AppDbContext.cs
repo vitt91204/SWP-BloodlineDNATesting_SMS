@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Repositories.Models;
+using System;
+using System.Collections.Generic;
 
 namespace Repositories.Data;
 
@@ -187,6 +187,9 @@ public partial class AppDbContext : DbContext
                 .HasMaxLength(20)
                 .IsUnicode(false)
                 .HasColumnName("status");
+            entity.Property(e => e.Token)
+                .HasMaxLength(100)
+                .HasColumnName("token");
 
             entity.HasOne(d => d.Request).WithMany(p => p.Payments)
                 .HasForeignKey(d => d.RequestId)

@@ -35,7 +35,7 @@ namespace Services
                 RequestId = feedbackDto.RequestId,
                 Rating = feedbackDto.Rating,
                 Comment = feedbackDto.Comment,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"))
             };
             await feedbackRepository.CreateAsync(feedback);
             return feedback;
@@ -62,7 +62,7 @@ namespace Services
                 throw new KeyNotFoundException($"Feedback with ID {feedbackId} not found.");
             }
             feedback.Response = responseDto.Response;
-            feedback.RespondedAt = responseDto.ResponseAt ?? DateTime.UtcNow;
+            feedback.RespondedAt = responseDto.ResponseAt ?? TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
             await feedbackRepository.UpdateAsync(feedback);
         }
 

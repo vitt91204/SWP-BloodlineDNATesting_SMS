@@ -13,11 +13,5 @@ namespace Repositories
     {
         public PaymentRepository() { }
 
-        public async Task<List<Payment>> GetPaymentByStatusAsync(string status)
-        {
-            return await context.Payments
-                .Where(p => p.Status == status)
-                .ToListAsync();
-        }
     }
 }

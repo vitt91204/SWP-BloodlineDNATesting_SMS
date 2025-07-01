@@ -6,12 +6,27 @@ using System.Threading.Tasks;
 using Repositories.Models;
 using Repositories;
 using Services.PaymentDTO;
+using Services.VNPayService;
+using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using Microsoft.AspNetCore.Http;
+using Repositories.Models.VnPay;
+using Repositories.ExternalLibs;
 
 namespace Services
 {
-    public class PaymentService
+    public class PaymentService : IVnPayService
     {
         private readonly PaymentRepository paymentRepository;
+        private readonly IConfiguration configuration;
+
+        public PaymentService(IConfiguration configuration)
+        {
+            paymentRepository = new PaymentRepository();
+            this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration), "Configuration cannot be null.");
+        }
 
         public PaymentService()
         {
@@ -23,22 +38,6 @@ namespace Services
             return await paymentRepository.GetAllAsync();
         }
 
-        public async Task<Payment> UpdateStatusAsync(int paymentId, UpdateStatusRequest updateStatusRequest)
-        {
-            if (updateStatusRequest == null)
-            {
-                throw new ArgumentNullException(nameof(updateStatusRequest), "Update status request cannot be null.");
-            }
-            var payment = await paymentRepository.GetByIdAsync(paymentId);
-            if (payment == null)
-            {
-                throw new KeyNotFoundException($"Payment with ID {paymentId} not found.");
-            }
-            payment.Status = updateStatusRequest.Status;
-            payment.PaidAt = updateStatusRequest.PaidAt;
-            await paymentRepository.UpdateAsync(payment);
-            return payment;
-        }
         public async Task<Payment> GetPaymentAsync(int paymentId)
         {
             var payment = await paymentRepository.GetByIdAsync(paymentId);
@@ -49,41 +48,42 @@ namespace Services
             return payment;
         }
 
-        public async Task<Payment> CreatePaymentAsync (PaymentDto paymentDTO)
+        public string CreatePaymentUrl(PaymentRequestModel model, HttpContext context)
         {
-            if (paymentDTO == null)
-            {
-                throw new ArgumentNullException(nameof(paymentDTO), "Payment DTO cannot be null.");
-            }
+            var timeZoneById = TimeZoneInfo.FindSystemTimeZoneById(configuration["TimeZoneId"]);
+            var timeNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeZoneById);
+            var tick = DateTime.Now.Ticks.ToString();
+            var vnPay = new VnPayLibs();
+            var urlCallBack = configuration["VnPay:PaymentReturnUrl"];
 
-            var payment = new Payment
-            {
-                RequestId = paymentDTO.RequestId,
-                Method = paymentDTO.Method,
-                Amount = paymentDTO.Amount,
-                Status = paymentDTO.Status,
-                PaidAt = paymentDTO.PaidAt
-            };
-            await paymentRepository.CreateAsync(payment);
-            return payment;
+
+            vnPay.AddRequestData("vnp_Version", configuration["VnPay:Version"]);
+            vnPay.AddRequestData("vnp_Command", configuration["VnPay:Command"]);
+            vnPay.AddRequestData("vnp_TmnCode", configuration["VnPay:TmnCode"]);
+            vnPay.AddRequestData("vnp_Amount", ((int)model.Amount * 100).ToString());
+            vnPay.AddRequestData("vnp_CreateDate", timeNow.ToString("yyyyMMddHHmmss"));
+            vnPay.AddRequestData("vnp_CurrCode", configuration["VnPay:CurrCode"]);
+            vnPay.AddRequestData("vnp_IpAddr", vnPay.GetIpAddress(context));
+            vnPay.AddRequestData("vnp_Locale", configuration["VnPay:Locale"]);
+            vnPay.AddRequestData("vnp_OrderInfo", $"{model.RequestId}{model.Amount}");
+            vnPay.AddRequestData("vnp_OrderType", "other");
+            vnPay.AddRequestData("vnp_ReturnUrl", urlCallBack);
+            vnPay.AddRequestData("vnp_TxnRef", tick);
+
+            var paymentUrl = vnPay.CreateRequestUrl(configuration["VnPay:BaseUrl"], configuration["VnPay:HashSecret"]);
+            return paymentUrl;
+
         }
 
-        public async Task UpdatePaymentAsync(int paymentId, PaymentDto paymentDTO)
+
+
+        public PaymentResponseModel PaymentExecute(IQueryCollection collections)
         {
-            if (paymentDTO == null)
-            {
-                throw new ArgumentNullException(nameof(paymentDTO), "Payment DTO cannot be null.");
-            }
-            var payment = await paymentRepository.GetByIdAsync(paymentId);
-            if (payment == null)
-            {
-                throw new KeyNotFoundException($"Payment with ID {paymentId} not found.");
-            }
-            payment.Method = paymentDTO.Method;
-            payment.Amount = paymentDTO.Amount;
-            payment.Status = paymentDTO.Status;
-            payment.PaidAt = paymentDTO.PaidAt;
-            await paymentRepository.UpdateAsync(payment);
+            var vnPay = new VnPayLibs();
+            var hashSecret = configuration["VnPay:HashSecret"];
+            var responseData = vnPay.GetFullResponseData(collections, hashSecret);
+
+            return responseData;
         }
     }
 }

@@ -92,7 +92,7 @@ namespace Services
                 throw new KeyNotFoundException($"TestKit with ID {kitId} not found.");
             }
             testKit.IsActive = false;
-            await testKitRepository.UpdateAsync(testKit);// Soft delete by marking as inactive
+            await testKitRepository.UpdateAsync(testKit);
         }
     }
 }
