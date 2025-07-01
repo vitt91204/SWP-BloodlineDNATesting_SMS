@@ -39,9 +39,9 @@ export default function Login() {
       console.log('Response keys:', Object.keys(response));
       console.log('Response type:', typeof response);
       
-      // Store auth token and user data - handle multiple API response formats
-      const token = response.token || response.accessToken || response.access_token || response.authToken;
-      const user = response.user || response.data || response.userData || response;
+      
+      const token = response.token;
+      const user = response.user;
       
       console.log('Extracted token:', token);
       console.log('Extracted user:', user);
@@ -242,18 +242,7 @@ export default function Login() {
                       </div>
                     </div>
 
-                    {/* Forgot Password */}
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm">
-                        <Link
-                          to="/forgot-password"
-                          className="font-medium text-emerald-500 hover:text-emerald-600 transition-colors duration-200 flex items-center group"
-                        >
-                          <Mail className="w-4 h-4 mr-1 group-hover:animate-pulse" />
-                          Quên mật khẩu?
-                        </Link>
-                      </div>
-                    </div>
+                    
 
                     {/* Submit Button */}
                     <Button

@@ -565,6 +565,25 @@ export const addressAPI = {
   }
 };
 
+// API cho Payment
+export const paymentAPI = {
+  // Tạo payment URL
+  createPaymentUrl: async (requestId: number, amount: number) => {
+    const response = await api.post('/api/Payment/create-payment-url', {
+      requestId,
+      amount
+    });
+    
+    // Backend trả về text/plain chứa URL trực tiếp
+    const paymentUrl = response.data;
+    
+    // Trả về object có paymentUrl để tương thích với code hiện tại
+    return {
+      paymentUrl: typeof paymentUrl === 'string' ? paymentUrl : null
+    };
+  }
+};
+
 
 
   

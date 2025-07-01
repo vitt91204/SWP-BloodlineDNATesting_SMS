@@ -5,23 +5,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { Separator } from "@/components/ui/separator";
 import { 
   CreditCard, 
-  Smartphone, 
-  Building2, 
   Shield, 
   CheckCircle, 
   Clock,
-  ArrowLeft,
-  Copy,
-  QrCode
+  ArrowLeft
 } from "lucide-react";
-import { testRequestAPI } from "@/api/axios";
+import { testRequestAPI, paymentAPI } from "@/api/axios";
 
 export default function Payment() {
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderInfo, setOrderInfo] = useState(null);
   const [bookingId, setBookingId] = useState(null);
@@ -44,7 +39,7 @@ export default function Payment() {
 
         if (idFromUrl) {
           console.log(`Fetching booking data for ID: ${idFromUrl} from API...`);
-          testRequestAPI.getById(idFromUrl)
+          testRequestAPI.getById(parseInt(idFromUrl))
             .then(res => {
               console.log("Loaded booking data from API:", res);
               // Cấu trúc lại dữ liệu để khớp với cấu trúc từ localStorage
@@ -77,38 +72,13 @@ export default function Payment() {
     }
   }, []);
 
-  const paymentMethods = [
-    {
-      id: "vnpay",
-      name: "VNPay",
-      description: "Thanh toán qua VNPay",
-      icon: CreditCard,
-      fee: 0,
-      popular: true
-    },
-    {
-      id: "momo",
-      name: "MoMo",
-      description: "Ví điện tử MoMo",
-      icon: Smartphone,
-      fee: 0,
-      popular: true
-    },
-    {
-      id: "zalopay",
-      name: "ZaloPay", 
-      description: "Ví điện tử ZaloPay",
-      icon: Smartphone,
-      fee: 0
-    },
-    {
-      id: "bank_transfer",
-      name: "Chuyển khoản ngân hàng",
-      description: "Chuyển khoản trực tiếp",
-      icon: Building2,
-      fee: 0
-    }
-  ];
+  const paymentMethod = {
+    id: "vnpay",
+    name: "VNPay",
+    description: "Thanh toán an toàn qua cổng VNPay",
+    icon: CreditCard,
+    fee: 0
+  };
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -118,26 +88,35 @@ export default function Payment() {
   };
 
   const handlePayment = async () => {
-    if (!selectedPaymentMethod || !bookingId || !orderInfo) return;
+    if (!bookingId || !orderInfo) return;
     setIsProcessing(true);
+    
+    const requestId = parseInt(bookingId);
+    const amount = orderInfo?.serviceInfo?.price || 0;
+    
     try {
-      // Chuẩn hóa payload cho API Payment
-      const payload = {
-        paymentId: 0,
-        requestId: bookingId,
-        method: selectedPaymentMethod,
-        amount: orderInfo?.serviceInfo?.price || 0,
-        status: "paid",
-        paidAt: new Date().toISOString()
-      };
-      await testRequestAPI.post('/api/Payment/create', payload);
-      setIsProcessing(false);
-      alert("Thanh toán thành công! Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất.");
-      // Có thể chuyển sang trang kết quả hoặc trang cảm ơn
+      console.log("Gọi API Payment với requestId:", requestId, "amount:", amount);
+      
+      // Gọi API để lấy payment URL
+      const response = await paymentAPI.createPaymentUrl(requestId, amount);
+      
+      console.log("API Response:", response);
+      
+      // Kiểm tra và chuyển hướng đến payment URL
+      if (response && response.paymentUrl) {
+        console.log("Chuyển hướng đến:", response.paymentUrl);
+        window.location.href = response.paymentUrl;
+      } else {
+        // Không có URL, có thể là lỗi
+        setIsProcessing(false);
+        alert("Không thể tạo liên kết thanh toán. Vui lòng thử lại!");
+        console.error("No payment URL in response:", response);
+      }
+      
     } catch (error) {
       setIsProcessing(false);
       alert("Thanh toán thất bại. Vui lòng thử lại!");
-      console.error(error);
+      console.error("Payment API error:", error);
     }
   };
 
@@ -161,10 +140,10 @@ export default function Payment() {
               Thanh toán
             </Badge>
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              Thanh toán dịch vụ
+              Thanh toán qua VNPay
             </h1>
             <p className="text-lg text-gray-600">
-              Hoàn tất thanh toán để xác nhận đặt lịch xét nghiệm
+              Thanh toán an toàn và nhanh chóng để xác nhận đặt lịch xét nghiệm
             </p>
           </div>
 
@@ -241,128 +220,54 @@ export default function Payment() {
             <div className="lg:col-span-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>Chọn phương thức thanh toán</CardTitle>
+                  <CardTitle>Phương thức thanh toán</CardTitle>
                   <CardDescription>
-                    Lựa chọn phương thức thanh toán phù hợp với bạn
+                    Thanh toán an toàn qua cổng VNPay
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Tabs defaultValue="online" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="online">Thanh toán online</TabsTrigger>
-                      <TabsTrigger value="transfer">Chuyển khoản</TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="online" className="space-y-4 mt-6">
-                      <div className="grid gap-4">
-                        {paymentMethods.filter(method => method.id !== 'bank_transfer').map((method) => {
-                          const Icon = method.icon;
-                          return (
-                            <div
-                              key={method.id}
-                              className={`p-4 border-2 rounded-lg cursor-pointer transition-all relative ${
-                                selectedPaymentMethod === method.id
-                                  ? 'border-blue-500 bg-blue-50'
-                                  : 'border-gray-200 hover:border-gray-300'
-                              }`}
-                              onClick={() => setSelectedPaymentMethod(method.id)}
-                            >
-                              {method.popular && (
-                                <Badge className="absolute -top-2 -right-2 bg-red-500">
-                                  Phổ biến
-                                </Badge>
-                              )}
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-3">
-                                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                                    selectedPaymentMethod === method.id ? 'bg-blue-100' : 'bg-gray-100'
-                                  }`}>
-                                    <Icon className={`w-6 h-6 ${
-                                      selectedPaymentMethod === method.id ? 'text-blue-600' : 'text-gray-600'
-                                    }`} />
-                                  </div>
-                                  <div>
-                                    <h3 className="font-semibold">{method.name}</h3>
-                                    <p className="text-sm text-gray-600">{method.description}</p>
-                                  </div>
-                                </div>
-                                <div className={`w-6 h-6 rounded-full border-2 ${
-                                  selectedPaymentMethod === method.id
-                                    ? 'border-blue-500 bg-blue-500'
-                                    : 'border-gray-300'
-                                }`}>
-                                  {selectedPaymentMethod === method.id && (
-                                    <CheckCircle className="w-5 h-5 text-white" />
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </TabsContent>
-                    
-                    <TabsContent value="transfer" className="space-y-4 mt-6">
-                      <div className="p-6 bg-gray-50 rounded-lg">
-                        <h3 className="font-semibold mb-4 flex items-center">
-                          <QrCode className="w-5 h-5 mr-2" />
-                          Thông tin chuyển khoản
-                        </h3>
-                        
-                        <div className="space-y-3">
-                          <div className="flex justify-between items-center p-3 bg-white rounded border">
-                            <div>
-                              <div className="text-sm text-gray-600">Ngân hàng</div>
-                              <div className="font-medium">Vietcombank</div>
-                            </div>
+                  <div className="space-y-6">
+                    {/* VNPay Payment Method */}
+                    <div className="p-6 border-2 border-blue-500 bg-blue-50 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-16 h-16 rounded-lg bg-blue-100 flex items-center justify-center">
+                            <CreditCard className="w-8 h-8 text-blue-600" />
                           </div>
-                          
-                          <div className="flex justify-between items-center p-3 bg-white rounded border">
-                            <div>
-                              <div className="text-sm text-gray-600">Số tài khoản</div>
-                              <div className="font-medium">1234567890</div>
+                          <div>
+                            <h3 className="text-xl font-semibold text-blue-900">{paymentMethod.name}</h3>
+                            <p className="text-blue-700">{paymentMethod.description}</p>
+                            <div className="flex items-center mt-2">
+                              <Shield className="w-4 h-4 text-green-600 mr-1" />
+                              <span className="text-sm text-green-700">Bảo mật cao • Xử lý nhanh chóng</span>
                             </div>
-                            <Button size="sm" variant="outline" className="ml-2">
-                              <Copy className="w-4 h-4" />
-                            </Button>
-                          </div>
-                          
-                          <div className="flex justify-between items-center p-3 bg-white rounded border">
-                            <div>
-                              <div className="text-sm text-gray-600">Chủ tài khoản</div>
-                              <div className="font-medium">CÔNG TY TNHH SWP DNA</div>
-                            </div>
-                          </div>
-                          
-                          <div className="flex justify-between items-center p-3 bg-white rounded border">
-                            <div>
-                              <div className="text-sm text-gray-600">Nội dung chuyển khoản</div>
-                              <div className="font-medium">DNA-{Date.now()}</div>
-                            </div>
-                            <Button size="sm" variant="outline" className="ml-2">
-                              <Copy className="w-4 h-4" />
-                            </Button>
-                          </div>
-                          
-                          <div className="flex justify-between items-center p-3 bg-white rounded border">
-                            <div>
-                              <div className="text-sm text-gray-600">Số tiền</div>
-                              <div className="font-medium text-blue-600">{formatPrice(orderInfo?.serviceInfo?.price || 0)}</div>
-                            </div>
-                            <Button size="sm" variant="outline" className="ml-2">
-                              <Copy className="w-4 h-4" />
-                            </Button>
                           </div>
                         </div>
-                        
-                        <div className="mt-4 p-3 bg-yellow-50 rounded border border-yellow-200">
-                          <p className="text-sm text-yellow-800">
-                            <strong>Lưu ý:</strong> Sau khi chuyển khoản, vui lòng chụp ảnh biên lai và gửi cho chúng tôi qua hotline để xác nhận thanh toán.
-                          </p>
+                        <div className="w-8 h-8 rounded-full border-2 border-blue-500 bg-blue-500 flex items-center justify-center">
+                          <CheckCircle className="w-6 h-6 text-white" />
                         </div>
                       </div>
-                    </TabsContent>
-                  </Tabs>
+                    </div>
+
+                    {/* Payment Features */}
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div className="p-4 bg-gray-50 rounded-lg text-center">
+                        <Shield className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+                        <h4 className="font-medium text-gray-900">Bảo mật tuyệt đối</h4>
+                        <p className="text-sm text-gray-600">Mã hóa SSL 256-bit</p>
+                      </div>
+                      <div className="p-4 bg-gray-50 rounded-lg text-center">
+                        <Clock className="w-8 h-8 text-green-600 mx-auto mb-2" />
+                        <h4 className="font-medium text-gray-900">Xử lý nhanh</h4>
+                        <p className="text-sm text-gray-600">Thanh toán trong vài giây</p>
+                      </div>
+                      <div className="p-4 bg-gray-50 rounded-lg text-center">
+                        <CreditCard className="w-8 h-8 text-purple-600 mx-auto mb-2" />
+                        <h4 className="font-medium text-gray-900">Đa dạng thẻ</h4>
+                        <p className="text-sm text-gray-600">Visa, Mastercard, ATM</p>
+                      </div>
+                    </div>
+                  </div>
 
                   <div className="mt-8 space-y-4">
                     <div className="flex space-x-4">
@@ -377,7 +282,7 @@ export default function Payment() {
                       <Button 
                         className="flex-1 bg-gradient-to-r from-blue-600 to-green-600"
                         onClick={handlePayment}
-                        disabled={!selectedPaymentMethod || isProcessing}
+                        disabled={isProcessing}
                       >
                         {isProcessing ? (
                           <>
@@ -386,7 +291,7 @@ export default function Payment() {
                           </>
                         ) : (
                           <>
-                            Thanh toán ngay
+                            Thanh toán qua VNPay
                             <CreditCard className="w-4 h-4 ml-2" />
                           </>
                         )}

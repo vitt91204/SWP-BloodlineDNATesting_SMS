@@ -16,49 +16,7 @@ export default function Booking() {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Debug function để test API
-  const testAPI = async () => {
-    try {
-      console.log('🧪 Testing TestRequest API...');
-      
-      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-      const userId = userData?.id || userData?.userId;
 
-      if (!userId) {
-        toast({
-          title: "API Test thất bại!",
-          description: "Không tìm thấy User ID. Vui lòng đăng nhập.",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      const testData: TestRequest = {
-        userId: parseInt(userId),
-        serviceId: 7, // Service ID tồn tại
-        collectionType: 'At Clinic',
-        status: 'Pending',
-        appointmentDate: '2025-07-01',
-        slotTime: '09:00',
-        staffId: null
-      };
-      
-      console.log('📤 Sending test request:', testData);
-      const response = await testRequestAPI.create(testData);
-      console.log('✅ Test request successful:', response);
-      toast({
-        title: "API Test thành công!",
-        description: `TestRequest ID: ${response.id || response.requestId || 'Unknown'}`,
-      });
-    } catch (error) {
-      console.error('❌ Test request failed:', error);
-      toast({
-        title: "API Test thất bại!",
-        description: error?.response?.data?.message || error?.message || 'Unknown error',
-        variant: "destructive"
-      });
-    }
-  };
   const [selectedService, setSelectedService] = useState("");
   const [selectedRelationship, setSelectedRelationship] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
@@ -91,6 +49,8 @@ export default function Booking() {
   const [isLoadingServices, setIsLoadingServices] = useState(true);
   const [selectedServiceData, setSelectedServiceData] = useState(null);
   const [isSubmittingBooking, setIsSubmittingBooking] = useState(false);
+  const [bookedTimeSlots, setBookedTimeSlots] = useState([]);
+  const [isLoadingTimeSlots, setIsLoadingTimeSlots] = useState(false);
 
   const services = [
     {
@@ -128,6 +88,70 @@ export default function Booking() {
     };
     loadTestServices();
   }, []);
+
+  // Load booked time slots cho ngày được chọn
+  const loadBookedTimeSlots = async (date) => {
+    if (!date) {
+      setBookedTimeSlots([]);
+      return;
+    }
+
+    try {
+      setIsLoadingTimeSlots(true);
+      console.log(`Loading booked time slots for date: ${date}`);
+      
+      // Gọi API để lấy tất cả test requests
+      const allRequests = await testRequestAPI.getAll();
+      console.log('All test requests:', allRequests);
+
+      // Filter theo ngày được chọn và status active
+      const bookedOnDate = allRequests.filter(request => {
+        const requestDate = request.appointmentDate?.split('T')[0]; // Lấy phần date, bỏ time
+        const isActiveBooking = ['Pending', 'Confirmed', 'In Progress'].includes(request.status);
+        return requestDate === date && isActiveBooking && request.slotTime;
+      });
+
+      console.log(`Booked appointments on ${date}:`, bookedOnDate);
+
+      // Extract time slots đã được đặt
+      const bookedSlots = bookedOnDate.map(request => request.slotTime);
+      setBookedTimeSlots(bookedSlots);
+      
+      console.log('Booked time slots:', bookedSlots);
+    } catch (error) {
+      console.error('Error loading booked time slots:', error);
+      setBookedTimeSlots([]);
+      toast({
+        title: "Lỗi tải dữ liệu",
+        description: "Không thể tải thông tin lịch đã đặt. Vui lòng thử lại.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoadingTimeSlots(false);
+    }
+  };
+
+  // Effect để load booked time slots khi selectedDate thay đổi
+  useEffect(() => {
+    if (selectedDate && ((selectedLocation === 'home' && selectedHomeOption === 'staff_visit') || selectedLocation === 'facility')) {
+      loadBookedTimeSlots(selectedDate);
+    } else {
+      setBookedTimeSlots([]);
+    }
+  }, [selectedDate, selectedLocation, selectedHomeOption]);
+
+  // Effect để reset selectedTimeSlot nếu slot đó đã bị đặt
+  useEffect(() => {
+    if (selectedTimeSlot && bookedTimeSlots.includes(selectedTimeSlot)) {
+      console.log(`Time slot ${selectedTimeSlot} is now booked, resetting selection`);
+      setSelectedTimeSlot("");
+      toast({
+        title: "Khung giờ không còn trống",
+        description: "Khung giờ bạn đã chọn vừa có người đặt. Vui lòng chọn khung giờ khác.",
+        variant: "destructive"
+      });
+    }
+  }, [bookedTimeSlots, selectedTimeSlot]);
 
   // Cập nhật selectedServiceData khi selectedRelationship thay đổi
   useEffect(() => {
@@ -261,7 +285,20 @@ export default function Booking() {
     const needsAppointmentSchedule = (selectedLocation === 'home' && selectedHomeOption === 'staff_visit') || selectedLocation === 'facility';
 
     if (needsAppointmentSchedule) {
-      return !!(selectedDate && selectedTimeSlot);
+      // Kiểm tra có chọn date và time slot
+      if (!(selectedDate && selectedTimeSlot)) return false;
+      
+      // Kiểm tra time slot đã chọn có bị đặt hay không
+      if (bookedTimeSlots.includes(selectedTimeSlot)) {
+        toast({
+          title: "Khung giờ không hợp lệ",
+          description: "Khung giờ bạn chọn đã có người đặt. Vui lòng chọn khung giờ khác.",
+          variant: "destructive"
+        });
+        return false;
+      }
+      
+      return true;
     }
     
     return true; // For 'diy_kit' case, no appointment needed
@@ -299,6 +336,19 @@ export default function Booking() {
       toast({
         title: "Lỗi đặt lịch",
         description: "Vui lòng đăng nhập và chọn dịch vụ hợp lệ trước khi đặt lịch!",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Double-check time slot conflicts trước khi submit
+    const needsAppointment = (selectedLocation === 'home' && selectedHomeOption === 'staff_visit') || selectedLocation === 'facility';
+    if (needsAppointment && selectedTimeSlot && bookedTimeSlots.includes(selectedTimeSlot)) {
+      // Refresh lại booked slots để đảm bảo data mới nhất
+      await loadBookedTimeSlots(selectedDate);
+      toast({
+        title: "Khung giờ đã được đặt",
+        description: "Khung giờ bạn chọn vừa có người đặt. Vui lòng chọn khung giờ khác.",
         variant: "destructive"
       });
       return;
@@ -502,22 +552,9 @@ export default function Booking() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="text-center mb-12">
-            <div className="flex justify-center items-center gap-4 mb-4">
-              <Badge className="bg-green-100 text-green-700">
-                Đặt lịch xét nghiệm
-              </Badge>
-              {/* Debug button - chỉ hiển thị trong development */}
-              {process.env.NODE_ENV === 'development' && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={testAPI}
-                  className="text-xs"
-                >
-                  🧪 Test API
-                </Button>
-              )}
-            </div>
+            <Badge className="bg-green-100 text-green-700 mb-4">
+              Đặt lịch xét nghiệm
+            </Badge>
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
               Đặt lịch xét nghiệm ADN
             </h1>
@@ -1041,36 +1078,107 @@ export default function Booking() {
                     
                     {selectedDate && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-3">
-                          Chọn khung giờ *
-                        </label>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                          {timeSlots.map((slot) => (
-                            <button
-                              key={slot.id}
-                              type="button"
-                              disabled={!slot.available}
-                              onClick={() => setSelectedTimeSlot(slot.id)}
-                              className={`px-4 py-3 text-sm font-medium rounded-lg border-2 transition-all ${
-                                !slot.available
-                                  ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                                  : selectedTimeSlot === slot.id
-                                  ? 'bg-blue-50 text-blue-700 border-blue-500'
-                                  : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                              }`}
-                            >
-                              <div className="flex items-center justify-center">
-                                <Clock className="w-4 h-4 mr-1" />
-                                {slot.label}
-                              </div>
-                              {!slot.available && (
-                                <div className="text-xs text-gray-400 mt-1">
-                                  Đã đặt
-                                </div>
-                              )}
-                            </button>
-                          ))}
+                        <div className="flex items-center justify-between mb-3">
+                          <label className="block text-sm font-medium text-gray-700">
+                            Chọn khung giờ *
+                            {isLoadingTimeSlots && (
+                              <span className="ml-2 text-sm text-blue-600">
+                                <Loader2 className="w-4 h-4 inline animate-spin mr-1" />
+                                Đang kiểm tra lịch trống...
+                              </span>
+                            )}
+                          </label>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => loadBookedTimeSlots(selectedDate)}
+                            disabled={isLoadingTimeSlots || !selectedDate}
+                            className="text-xs px-2 py-1 h-6"
+                          >
+                            🔄 Làm mới
+                          </Button>
                         </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                          {timeSlots.map((slot) => {
+                            const isBooked = bookedTimeSlots.includes(slot.time);
+                            const isDisabled = !slot.available || isBooked;
+                            
+                            return (
+                              <button
+                                key={slot.id}
+                                type="button"
+                                disabled={isDisabled || isLoadingTimeSlots}
+                                onClick={() => setSelectedTimeSlot(slot.id)}
+                                className={`px-4 py-3 text-sm font-medium rounded-lg border-2 transition-all ${
+                                  isDisabled
+                                    ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                                    : selectedTimeSlot === slot.id
+                                    ? 'bg-blue-50 text-blue-700 border-blue-500'
+                                    : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                }`}
+                              >
+                                <div className="flex items-center justify-center">
+                                  <Clock className="w-4 h-4 mr-1" />
+                                  {slot.label}
+                                </div>
+                                {isBooked && (
+                                  <div className="text-xs text-red-500 mt-1 font-medium">
+                                    Đã có người đặt
+                                  </div>
+                                )}
+                                {!slot.available && !isBooked && (
+                                  <div className="text-xs text-gray-400 mt-1">
+                                    Không khả dụng
+                                  </div>
+                                )}
+                                {isLoadingTimeSlots && (
+                                  <div className="text-xs text-gray-400 mt-1">
+                                    Đang kiểm tra...
+                                  </div>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Hiển thị thống kê slot */}
+                        {!isLoadingTimeSlots && selectedDate && (
+                          <div className="mt-3">
+                            {bookedTimeSlots.length > 0 && (
+                              <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 mb-3">
+                                <div className="flex items-center justify-between text-amber-800">
+                                  <div className="flex items-center">
+                                    <Clock className="w-4 h-4 mr-2" />
+                                    <span className="text-sm font-medium">
+                                      Thông tin lịch ngày {selectedDate}:
+                                    </span>
+                                  </div>
+                                  <div className="text-sm">
+                                    <span className="text-red-600 font-medium">{bookedTimeSlots.length} đã đặt</span>
+                                    <span className="mx-2">•</span>
+                                    <span className="text-green-600 font-medium">
+                                      {timeSlots.filter(slot => slot.available && !bookedTimeSlots.includes(slot.time)).length} còn trống
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Warning khi hết slot */}
+                            {timeSlots.filter(slot => slot.available && !bookedTimeSlots.includes(slot.time)).length === 0 && (
+                              <div className="p-3 bg-red-50 rounded-lg border border-red-200 mb-3">
+                                <div className="flex items-center text-red-700">
+                                  <Clock className="w-4 h-4 mr-2" />
+                                  <span className="text-sm font-medium">
+                                    Tất cả khung giờ trong ngày {selectedDate} đã được đặt. Vui lòng chọn ngày khác.
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
                         {selectedTimeSlot && (
                           <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
                             <div className="flex items-center text-green-700">
