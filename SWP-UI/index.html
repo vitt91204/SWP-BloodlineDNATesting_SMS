@@ -15,6 +15,42 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@lovable_dev" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    
+    <!-- Content Security Policy for VNPay integration -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:;
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' 
+        https://sandbox.vnpayment.vn 
+        https://pay.vnpay.vn 
+        https://www.vnpay.vn
+        https://ajax.googleapis.com
+        https://code.jquery.com
+        data: blob:;
+      style-src 'self' 'unsafe-inline' 
+        https://sandbox.vnpayment.vn 
+        https://pay.vnpay.vn 
+        https://www.vnpay.vn
+        https://fonts.googleapis.com;
+      img-src 'self' data: blob: 
+        https://sandbox.vnpayment.vn 
+        https://pay.vnpay.vn 
+        https://www.vnpay.vn
+        https://lovable.dev;
+      font-src 'self' 
+        https://fonts.gstatic.com 
+        https://sandbox.vnpayment.vn 
+        https://pay.vnpay.vn;
+      connect-src 'self' 
+        https://sandbox.vnpayment.vn 
+        https://pay.vnpay.vn 
+        https://www.vnpay.vn;
+      frame-src 'self' 
+        https://sandbox.vnpayment.vn 
+        https://pay.vnpay.vn 
+        https://www.vnpay.vn;
+      object-src 'none';
+      base-uri 'self';
+    " />
   </head>
 
   <body>

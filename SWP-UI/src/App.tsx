@@ -13,6 +13,7 @@ import Contact from "@/pages/Contact";
 import Results from "@/pages/Results";
 import Booking from "@/pages/Booking";
 import Payment from "@/pages/Payment";
+import PaymentSuccess from "@/pages/PaymentSuccess";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import CustomerProfile from "@/pages/customer/Profile";
@@ -50,6 +51,7 @@ function App() {
             <Route path="/results" element={<Results />} />
             <Route path="/booking" element={<Booking />} />
             <Route path="/payment" element={<Payment />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/blog/:id" element={<BlogDetail />} />
 
             
