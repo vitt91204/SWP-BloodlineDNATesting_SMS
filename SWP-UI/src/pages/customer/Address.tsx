@@ -4,69 +4,582 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Plus, Trash2, Edit2, Save, X, Loader2, MapPin } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/components/ui/use-toast";
+import { addressAPI } from "@/api/axios";
 
 interface Address {
-  id: string;
-  detail: string;
+  id: number;
+  addressId?: number;
+  label: string;
+  addressLine: string;
+  city: string;
+  province: string;
+  postalCode: string;
+  country: string;
+  isPrimary: boolean;
+  userId: number;
+}
+
+interface AddressFormData {
+  label: string;
+  addressLine: string;
+  city: string;
+  province: string;
+  postalCode: string;
+  country: string;
+  isPrimary: boolean;
 }
 
 export default function AddressTab() {
   const [addresses, setAddresses] = useState<Address[]>([]);
-  const [newAddress, setNewAddress] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const { toast } = useToast();
 
-  // Fake API loading
+  const [formData, setFormData] = useState<AddressFormData>({
+    label: "",
+    addressLine: "",
+    city: "",
+    province: "",
+    postalCode: "",
+    country: "Việt Nam",
+    isPrimary: false
+  });
+
+  const [editFormData, setEditFormData] = useState<AddressFormData>({
+    label: "",
+    addressLine: "",
+    city: "",
+    province: "",
+    postalCode: "",
+    country: "Việt Nam",
+    isPrimary: false
+  });
+
+  // Get userId from localStorage
+  const getUserId = () => {
+    const userData = localStorage.getItem('userData');
+    if (userData) {
+      try {
+        const user = JSON.parse(userData);
+        return user?.id || user?.userId;
+      } catch (e) {
+        console.error('Error parsing user data:', e);
+      }
+    }
+    return null;
+  };
+
+  // Load addresses from API
+  const loadAddresses = async () => {
+    const userId = getUserId();
+    if (!userId) {
+      toast({
+        title: "Lỗi",
+        description: "Vui lòng đăng nhập để xem địa chỉ",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const data = await addressAPI.getByUserId(userId);
+      console.log('Loaded addresses:', data);
+      setAddresses(data || []);
+    } catch (error) {
+      console.error('Error loading addresses:', error);
+      toast({
+        title: "Lỗi tải dữ liệu",
+        description: "Không thể tải danh sách địa chỉ. Vui lòng thử lại.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    // Fetch from API if needed
-    setAddresses([
-      { id: "1", detail: "123 Nguyễn Văn Cừ, Q5" },
-      { id: "2", detail: "456 Lê Lợi, Q1" },
-    ]);
+    loadAddresses();
   }, []);
 
-  const handleAdd = () => {
-    if (!newAddress.trim()) return;
-    const newItem = {
-      id: Date.now().toString(),
-      detail: newAddress,
-    };
-    setAddresses(prev => [...prev, newItem]);
-    setNewAddress("");
+  const resetForm = () => {
+    setFormData({
+      label: "",
+      addressLine: "",
+      city: "",
+      province: "",
+      postalCode: "",
+      country: "Việt Nam",
+      isPrimary: false
+    });
   };
 
-  const handleDelete = (id: string) => {
-    setAddresses(prev => prev.filter(addr => addr.id !== id));
+  const handleAdd = async () => {
+    const userId = getUserId();
+    if (!userId) {
+      toast({
+        title: "Lỗi",
+        description: "Vui lòng đăng nhập để thêm địa chỉ",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!formData.label.trim() || !formData.addressLine.trim() || !formData.city.trim() || !formData.province.trim()) {
+      toast({
+        title: "Thông tin không đầy đủ",
+        description: "Vui lòng điền đầy đủ thông tin bắt buộc",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const newAddress = await addressAPI.create(userId, formData);
+      console.log('Created address:', newAddress);
+      
+      toast({
+        title: "Thành công",
+        description: "Đã thêm địa chỉ mới"
+      });
+      
+      resetForm();
+      setShowAddForm(false);
+      await loadAddresses(); // Reload to get updated data
+    } catch (error) {
+      console.error('Error creating address:', error);
+      toast({
+        title: "Lỗi",
+        description: "Không thể thêm địa chỉ. Vui lòng thử lại.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const handleEdit = (address: Address) => {
+    setEditingId(address.id || address.addressId || 0);
+    setEditFormData({
+      label: address.label || "",
+      addressLine: address.addressLine || "",
+      city: address.city || "",
+      province: address.province || "",
+      postalCode: address.postalCode || "",
+      country: address.country || "Việt Nam",
+      isPrimary: address.isPrimary || false
+    });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingId) return;
+
+    if (!editFormData.label.trim() || !editFormData.addressLine.trim() || !editFormData.city.trim() || !editFormData.province.trim()) {
+      toast({
+        title: "Thông tin không đầy đủ",
+        description: "Vui lòng điền đầy đủ thông tin bắt buộc",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const updatedAddress = await addressAPI.update(editingId, editFormData);
+      console.log('Updated address:', updatedAddress);
+      
+      toast({
+        title: "Thành công",
+        description: "Đã cập nhật địa chỉ"
+      });
+      
+      setEditingId(null);
+      await loadAddresses(); // Reload to get updated data
+    } catch (error) {
+      console.error('Error updating address:', error);
+      toast({
+        title: "Lỗi",
+        description: "Không thể cập nhật địa chỉ. Vui lòng thử lại.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (addressId: number) => {
+    if (!confirm("Bạn có chắc chắn muốn xóa địa chỉ này?")) return;
+
+    try {
+      setIsSubmitting(true);
+      await addressAPI.delete(addressId);
+      
+      toast({
+        title: "Thành công",
+        description: "Đã xóa địa chỉ"
+      });
+      
+      await loadAddresses(); // Reload to get updated data
+    } catch (error) {
+      console.error('Error deleting address:', error);
+      toast({
+        title: "Lỗi",
+        description: "Không thể xóa địa chỉ. Vui lòng thử lại.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditFormData({
+      label: "",
+      addressLine: "",
+      city: "",
+      province: "",
+      postalCode: "",
+      country: "Việt Nam",
+      isPrimary: false
+    });
+  };
+
+  const updateFormData = (field: keyof AddressFormData, value: string | boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const updateEditFormData = (field: keyof AddressFormData, value: string | boolean) => {
+    setEditFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <MapPin className="w-5 h-5 mr-2" />
+            Quản lý địa chỉ
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex items-center justify-center py-8">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600 mr-3" />
+          <span className="text-gray-600">Đang tải danh sách địa chỉ...</span>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Quản lý địa chỉ</CardTitle>
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center">
+            <MapPin className="w-5 h-5 mr-2" />
+            Quản lý địa chỉ
+          </div>
+          <Button 
+            onClick={() => setShowAddForm(!showAddForm)}
+            disabled={isSubmitting}
+            size="sm"
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            Thêm địa chỉ
+          </Button>
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {addresses.map((addr) => (
-          <div key={addr.id} className="flex items-center justify-between border rounded p-2">
-            <span>{addr.detail}</span>
-            <Button size="icon" variant="destructive" onClick={() => handleDelete(addr.id)}>
-              <Trash2 className="w-4 h-4" />
-            </Button>
+        {/* Address List */}
+        {addresses.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <MapPin className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+            <p>Chưa có địa chỉ nào. Thêm địa chỉ đầu tiên của bạn!</p>
           </div>
-        ))}
+        ) : (
+          addresses.map((address) => {
+            const addressId = address.id || address.addressId || 0;
+            const isEditing = editingId === addressId;
+            
+            return (
+              <div key={addressId} className="border rounded-lg p-4 space-y-3">
+                {isEditing ? (
+                  // Edit Form
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label htmlFor={`edit-label-${addressId}`}>Nhãn địa chỉ *</Label>
+                        <Input
+                          id={`edit-label-${addressId}`}
+                          value={editFormData.label}
+                          onChange={(e) => updateEditFormData('label', e.target.value)}
+                          placeholder="Ví dụ: Nhà riêng, Văn phòng..."
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor={`edit-country-${addressId}`}>Quốc gia</Label>
+                        <Input
+                          id={`edit-country-${addressId}`}
+                          value={editFormData.country}
+                          onChange={(e) => updateEditFormData('country', e.target.value)}
+                          placeholder="Quốc gia"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor={`edit-addressLine-${addressId}`}>Địa chỉ chi tiết *</Label>
+                      <Textarea
+                        id={`edit-addressLine-${addressId}`}
+                        value={editFormData.addressLine}
+                        onChange={(e) => updateEditFormData('addressLine', e.target.value)}
+                        placeholder="Số nhà, tên đường, phường/xã..."
+                        rows={2}
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label htmlFor={`edit-city-${addressId}`}>Thành phố/Quận/Huyện *</Label>
+                        <Input
+                          id={`edit-city-${addressId}`}
+                          value={editFormData.city}
+                          onChange={(e) => updateEditFormData('city', e.target.value)}
+                          placeholder="Thành phố/Quận/Huyện"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor={`edit-province-${addressId}`}>Tỉnh/Thành phố *</Label>
+                        <Input
+                          id={`edit-province-${addressId}`}
+                          value={editFormData.province}
+                          onChange={(e) => updateEditFormData('province', e.target.value)}
+                          placeholder="Tỉnh/Thành phố"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor={`edit-postalCode-${addressId}`}>Mã bưu điện</Label>
+                      <Input
+                        id={`edit-postalCode-${addressId}`}
+                        value={editFormData.postalCode}
+                        onChange={(e) => updateEditFormData('postalCode', e.target.value)}
+                        placeholder="Mã bưu điện (không bắt buộc)"
+                      />
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id={`edit-isPrimary-${addressId}`}
+                        checked={editFormData.isPrimary}
+                        onChange={(e) => updateEditFormData('isPrimary', e.target.checked)}
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <Label htmlFor={`edit-isPrimary-${addressId}`}>Đặt làm địa chỉ chính</Label>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={handleSaveEdit}
+                        disabled={isSubmitting}
+                        size="sm"
+                      >
+                        {isSubmitting ? (
+                          <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                        ) : (
+                          <Save className="w-4 h-4 mr-1" />
+                        )}
+                        Lưu
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={handleCancelEdit}
+                        disabled={isSubmitting}
+                        size="sm"
+                      >
+                        <X className="w-4 h-4 mr-1" />
+                        Hủy
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  // Display Mode
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="font-medium text-gray-900">
+                          {address.label || 'Địa chỉ'}
+                        </span>
+                        {address.isPrimary && (
+                          <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
+                            Chính
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-gray-600 space-y-1">
+                        <p>{address.addressLine}</p>
+                        <p>
+                          {[address.city, address.province, address.country]
+                            .filter(Boolean)
+                            .join(', ')}
+                        </p>
+                        {address.postalCode && (
+                          <p className="text-sm">Mã BĐ: {address.postalCode}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleEdit(address)}
+                        disabled={isSubmitting}
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleDelete(addressId)}
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
 
-        <Separator />
-
-        <div className="flex gap-2">
-          <Input
-            value={newAddress}
-            onChange={(e) => setNewAddress(e.target.value)}
-            placeholder="Thêm địa chỉ mới..."
-          />
-          <Button onClick={handleAdd}>
-            <Plus className="w-4 h-4 mr-1" />
-            Thêm
-          </Button>
-        </div>
+        {/* Add New Address Form */}
+        {showAddForm && (
+          <>
+            <Separator />
+            <div className="border rounded-lg p-4 bg-gray-50">
+              <h3 className="font-medium text-gray-900 mb-3">Thêm địa chỉ mới</h3>
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="new-label">Nhãn địa chỉ *</Label>
+                    <Input
+                      id="new-label"
+                      value={formData.label}
+                      onChange={(e) => updateFormData('label', e.target.value)}
+                      placeholder="Ví dụ: Nhà riêng, Văn phòng..."
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="new-country">Quốc gia</Label>
+                    <Input
+                      id="new-country"
+                      value={formData.country}
+                      onChange={(e) => updateFormData('country', e.target.value)}
+                      placeholder="Quốc gia"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <Label htmlFor="new-addressLine">Địa chỉ chi tiết *</Label>
+                  <Textarea
+                    id="new-addressLine"
+                    value={formData.addressLine}
+                    onChange={(e) => updateFormData('addressLine', e.target.value)}
+                    placeholder="Số nhà, tên đường, phường/xã..."
+                    rows={2}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="new-city">Thành phố/Quận/Huyện *</Label>
+                    <Input
+                      id="new-city"
+                      value={formData.city}
+                      onChange={(e) => updateFormData('city', e.target.value)}
+                      placeholder="Thành phố/Quận/Huyện"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="new-province">Tỉnh/Thành phố *</Label>
+                    <Input
+                      id="new-province"
+                      value={formData.province}
+                      onChange={(e) => updateFormData('province', e.target.value)}
+                      placeholder="Tỉnh/Thành phố"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <Label htmlFor="new-postalCode">Mã bưu điện</Label>
+                  <Input
+                    id="new-postalCode"
+                    value={formData.postalCode}
+                    onChange={(e) => updateFormData('postalCode', e.target.value)}
+                    placeholder="Mã bưu điện (không bắt buộc)"
+                  />
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="new-isPrimary"
+                    checked={formData.isPrimary}
+                    onChange={(e) => updateFormData('isPrimary', e.target.checked)}
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <Label htmlFor="new-isPrimary">Đặt làm địa chỉ chính</Label>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handleAdd}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                    ) : (
+                      <Plus className="w-4 h-4 mr-1" />
+                    )}
+                    Thêm địa chỉ
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      setShowAddForm(false);
+                      resetForm();
+                    }}
+                    disabled={isSubmitting}
+                  >
+                    <X className="w-4 h-4 mr-1" />
+                    Hủy
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );

@@ -159,10 +159,10 @@ export default function CustomerProfile() {
             id: basicUserInfo.id || userId,
             fullName: basicUserInfo.fullName || basicUserInfo.username || "",
             email: basicUserInfo.email || "",
-            phone: basicInfo.phone || "",
-            dateOfBirth: basicInfo.dateOfBirth || "",
-            gender: basicInfo.gender || "",
-            notes: basicInfo.notes || "",
+            phone: basicUserInfo.phone || "",
+            dateOfBirth: basicUserInfo.dateOfBirth || "",
+            gender: basicUserInfo.gender || "",
+            notes: basicUserInfo.notes || "",
           };
           setProfileData(newProfileData);
           setEditData(newProfileData);

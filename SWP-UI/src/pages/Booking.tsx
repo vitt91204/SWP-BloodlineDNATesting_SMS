@@ -52,6 +52,12 @@ export default function Booking() {
   const [bookedTimeSlots, setBookedTimeSlots] = useState([]);
   const [isLoadingTimeSlots, setIsLoadingTimeSlots] = useState(false);
 
+  // Thêm state cho address management
+  const [existingAddresses, setExistingAddresses] = useState([]);
+  const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
+  const [selectedAddressId, setSelectedAddressId] = useState("");
+  const [useExistingAddress, setUseExistingAddress] = useState(false);
+
   const services = [
     {
       id: "civil",
@@ -89,6 +95,87 @@ export default function Booking() {
     loadTestServices();
   }, []);
 
+  // Load existing addresses khi component mount
+  useEffect(() => {
+    const loadExistingAddresses = async () => {
+      const userData = localStorage.getItem('userData');
+      if (!userData) return;
+      
+      try {
+        const user = JSON.parse(userData);
+        const userId = user?.id || user?.userId;
+        if (!userId) return;
+        
+        setIsLoadingAddresses(true);
+        const addresses = await addressAPI.getByUserId(userId);
+        console.log('Loaded existing addresses for booking:', addresses);
+        setExistingAddresses(addresses || []);
+        
+        // Nếu có địa chỉ và chưa có dữ liệu form, auto-select địa chỉ primary hoặc đầu tiên
+        if (addresses && addresses.length > 0 && !formData.addressLine) {
+          const primaryAddress = addresses.find(addr => addr.isPrimary) || addresses[0];
+          if (primaryAddress) {
+            setUseExistingAddress(true);
+            setSelectedAddressId((primaryAddress.id || primaryAddress.addressId || '').toString());
+            setFormData(prev => ({
+              ...prev,
+              addressLabel: primaryAddress.label || "",
+              addressLine: primaryAddress.addressLine || "",
+              city: primaryAddress.city || "",
+              province: primaryAddress.province || "",
+              postalCode: primaryAddress.postalCode || "",
+              country: primaryAddress.country || "Việt Nam",
+              isPrimary: false // Không set làm primary cho booking address
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Error loading existing addresses:', error);
+      } finally {
+        setIsLoadingAddresses(false);
+      }
+    };
+    
+    loadExistingAddresses();
+  }, []);
+
+  // Hàm xử lý khi chọn địa chỉ có sẵn
+  const handleSelectExistingAddress = (addressId: string) => {
+    setSelectedAddressId(addressId);
+    const selectedAddress = existingAddresses.find(addr => 
+      (addr.id || addr.addressId || '').toString() === addressId
+    );
+    
+    if (selectedAddress) {
+      setFormData(prev => ({
+        ...prev,
+        addressLabel: selectedAddress.label || "",
+        addressLine: selectedAddress.addressLine || "",
+        city: selectedAddress.city || "",
+        province: selectedAddress.province || "",
+        postalCode: selectedAddress.postalCode || "",
+        country: selectedAddress.country || "Việt Nam",
+        isPrimary: false // Không set làm primary cho booking address
+      }));
+    }
+  };
+
+  // Hàm reset về địa chỉ mới
+  const handleUseNewAddress = () => {
+    setUseExistingAddress(false);
+    setSelectedAddressId("");
+    setFormData(prev => ({
+      ...prev,
+      addressLabel: "",
+      addressLine: "",
+      city: "",
+      province: "",
+      postalCode: "",
+      country: "Việt Nam",
+      isPrimary: false
+    }));
+  };
+
   // Load booked time slots cho ngày được chọn
   const loadBookedTimeSlots = async (date) => {
     if (!date) {
@@ -113,8 +200,16 @@ export default function Booking() {
 
       console.log(`Booked appointments on ${date}:`, bookedOnDate);
 
-      // Extract time slots đã được đặt
-      const bookedSlots = bookedOnDate.map(request => request.slotTime);
+      // Extract time slots đã được đặt và chuẩn hoá về định dạng HH:MM
+      const normalizeTime = (t: string) => {
+        if (!t) return t;
+        // Chuẩn HH:MM hoặc HH:MM:SS → cắt 5 ký tự đầu
+        return t.length > 5 ? t.slice(0, 5) : t;
+      };
+
+      const bookedSlots = bookedOnDate
+        .map(request => normalizeTime(request.slotTime))
+        .filter(Boolean);
       setBookedTimeSlots(bookedSlots);
       
       console.log('Booked time slots:', bookedSlots);
@@ -265,20 +360,30 @@ export default function Booking() {
   const timeSlots = [
     { id: "08:00", time: "08:00", label: "08:00 - 09:00", available: true },
     { id: "09:00", time: "09:00", label: "09:00 - 10:00", available: true },
-    { id: "10:00", time: "10:00", label: "10:00 - 11:00", available: false },
+    { id: "10:00", time: "10:00", label: "10:00 - 11:00", available: true },
     { id: "11:00", time: "11:00", label: "11:00 - 12:00", available: true },
     { id: "13:00", time: "13:00", label: "13:00 - 14:00", available: true },
     { id: "14:00", time: "14:00", label: "14:00 - 15:00", available: true },
-    { id: "15:00", time: "15:00", label: "15:00 - 16:00", available: false },
+    { id: "15:00", time: "15:00", label: "15:00 - 16:00", available: true },
     { id: "16:00", time: "16:00", label: "16:00 - 17:00", available: true },
     { id: "18:00", time: "18:00", label: "18:00 - 19:00", available: true },
     { id: "19:00", time: "19:00", label: "19:00 - 20:00", available: true },
   ];
 
+  // Helper to determine if a given date + time slot is in the past (based on current client time)
+  const isSlotInPast = (date: string, time: string): boolean => {
+    if (!date || !time) return false;
+    const slotDateTime = new Date(`${date}T${time}:00`);
+    return slotDateTime < new Date();
+  };
+
   // Hàm kiểm tra validation các trường bắt buộc của Step 4
   const isStep4Valid = () => {
     const requiredFields = formData.fullName && formData.phone && 
-                          formData.addressLine && formData.city && formData.province;
+                          (
+                            (useExistingAddress && selectedAddressId) || // Có chọn địa chỉ có sẵn
+                            (!useExistingAddress && formData.addressLine && formData.city && formData.province) // Hoặc đã nhập đủ thông tin địa chỉ mới
+                          );
 
     if (!requiredFields) return false;
 
@@ -293,6 +398,16 @@ export default function Booking() {
         toast({
           title: "Khung giờ không hợp lệ",
           description: "Khung giờ bạn chọn đã có người đặt. Vui lòng chọn khung giờ khác.",
+          variant: "destructive"
+        });
+        return false;
+      }
+      
+      // Không cho phép đặt lịch trong quá khứ
+      if (isSlotInPast(selectedDate, selectedTimeSlot)) {
+        toast({
+          title: "Khung giờ không hợp lệ",
+          description: "Không thể đặt lịch trong quá khứ. Vui lòng chọn khung giờ khác.",
           variant: "destructive"
         });
         return false;
@@ -354,10 +469,25 @@ export default function Booking() {
       return;
     }
 
+    // Không cho phép đặt lịch trong quá khứ (double-check trước khi gửi server)
+    if (needsAppointment && selectedTimeSlot && isSlotInPast(selectedDate, selectedTimeSlot)) {
+      toast({
+        title: "Khung giờ không hợp lệ",
+        description: "Không thể đặt lịch trong quá khứ. Vui lòng chọn khung giờ khác.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     // Tạo địa chỉ mới trước (optional, để lưu thông tin địa chỉ của khách hàng)
     let addressId = null;
     try {
-      if (formData.addressLine && formData.city && formData.province) {
+      // Nếu dùng địa chỉ có sẵn, lấy addressId từ selection
+      if (useExistingAddress && selectedAddressId) {
+        addressId = parseInt(selectedAddressId);
+        console.log('📍 Sử dụng địa chỉ có sẵn:', addressId);
+      } else if (formData.addressLine && formData.city && formData.province) {
+        // Tạo địa chỉ mới
         const addressData = {
           label: formData.addressLabel || 'Địa chỉ booking',
           addressLine: formData.addressLine,
@@ -956,99 +1086,192 @@ export default function Booking() {
                     Địa chỉ {selectedLocation === 'home' ? 'thu mẫu' : 'liên hệ'} *
                   </h3>
                   
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Nhãn địa chỉ
-                    </label>
-                    <Input 
-                      placeholder="Ví dụ: Nhà riêng, Văn phòng, Địa chỉ booking..." 
-                      value={formData.addressLabel}
-                      onChange={(e) => updateFormData('addressLabel', e.target.value)}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Địa chỉ chi tiết *
-                    </label>
-                    <Textarea 
-                      placeholder="Số nhà, tên đường, phường/xã..." 
-                      rows={2} 
-                      value={formData.addressLine}
-                      onChange={(e) => updateFormData('addressLine', e.target.value)}
-                      className={showValidation && !formData.addressLine ? 'border-red-300 focus:border-red-500' : ''}
-                    />
-                    {showValidation && !formData.addressLine && (
-                      <p className="text-red-500 text-xs mt-1">Vui lòng nhập địa chỉ chi tiết</p>
-                    )}
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Thành phố/Quận/Huyện *
-                      </label>
-                      <Input 
-                        placeholder="Nhập thành phố hoặc quận/huyện" 
-                        value={formData.city}
-                        onChange={(e) => updateFormData('city', e.target.value)}
-                        className={showValidation && !formData.city ? 'border-red-300 focus:border-red-500' : ''}
-                      />
-                      {showValidation && !formData.city && (
-                        <p className="text-red-500 text-xs mt-1">Vui lòng nhập thành phố</p>
+                  {/* Address Selection Options */}
+                  {existingAddresses.length > 0 && (
+                    <div className="mb-4">
+                      <div className="flex items-center space-x-4 mb-3">
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            name="addressOption"
+                            checked={useExistingAddress}
+                            onChange={() => setUseExistingAddress(true)}
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500"
+                          />
+                          <span className="ml-2 text-sm font-medium text-gray-700">
+                            Sử dụng địa chỉ có sẵn
+                          </span>
+                        </label>
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            name="addressOption"
+                            checked={!useExistingAddress}
+                            onChange={handleUseNewAddress}
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500"
+                          />
+                          <span className="ml-2 text-sm font-medium text-gray-700">
+                            Nhập địa chỉ mới
+                          </span>
+                        </label>
+                      </div>
+                      
+                      {useExistingAddress && (
+                        <div className="mb-4">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Chọn địa chỉ có sẵn *
+                          </label>
+                          {isLoadingAddresses ? (
+                            <div className="flex items-center py-2">
+                              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                              <span className="text-sm text-gray-600">Đang tải địa chỉ...</span>
+                            </div>
+                          ) : (
+                            <select
+                              value={selectedAddressId}
+                              onChange={(e) => handleSelectExistingAddress(e.target.value)}
+                              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 ${
+                                showValidation && useExistingAddress && !selectedAddressId ? 'border-red-300' : 'border-gray-300'
+                              }`}
+                            >
+                              <option value="">Chọn địa chỉ...</option>
+                              {existingAddresses.map((address) => {
+                                const addressId = (address.id || address.addressId || '').toString();
+                                const fullAddress = [
+                                  address.addressLine,
+                                  address.city,
+                                  address.province,
+                                  address.country
+                                ].filter(Boolean).join(', ');
+                                
+                                return (
+                                  <option key={addressId} value={addressId}>
+                                    {address.label ? `${address.label}: ` : ''}{fullAddress}
+                                    {address.isPrimary ? ' (Chính)' : ''}
+                                  </option>
+                                );
+                              })}
+                            </select>
+                          )}
+                          {showValidation && useExistingAddress && !selectedAddressId && (
+                            <p className="text-red-500 text-xs mt-1">Vui lòng chọn địa chỉ</p>
+                          )}
+                        </div>
                       )}
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Tỉnh/Thành phố *
-                      </label>
-                      <Input 
-                        placeholder="Nhập tỉnh/thành phố" 
-                        value={formData.province}
-                        onChange={(e) => updateFormData('province', e.target.value)}
-                        className={showValidation && !formData.province ? 'border-red-300 focus:border-red-500' : ''}
-                      />
-                      {showValidation && !formData.province && (
-                        <p className="text-red-500 text-xs mt-1">Vui lòng nhập tỉnh/thành phố</p>
-                      )}
+                  )}
+                  
+                  {/* Always show address display when using existing address */}
+                  {useExistingAddress && selectedAddressId && (
+                    <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <h4 className="font-medium text-blue-900 mb-2">Địa chỉ đã chọn:</h4>
+                      <div className="text-blue-800 text-sm">
+                        <p className="font-medium">{formData.addressLabel || 'Địa chỉ'}</p>
+                        <p>{formData.addressLine}</p>
+                        <p>{[formData.city, formData.province, formData.country].filter(Boolean).join(', ')}</p>
+                        {formData.postalCode && <p>Mã BĐ: {formData.postalCode}</p>}
+                      </div>
                     </div>
-                  </div>
+                  )}
+                  
+                  {/* Address Form - Show only when using new address or no existing addresses */}
+                  {!useExistingAddress && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Nhãn địa chỉ
+                        </label>
+                        <Input 
+                          placeholder="Ví dụ: Nhà riêng, Văn phòng, Địa chỉ booking..." 
+                          value={formData.addressLabel}
+                          onChange={(e) => updateFormData('addressLabel', e.target.value)}
+                        />
+                      </div>
 
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Mã bưu điện
-                      </label>
-                      <Input 
-                        placeholder="Mã bưu điện (không bắt buộc)" 
-                        value={formData.postalCode}
-                        onChange={(e) => updateFormData('postalCode', e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Quốc gia
-                      </label>
-                      <Input 
-                        placeholder="Quốc gia" 
-                        value={formData.country}
-                        onChange={(e) => updateFormData('country', e.target.value)}
-                      />
-                    </div>
-                  </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Địa chỉ chi tiết *
+                        </label>
+                        <Textarea 
+                          placeholder="Số nhà, tên đường, phường/xã..." 
+                          rows={2} 
+                          value={formData.addressLine}
+                          onChange={(e) => updateFormData('addressLine', e.target.value)}
+                          className={showValidation && !formData.addressLine ? 'border-red-300 focus:border-red-500' : ''}
+                        />
+                        {showValidation && !formData.addressLine && (
+                          <p className="text-red-500 text-xs mt-1">Vui lòng nhập địa chỉ chi tiết</p>
+                        )}
+                      </div>
 
-                  <div className="flex items-center space-x-2">
-                    <input 
-                      type="checkbox" 
-                      id="isPrimary"
-                      checked={formData.isPrimary}
-                      onChange={(e) => updateFormData('isPrimary', e.target.checked)}
-                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                    />
-                    <label htmlFor="isPrimary" className="text-sm text-gray-700">
-                      Đặt làm địa chỉ chính của tôi
-                    </label>
-                  </div>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Thành phố/Quận/Huyện *
+                          </label>
+                          <Input 
+                            placeholder="Nhập thành phố hoặc quận/huyện" 
+                            value={formData.city}
+                            onChange={(e) => updateFormData('city', e.target.value)}
+                            className={showValidation && !formData.city ? 'border-red-300 focus:border-red-500' : ''}
+                          />
+                          {showValidation && !formData.city && (
+                            <p className="text-red-500 text-xs mt-1">Vui lòng nhập thành phố</p>
+                          )}
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Tỉnh/Thành phố *
+                          </label>
+                          <Input 
+                            placeholder="Nhập tỉnh/thành phố" 
+                            value={formData.province}
+                            onChange={(e) => updateFormData('province', e.target.value)}
+                            className={showValidation && !formData.province ? 'border-red-300 focus:border-red-500' : ''}
+                          />
+                          {showValidation && !formData.province && (
+                            <p className="text-red-500 text-xs mt-1">Vui lòng nhập tỉnh/thành phố</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Mã bưu điện
+                          </label>
+                          <Input 
+                            placeholder="Mã bưu điện (không bắt buộc)" 
+                            value={formData.postalCode}
+                            onChange={(e) => updateFormData('postalCode', e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Quốc gia
+                          </label>
+                          <Input 
+                            placeholder="Quốc gia" 
+                            value={formData.country}
+                            onChange={(e) => updateFormData('country', e.target.value)}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <input 
+                          type="checkbox" 
+                          id="isPrimary"
+                          checked={formData.isPrimary}
+                          onChange={(e) => updateFormData('isPrimary', e.target.checked)}
+                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                        <label htmlFor="isPrimary" className="text-sm text-gray-700">
+                          Đặt làm địa chỉ chính của tôi
+                        </label>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Appointment scheduling fields */}
@@ -1102,7 +1325,8 @@ export default function Booking() {
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                           {timeSlots.map((slot) => {
                             const isBooked = bookedTimeSlots.includes(slot.time);
-                            const isDisabled = !slot.available || isBooked;
+                            const isPast = isSlotInPast(selectedDate, slot.time);
+                            const isDisabled = !slot.available || isBooked || isPast;
                             
                             return (
                               <button
@@ -1125,6 +1349,11 @@ export default function Booking() {
                                 {isBooked && (
                                   <div className="text-xs text-red-500 mt-1 font-medium">
                                     Đã có người đặt
+                                  </div>
+                                )}
+                                {!isBooked && isPast && (
+                                  <div className="text-xs text-gray-400 mt-1">
+                                    Đã qua
                                   </div>
                                 )}
                                 {!slot.available && !isBooked && (
@@ -1158,7 +1387,7 @@ export default function Booking() {
                                     <span className="text-red-600 font-medium">{bookedTimeSlots.length} đã đặt</span>
                                     <span className="mx-2">•</span>
                                     <span className="text-green-600 font-medium">
-                                      {timeSlots.filter(slot => slot.available && !bookedTimeSlots.includes(slot.time)).length} còn trống
+                                      {timeSlots.filter(slot => slot.available && !bookedTimeSlots.includes(slot.time) && !isSlotInPast(selectedDate, slot.time)).length} còn trống
                                     </span>
                                   </div>
                                 </div>
@@ -1166,7 +1395,7 @@ export default function Booking() {
                             )}
                             
                             {/* Warning khi hết slot */}
-                            {timeSlots.filter(slot => slot.available && !bookedTimeSlots.includes(slot.time)).length === 0 && (
+                            {timeSlots.filter(slot => slot.available && !bookedTimeSlots.includes(slot.time) && !isSlotInPast(selectedDate, slot.time)).length === 0 && (
                               <div className="p-3 bg-red-50 rounded-lg border border-red-200 mb-3">
                                 <div className="flex items-center text-red-700">
                                   <Clock className="w-4 h-4 mr-2" />
@@ -1349,14 +1578,6 @@ export default function Booking() {
                     )}
                     <li>• Thông báo kết quả qua SMS/Email khi hoàn thành</li>
                   </ul>
-                </div>
-
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <input type="checkbox" id="terms" className="rounded" />
-                  <label htmlFor="terms">
-                    Tôi đồng ý với <a href="#" className="text-blue-600 hover:underline">điều khoản dịch vụ</a> và 
-                    <a href="#" className="text-blue-600 hover:underline ml-1">chính sách bảo mật</a>
-                  </label>
                 </div>
 
                 <div className="flex space-x-4">

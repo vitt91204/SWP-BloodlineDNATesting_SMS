@@ -542,7 +542,7 @@ export const addressAPI = {
 
   // Lấy tất cả địa chỉ của user
   getByUserId: async (userId: number) => {
-    const response = await api.get(`/api/Address/user/${userId}`);
+    const response = await api.get(`/api/Address/${userId}`);
     return response.data;
   },
 
@@ -554,13 +554,45 @@ export const addressAPI = {
 
   // Cập nhật địa chỉ
   update: async (addressId: number, addressData: any) => {
-    const response = await api.put(`/api/Address/${addressId}`, addressData);
+    // Get userId from localStorage for the API call
+    const userData = localStorage.getItem('userData');
+    let userId = null;
+    if (userData) {
+      try {
+        const user = JSON.parse(userData);
+        userId = user?.id || user?.userId;
+      } catch (e) {
+        console.error('Error parsing user data:', e);
+      }
+    }
+    
+    if (!userId) {
+      throw new Error('User ID is required for address update');
+    }
+    
+    const response = await api.put(`/api/Address/${addressId}/${userId}`, addressData);
     return response.data;
   },
 
   // Xóa địa chỉ
   delete: async (addressId: number) => {
-    const response = await api.delete(`/api/Address/${addressId}`);
+    // Get userId from localStorage for the API call
+    const userData = localStorage.getItem('userData');
+    let userId = null;
+    if (userData) {
+      try {
+        const user = JSON.parse(userData);
+        userId = user?.id || user?.userId;
+      } catch (e) {
+        console.error('Error parsing user data:', e);
+      }
+    }
+    
+    if (!userId) {
+      throw new Error('User ID is required for address deletion');
+    }
+    
+    const response = await api.delete(`/api/Address/${addressId}/${userId}`);
     return response.data;
   }
 };
@@ -571,16 +603,25 @@ export const paymentAPI = {
   createPaymentUrl: async (requestId: number, amount: number) => {
     const response = await api.post('/api/Payment/create-payment-url', {
       requestId,
-      amount
+      amount,
     });
-    
-    // Backend trả về text/plain chứa URL trực tiếp
-    const paymentUrl = response.data;
-    
-    // Trả về object có paymentUrl để tương thích với code hiện tại
-    return {
-      paymentUrl: typeof paymentUrl === 'string' ? paymentUrl : null
-    };
+
+    /*
+      Backend có 2 khả năng phản hồi:
+      1. Trả về text/plain chứa trực tiếp URL thanh toán (kiểu string)
+      2. Trả về JSON có cấu trúc { result: "<paymentUrl>", ... }
+      Để an toàn, ta kiểm tra cả 2 trường hợp và chuẩn hóa thành { paymentUrl: string | null }
+    */
+
+    let paymentUrl: string | null = null;
+
+    if (typeof response.data === 'string') {
+      paymentUrl = response.data;
+    } else if (response.data && typeof response.data.result === 'string') {
+      paymentUrl = response.data.result;
+    }
+
+    return { paymentUrl };
   }
 };
 

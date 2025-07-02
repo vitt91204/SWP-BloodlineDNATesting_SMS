@@ -31,10 +31,10 @@ export const ServicesSection = () => {
       title: "Xét nghiệm huyết thống hành chính",
       description: "Phục vụ các thủ tục pháp lý, tòa án và cơ quan nhà nước",
       features: [
-        "Có giá trị pháp lý",
-        "Quy trình nghiêm ngặt",
-        "Chứng kiến thu mẫu",
-        "Báo cáo chính thức"
+        "Xét nghiệm cha con",
+        "Xét nghiệm mẹ con", 
+        "Xét nghiệm anh chị em ruột",
+        "Xét nghiệm ông bà - cháu"
       ],
       price: "3.500.000 - 6.000.000 VNĐ",
       timeframe: "7-10 ngày",
