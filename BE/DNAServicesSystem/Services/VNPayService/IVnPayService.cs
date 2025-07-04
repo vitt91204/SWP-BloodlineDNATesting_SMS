@@ -12,7 +12,7 @@ namespace Services.VNPayService
 {
     public interface IVnPayService
     {
-        string CreatePaymentUrl(PaymentRequestModel model, HttpContext context);
+        Task<string> CreatePaymentUrl(PaymentDto model ,HttpContext context);
         PaymentResponseModel PaymentExecute(IQueryCollection collections);
 
     }

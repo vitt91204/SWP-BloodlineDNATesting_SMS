@@ -35,7 +35,6 @@ namespace Services
                 RequestId = feedbackDto.RequestId,
                 Rating = feedbackDto.Rating,
                 Comment = feedbackDto.Comment,
-                CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"))
             };
             await feedbackRepository.CreateAsync(feedback);
             return feedback;

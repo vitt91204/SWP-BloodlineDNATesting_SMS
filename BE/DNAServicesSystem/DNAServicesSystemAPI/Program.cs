@@ -40,6 +40,7 @@ namespace DNAServicesSystemAPI
             builder.Services.AddScoped<SampleService>();
             builder.Services.AddScoped<PaymentService>();
             builder.Services.AddScoped<IVnPayService, PaymentService>();
+            builder.Services.AddScoped<ServiceTypeService>();
 
 
             // Add services to the container.

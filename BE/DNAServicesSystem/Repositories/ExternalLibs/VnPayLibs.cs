@@ -51,7 +51,7 @@ namespace Repositories.ExternalLibs
             return new PaymentResponseModel
             {
                 IsSuccess = true,
-                PaymnetMethod = "VnPay",
+                PaymentMethod = "VnPay",
                 OrderDescription = orderInfo,
                 OrderId = orderId.ToString(),
                 TransactionId = vnPayTrancsactionId.ToString(),

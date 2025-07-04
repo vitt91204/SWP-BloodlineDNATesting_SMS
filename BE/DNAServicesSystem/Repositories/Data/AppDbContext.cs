@@ -29,6 +29,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Sample> Samples { get; set; }
 
+    public virtual DbSet<ServiceType> ServiceTypes { get; set; }
+
     public virtual DbSet<SubSample> SubSamples { get; set; }
 
     public virtual DbSet<TestKit> TestKits { get; set; }
@@ -54,11 +56,12 @@ public partial class AppDbContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     => optionsBuilder.UseSqlServer(GetConnectionString("DefaultConnection"));
 
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Address>(entity =>
         {
-            entity.HasKey(e => e.AddressId).HasName("PK__Address__CAA247C80F6A1875");
+            entity.HasKey(e => e.AddressId).HasName("PK__Address__CAA247C88E79AF62");
 
             entity.ToTable("Address");
 
@@ -68,11 +71,9 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("address_line");
             entity.Property(e => e.City)
                 .HasMaxLength(100)
-                .IsUnicode(false)
                 .HasColumnName("city");
             entity.Property(e => e.Country)
                 .HasMaxLength(100)
-                .IsUnicode(false)
                 .HasColumnName("country");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
@@ -83,7 +84,6 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("is_primary");
             entity.Property(e => e.Label)
                 .HasMaxLength(100)
-                .IsUnicode(false)
                 .HasColumnName("label");
             entity.Property(e => e.PostalCode)
                 .HasMaxLength(20)
@@ -91,7 +91,6 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("postal_code");
             entity.Property(e => e.Province)
                 .HasMaxLength(100)
-                .IsUnicode(false)
                 .HasColumnName("province");
             entity.Property(e => e.UserId).HasColumnName("user_id");
 
@@ -103,7 +102,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<BlogPost>(entity =>
         {
-            entity.HasKey(e => e.PostId).HasName("PK__BlogPost__3ED787669801A851");
+            entity.HasKey(e => e.PostId).HasName("PK__BlogPost__3ED78766499DEA03");
 
             entity.ToTable("BlogPost");
 
@@ -118,7 +117,6 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("created_at");
             entity.Property(e => e.Title)
                 .HasMaxLength(200)
-                .IsUnicode(false)
                 .HasColumnName("title");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(getdate())")
@@ -127,12 +125,12 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.Author).WithMany(p => p.BlogPosts)
                 .HasForeignKey(d => d.AuthorId)
-                .HasConstraintName("FK__BlogPost__author__7B5B524B");
+                .HasConstraintName("FK__BlogPost__author__7E37BEF6");
         });
 
         modelBuilder.Entity<Feedback>(entity =>
         {
-            entity.HasKey(e => e.FeedbackId).HasName("PK__Feedback__7A6B2B8C28995763");
+            entity.HasKey(e => e.FeedbackId).HasName("PK__Feedback__7A6B2B8CED96C97E");
 
             entity.ToTable("Feedback");
 
@@ -157,17 +155,17 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.Request).WithMany(p => p.Feedbacks)
                 .HasForeignKey(d => d.RequestId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Feedback__reques__76969D2E");
+                .HasConstraintName("FK__Feedback__reques__797309D9");
 
             entity.HasOne(d => d.User).WithMany(p => p.Feedbacks)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Feedback__user_i__75A278F5");
+                .HasConstraintName("FK__Feedback__user_i__787EE5A0");
         });
 
         modelBuilder.Entity<Payment>(entity =>
         {
-            entity.HasKey(e => e.PaymentId).HasName("PK__Payment__ED1FC9EA14D40119");
+            entity.HasKey(e => e.PaymentId).HasName("PK__Payment__ED1FC9EA33EB740C");
 
             entity.ToTable("Payment");
 
@@ -194,25 +192,23 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.Request).WithMany(p => p.Payments)
                 .HasForeignKey(d => d.RequestId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Payment__request__02FC7413");
+                .HasConstraintName("FK__Payment__request__05D8E0BE");
         });
 
         modelBuilder.Entity<ResultDatum>(entity =>
         {
-            entity.HasKey(e => e.ResultDataId).HasName("PK__ResultDa__D07B4EE786AAD9D2");
+            entity.HasKey(e => e.ResultDataId).HasName("PK__ResultDa__D07B4EE721E0E461");
 
             entity.Property(e => e.ResultDataId).HasColumnName("Result_data_id");
+            entity.Property(e => e.FileData).HasColumnName("file_data");
             entity.Property(e => e.FileName)
                 .HasMaxLength(255)
                 .HasColumnName("file_name");
-            entity.Property(e => e.FilePath)
-                .HasMaxLength(500)
-                .HasColumnName("file_path");
         });
 
         modelBuilder.Entity<Sample>(entity =>
         {
-            entity.HasKey(e => e.SampleId).HasName("PK__Sample__84ACF7BAFE897FC3");
+            entity.HasKey(e => e.SampleId).HasName("PK__Sample__84ACF7BA151FC047");
 
             entity.ToTable("Sample");
 
@@ -233,17 +229,29 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.CollectedByNavigation).WithMany(p => p.Samples)
                 .HasForeignKey(d => d.CollectedBy)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Sample__collecte__6754599E");
+                .HasConstraintName("FK__Sample__collecte__6A30C649");
 
             entity.HasOne(d => d.Request).WithMany(p => p.Samples)
                 .HasForeignKey(d => d.RequestId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Sample__request___66603565");
+                .HasConstraintName("FK__Sample__request___693CA210");
+        });
+
+        modelBuilder.Entity<ServiceType>(entity =>
+        {
+            entity.HasKey(e => e.TypeId).HasName("PK__ServiceT__2C0005988B8801B6");
+
+            entity.ToTable("ServiceType");
+
+            entity.Property(e => e.TypeId).HasColumnName("type_id");
+            entity.Property(e => e.TypeName)
+                .HasMaxLength(50)
+                .HasColumnName("type_name");
         });
 
         modelBuilder.Entity<SubSample>(entity =>
         {
-            entity.HasKey(e => e.SubSampleId).HasName("PK__SubSampl__F53F8AF35E917162");
+            entity.HasKey(e => e.SubSampleId).HasName("PK__SubSampl__F53F8AF396871DFA");
 
             entity.ToTable("SubSample");
 
@@ -260,12 +268,12 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.Sample).WithMany(p => p.SubSamples)
                 .HasForeignKey(d => d.SampleId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__SubSample__sampl__7F2BE32F");
+                .HasConstraintName("FK__SubSample__sampl__02084FDA");
         });
 
         modelBuilder.Entity<TestKit>(entity =>
         {
-            entity.HasKey(e => e.KitId).HasName("PK__TestKit__7B21C6978958BBD2");
+            entity.HasKey(e => e.KitId).HasName("PK__TestKit__7B21C697B94FD922");
 
             entity.ToTable("TestKit");
 
@@ -278,16 +286,20 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("is_active");
             entity.Property(e => e.Name)
                 .HasMaxLength(100)
-                .IsUnicode(false)
                 .HasColumnName("name");
+            entity.Property(e => e.ServiceType).HasColumnName("service_type");
             entity.Property(e => e.StockQuantity)
                 .HasDefaultValue(0)
                 .HasColumnName("stock_quantity");
+
+            entity.HasOne(d => d.ServiceTypeNavigation).WithMany(p => p.TestKits)
+                .HasForeignKey(d => d.ServiceType)
+                .HasConstraintName("FK__TestKit__service__59063A47");
         });
 
         modelBuilder.Entity<TestRequest>(entity =>
         {
-            entity.HasKey(e => e.RequestId).HasName("PK__TestRequ__18D3B90FDE0EC2F0");
+            entity.HasKey(e => e.RequestId).HasName("PK__TestRequ__18D3B90F7D5C0C64");
 
             entity.ToTable("TestRequest");
 
@@ -313,26 +325,26 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.Address).WithMany(p => p.TestRequests)
                 .HasForeignKey(d => d.AddressId)
-                .HasConstraintName("FK__TestReque__addre__628FA481");
+                .HasConstraintName("FK__TestReque__addre__656C112C");
 
             entity.HasOne(d => d.Service).WithMany(p => p.TestRequests)
                 .HasForeignKey(d => d.ServiceId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__TestReque__servi__60A75C0F");
+                .HasConstraintName("FK__TestReque__servi__6383C8BA");
 
             entity.HasOne(d => d.Staff).WithMany(p => p.TestRequestStaffs)
                 .HasForeignKey(d => d.StaffId)
-                .HasConstraintName("FK__TestReque__staff__619B8048");
+                .HasConstraintName("FK__TestReque__staff__6477ECF3");
 
             entity.HasOne(d => d.User).WithMany(p => p.TestRequestUsers)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__TestReque__user___5FB337D6");
+                .HasConstraintName("FK__TestReque__user___628FA481");
         });
 
         modelBuilder.Entity<TestResult>(entity =>
         {
-            entity.HasKey(e => e.ResultId).HasName("PK__TestResu__AFB3C316337BDE1E");
+            entity.HasKey(e => e.ResultId).HasName("PK__TestResu__AFB3C3167E80C100");
 
             entity.ToTable("TestResult");
 
@@ -352,33 +364,33 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.ApprovedByNavigation).WithMany(p => p.TestResultApprovedByNavigations)
                 .HasForeignKey(d => d.ApprovedBy)
-                .HasConstraintName("FK__TestResul__appro__6EF57B66");
+                .HasConstraintName("FK__TestResul__appro__71D1E811");
 
             entity.HasOne(d => d.Request).WithMany(p => p.TestResults)
                 .HasForeignKey(d => d.RequestId)
-                .HasConstraintName("FK__TestResul__reque__6D0D32F4");
+                .HasConstraintName("FK__TestResul__reque__6FE99F9F");
 
             entity.HasOne(d => d.ResultData).WithMany(p => p.TestResults)
                 .HasForeignKey(d => d.ResultDataId)
-                .HasConstraintName("FK__TestResul__Resul__70DDC3D8");
+                .HasConstraintName("FK__TestResul__Resul__73BA3083");
 
             entity.HasOne(d => d.Sample).WithMany(p => p.TestResults)
                 .HasForeignKey(d => d.SampleId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__TestResul__sampl__6C190EBB");
+                .HasConstraintName("FK__TestResul__sampl__6EF57B66");
 
             entity.HasOne(d => d.Staff).WithMany(p => p.TestResultStaffs)
                 .HasForeignKey(d => d.StaffId)
-                .HasConstraintName("FK__TestResul__staff__6FE99F9F");
+                .HasConstraintName("FK__TestResul__staff__72C60C4A");
 
             entity.HasOne(d => d.UploadedByNavigation).WithMany(p => p.TestResultUploadedByNavigations)
                 .HasForeignKey(d => d.UploadedBy)
-                .HasConstraintName("FK__TestResul__uploa__6E01572D");
+                .HasConstraintName("FK__TestResul__uploa__70DDC3D8");
         });
 
         modelBuilder.Entity<TestService>(entity =>
         {
-            entity.HasKey(e => e.ServiceId).HasName("PK__TestServ__3E0DB8AFCC5B8259");
+            entity.HasKey(e => e.ServiceId).HasName("PK__TestServ__3E0DB8AF81A8EDD5");
 
             entity.ToTable("TestService");
 
@@ -392,7 +404,6 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.KitId).HasColumnName("kit_id");
             entity.Property(e => e.Name)
                 .HasMaxLength(100)
-                .IsUnicode(false)
                 .HasColumnName("name");
             entity.Property(e => e.Price)
                 .HasColumnType("decimal(10, 2)")
@@ -401,16 +412,16 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.Kit).WithMany(p => p.TestServices)
                 .HasForeignKey(d => d.KitId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__TestServi__kit_i__59FA5E80");
+                .HasConstraintName("FK__TestServi__kit_i__5CD6CB2B");
         });
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__User__B9BE370FEC8B8E28");
+            entity.HasKey(e => e.UserId).HasName("PK__User__B9BE370F74470E8D");
 
             entity.ToTable("User");
 
-            entity.HasIndex(e => e.Username, "UQ__User__F3DBC57253448A29").IsUnique();
+            entity.HasIndex(e => e.Username, "UQ__User__F3DBC5721128E694").IsUnique();
 
             entity.Property(e => e.UserId).HasColumnName("user_id");
             entity.Property(e => e.CreatedAt)
@@ -424,7 +435,6 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("email");
             entity.Property(e => e.FullName)
                 .HasMaxLength(100)
-                .IsUnicode(false)
                 .HasColumnName("full_name");
             entity.Property(e => e.Gender)
                 .HasMaxLength(10)

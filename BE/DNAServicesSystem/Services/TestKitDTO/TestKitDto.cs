@@ -24,5 +24,9 @@ namespace Services.TestKitDTO
 
         [Required]
         public bool IsActive { get; set; }
+
+        [Required]
+        [Range(1, byte.MaxValue, ErrorMessage = "ServiceType must be a valid byte value.")]
+        public byte ServiceType { get; set; } = 1;
     }
 }

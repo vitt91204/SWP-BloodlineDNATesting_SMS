@@ -11,7 +11,7 @@ namespace Repositories.Models.VnPay
         public string OrderDescription { get; set; }
         public string TransactionId { get; set; }
         public string OrderId { get; set; }
-        public string PaymnetMethod { get; set; }
+        public string PaymentMethod { get; set; }
         public string PaymentId { get; set; }
 
         public string ResponseCode { get; set; }

@@ -33,6 +33,7 @@ namespace Services
                 throw new ArgumentException("KitId must be a positive integer.", nameof(kitId));
             }
             return await testKitRepository.GetByIdAsync(kitId);
+            
         }
 
         public async Task<IEnumerable<TestKit>> GetAllTestKitsAsync()
@@ -46,12 +47,15 @@ namespace Services
             {
                 throw new ArgumentNullException(nameof(testKitDTO), "TestKitDto cannot be null.");
             }
+
+
             var testKit = new TestKit
             {
                 Name = testKitDTO.Name,
                 Description = testKitDTO.Description,
                 StockQuantity = testKitDTO.StockQuantity,
                 IsActive = testKitDTO.IsActive,
+                ServiceType = testKitDTO.ServiceType > 0 ? testKitDTO.ServiceType : null
             };
             await testKitRepository.CreateAsync(testKit);
             return testKit;
@@ -77,6 +81,7 @@ namespace Services
             existingTestKit.Description = testKitDTO.Description;
             existingTestKit.StockQuantity = testKitDTO.StockQuantity;
             existingTestKit.IsActive = testKitDTO.IsActive;
+            existingTestKit.ServiceType = testKitDTO.ServiceType > 0 ? testKitDTO.ServiceType : null;
             await testKitRepository.UpdateAsync(existingTestKit);
             return existingTestKit;
         }

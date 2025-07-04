@@ -378,7 +378,7 @@
     "Parameters": [
       {
         "Name": "model",
-        "Type": "Services.PaymentDTO.PaymentRequestModel",
+        "Type": "Services.PaymentDTO.PaymentDto",
         "IsRequired": true
       }
     ],
@@ -455,6 +455,32 @@
         "IsRequired": true
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.ServiceTypeController",
+    "Method": "GetServiceTypeById",
+    "RelativePath": "api/ServiceType/{serviceTypeId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "serviceTypeId",
+        "Type": "System.SByte",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.ServiceTypeController",
+    "Method": "GetAllServiceTypes",
+    "RelativePath": "api/ServiceType/all-service-types",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {

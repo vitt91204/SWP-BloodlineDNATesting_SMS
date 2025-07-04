@@ -28,6 +28,7 @@ namespace DNAServicesSystemAPI.Controllers
         public async Task<IActionResult> GetTestKitById(int kitId)
         {
             var testKit = await testKitService.GetTestKitByIdAsync(kitId);
+
             if (testKit == null)
             {
                 return NotFound($"Test kit with ID '{kitId}' not found.");

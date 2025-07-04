@@ -573,17 +573,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PaymentRequestModel"
+                "$ref": "#/components/schemas/PaymentDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/PaymentRequestModel"
+                "$ref": "#/components/schemas/PaymentDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/PaymentRequestModel"
+                "$ref": "#/components/schemas/PaymentDto"
               }
             }
           }
@@ -704,6 +704,41 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/ServiceType/all-service-types": {
+      "get": {
+        "tags": [
+          "ServiceType"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/ServiceType/{serviceTypeId}": {
+      "get": {
+        "tags": [
+          "ServiceType"
+        ],
+        "parameters": [
+          {
+            "name": "serviceTypeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -1862,7 +1897,7 @@
         },
         "additionalProperties": false
       },
-      "PaymentRequestModel": {
+      "PaymentDto": {
         "required": [
           "amount",
           "requestId"
@@ -1958,6 +1993,7 @@
         "required": [
           "isActive",
           "name",
+          "serviceType",
           "stockQuantity"
         ],
         "type": "object",
@@ -1981,6 +2017,12 @@
           },
           "isActive": {
             "type": "boolean"
+          },
+          "serviceType": {
+            "maximum": 255,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
