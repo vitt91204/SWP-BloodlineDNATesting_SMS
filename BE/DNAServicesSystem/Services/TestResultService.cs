@@ -15,8 +15,7 @@ namespace Services
             return results.Select(r => new TestResultDto
             {
                 ResultId = r.ResultId,
-                SampleId = r.SampleId,
-                RequestId = r.RequestId ?? 0, // Explicitly handle nullable value
+                SampleId = r.SampleId ?? 0,
                 UploadedBy = r.UploadedBy,
                 ApprovedBy = r.ApprovedBy,
                 UploadedTime = r.UploadedTime,
@@ -32,8 +31,7 @@ namespace Services
             return new TestResultDto
             {
                 ResultId = r.ResultId,
-                SampleId = r.SampleId,
-                RequestId = r.RequestId ?? 0, // Explicitly handle nullable value
+                SampleId = r.SampleId ?? 0,
                 UploadedBy = r.UploadedBy,
                 ApprovedBy = r.ApprovedBy,
                 UploadedTime = r.UploadedTime,
@@ -47,7 +45,6 @@ namespace Services
             var entity = new TestResult
             {
                 SampleId = dto.SampleId,
-                RequestId = dto.RequestId,
                 UploadedBy = dto.UploadedBy,
                 ApprovedBy = dto.ApprovedBy,
                 UploadedTime = dto.UploadedTime,
@@ -63,7 +60,6 @@ namespace Services
             if (entity == null) return false;
 
             entity.SampleId = dto.SampleId;
-            entity.RequestId = dto.RequestId;
             entity.UploadedBy = dto.UploadedBy;
             entity.ApprovedBy = dto.ApprovedBy;
             entity.UploadedTime = dto.UploadedTime;

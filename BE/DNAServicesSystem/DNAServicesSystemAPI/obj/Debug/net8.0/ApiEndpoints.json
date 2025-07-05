@@ -458,32 +458,6 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "DNAServicesSystemAPI.Controllers.ServiceTypeController",
-    "Method": "GetServiceTypeById",
-    "RelativePath": "api/ServiceType/{serviceTypeId}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "serviceTypeId",
-        "Type": "System.SByte",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DNAServicesSystemAPI.Controllers.ServiceTypeController",
-    "Method": "GetAllServiceTypes",
-    "RelativePath": "api/ServiceType/all-service-types",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": []
-  },
-  {
     "ContainingType": "DNAServicesSystemAPI.Controllers.SubSampleController",
     "Method": "GetAll",
     "RelativePath": "api/SubSample",
@@ -627,16 +601,21 @@
   },
   {
     "ContainingType": "DNAServicesSystemAPI.Controllers.TestKitController",
-    "Method": "GetTestKitByName",
-    "RelativePath": "api/TestKit/{name}",
-    "HttpMethod": "GET",
+    "Method": "UpdateQuantity",
+    "RelativePath": "api/TestKit/{kitId}/updatequantity",
+    "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "name",
-        "Type": "System.String",
+        "Name": "kitId",
+        "Type": "System.Int32",
         "IsRequired": true
+      },
+      {
+        "Name": "newQuantity",
+        "Type": "System.Int32",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []

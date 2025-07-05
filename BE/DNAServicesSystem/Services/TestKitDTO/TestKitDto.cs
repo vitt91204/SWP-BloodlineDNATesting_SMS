@@ -9,7 +9,6 @@ namespace Services.TestKitDTO
 {
     public class TestKitDto
     {
-        // KitId is typically not set by the client for create/update, so it's omitted
 
         [Required(AllowEmptyStrings = false)]
         [StringLength(100, MinimumLength = 2)]
@@ -26,7 +25,6 @@ namespace Services.TestKitDTO
         public bool IsActive { get; set; }
 
         [Required]
-        [Range(1, byte.MaxValue, ErrorMessage = "ServiceType must be a valid byte value.")]
-        public byte ServiceType { get; set; } = 1;
+        public string? ServiceType { get; set; }
     }
 }

@@ -37,7 +37,5 @@ public partial class TestRequest
 
     public virtual User? Staff { get; set; }
 
-    public virtual ICollection<TestResult> TestResults { get; set; } = new List<TestResult>();
-
     public virtual User User { get; set; } = null!;
 }

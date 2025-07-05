@@ -70,7 +70,7 @@ namespace DNAServicesSystemAPI.Controllers
 
             var testResult = new TestResult
             {
-                ResultDataId = resultDatum.ResultDataId,
+                ResultId = resultDatum.ResultDataId,
                 UploadedTime = DateTime.UtcNow
             };
             await _testResultRepository.CreateAsync(testResult);

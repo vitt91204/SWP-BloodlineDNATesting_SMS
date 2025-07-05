@@ -42,7 +42,6 @@ namespace DNAServicesSystemAPI
             builder.Services.AddScoped<SampleService>();
             builder.Services.AddScoped<PaymentService>();
             builder.Services.AddScoped<IVnPayService, PaymentService>();
-            builder.Services.AddScoped<ServiceTypeService>();
             builder.Services.AddScoped<TestResultService>();
             builder.Services.AddScoped<TestResultRepository>();
             builder.Services.AddScoped<GenericRepository<ResultDatum>>();

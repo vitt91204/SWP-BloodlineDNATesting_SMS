@@ -711,41 +711,6 @@
         }
       }
     },
-    "/api/ServiceType/all-service-types": {
-      "get": {
-        "tags": [
-          "ServiceType"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/ServiceType/{serviceTypeId}": {
-      "get": {
-        "tags": [
-          "ServiceType"
-        ],
-        "parameters": [
-          {
-            "name": "serviceTypeId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
     "/api/SubSample": {
       "get": {
         "tags": [
@@ -843,28 +808,6 @@
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/TestKit/{name}": {
-      "get": {
-        "tags": [
-          "TestKit"
-        ],
-        "parameters": [
-          {
-            "name": "name",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -990,6 +933,37 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TestKit/{kitId}/updatequantity": {
+      "put": {
+        "tags": [
+          "TestKit"
+        ],
+        "parameters": [
+          {
+            "name": "kitId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "newQuantity",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -2081,10 +2055,8 @@
             "type": "boolean"
           },
           "serviceType": {
-            "maximum": 255,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
+            "minLength": 1,
+            "type": "string"
           }
         },
         "additionalProperties": false
