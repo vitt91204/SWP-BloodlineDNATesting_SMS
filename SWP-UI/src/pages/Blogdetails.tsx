@@ -5,26 +5,50 @@ import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { feedbackAPI } from "@/api/axios";
 
 export default function Blogdetails() {
   const { id } = useParams();
   const [blog, setBlog] = useState(null);
   const [error, setError] = useState("");
+  const [feedback, setFeedback] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
-useEffect(() => {
-  const fetchBlog = async () => {
+  useEffect(() => {
+    const fetchBlog = async () => {
+      try {
+        const data = await blogAPI.getById(id); 
+        setBlog(data);
+      } catch (err) {
+        setError("Không thể tải bài viết.");
+        console.error(err);
+      }
+    };
+
+    if (id) fetchBlog();
+  }, [id]);
+
+  const handleFeedbackSubmit = async (e) => {
+    e.preventDefault();
+    if (!feedback.trim()) {
+      toast({ title: "Vui lòng nhập nhận xét!", variant: "destructive" });
+      return;
+    }
+    setLoading(true);
     try {
-      const data = await blogAPI.getById(id); 
-      setBlog(data);
+      await feedbackAPI.create({ blogPostId: id, comment: feedback });
+      toast({ title: "Cảm ơn bạn đã gửi feedback!" });
+      setFeedback("");
     } catch (err) {
-      setError("Không thể tải bài viết.");
-      console.error(err);
+      toast({ title: "Gửi feedback thất bại!", variant: "destructive" });
+    } finally {
+      setLoading(false);
     }
   };
-
-  if (id) fetchBlog();
-}, [id]);
-
 
   if (error) {
     return (
@@ -72,6 +96,23 @@ useEffect(() => {
             </div>
           </CardContent>
         </Card>
+      </div>
+      {/* Feedback Section */}
+      <div className="max-w-3xl mx-auto px-4 pb-10">
+        <form onSubmit={handleFeedbackSubmit} className="bg-white rounded-lg shadow p-6 mt-8">
+          <div className="font-semibold mb-2">Hãy để lại nhận xét hoặc góp ý cho bài viết này!</div>
+          <Textarea
+            value={feedback}
+            onChange={e => setFeedback(e.target.value)}
+            placeholder="Nhận xét của bạn..."
+            rows={4}
+            className="mb-4"
+            disabled={loading}
+          />
+          <Button type="submit" disabled={loading}>
+            {loading ? "Đang gửi..." : "Gửi feedback"}
+          </Button>
+        </form>
       </div>
       <Footer />
     </div>

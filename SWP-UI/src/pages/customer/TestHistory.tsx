@@ -106,13 +106,16 @@ export default function TestHistory() {
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => navigate('/results')}
+                      onClick={() => navigate(`/test-result/${test.id}`)}
                     >
                       <Eye className="w-4 h-4 mr-2" />
                       Xem chi tiết
                     </Button>
                     {test.result === "Có kết quả" && (
-                      <Button size="sm">
+                      <Button 
+                        size="sm"
+                        onClick={() => navigate(`/test-result/${test.id}`)}
+                      >
                         <Download className="w-4 h-4 mr-2" />
                         Tải kết quả
                       </Button>

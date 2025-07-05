@@ -55,7 +55,7 @@ export default function Blog() {
 
       {/* Blog section */}
       <ScrollReveal animation="scaleIn" delay={150}>
-        <BlogSection blogs={blogs} />
+        <BlogSection />
       </ScrollReveal>
 
       <Footer />

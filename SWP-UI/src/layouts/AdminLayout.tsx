@@ -20,6 +20,9 @@ import {
   LogOut,
   Home,
   Package,
+  TestTube,
+  BarChart3,
+  Microscope,
 } from "lucide-react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -44,6 +47,21 @@ const navigation = [
     name: "Lịch hẹn",
     href: "/admin/appointments",
     icon: Calendar
+  },
+  {
+    name: "Quản lý mẫu",
+    href: "/admin/samples",
+    icon: TestTube
+  },
+  {
+    name: "Kết quả xét nghiệm",
+    href: "/admin/test-results",
+    icon: BarChart3
+  },
+  {
+    name: "Quản lý phòng lab",
+    href: "/admin/lab",
+    icon: Microscope
   },
   {
     name: "Quản lý loại dịch vụ",

@@ -625,6 +625,212 @@ export const paymentAPI = {
   }
 };
 
+// API cho Sample Management
+export const sampleAPI = {
+  // Lấy tất cả mẫu xét nghiệm
+  getAll: async () => {
+    const response = await api.get('/api/Sample');
+    return response.data;
+  },
+
+  // Lấy mẫu theo ID
+  getById: async (id: string) => {
+    const response = await api.get(`/api/Sample/${id}`);
+    return response.data;
+  },
+
+  // Tạo mẫu mới
+  create: async (sampleData: any) => {
+    const response = await api.post('/api/Sample', sampleData);
+    return response.data;
+  },
+
+  // Cập nhật mẫu
+  update: async (id: string, sampleData: any) => {
+    const response = await api.put(`/api/Sample/${id}`, sampleData);
+    return response.data;
+  },
+
+  // Xóa mẫu
+  delete: async (id: string) => {
+    const response = await api.delete(`/api/Sample/${id}`);
+    return response.data;
+  },
+
+  // Cập nhật trạng thái mẫu
+  updateStatus: async (id: string, status: string) => {
+    const response = await api.patch(`/api/Sample/${id}/status`, { status });
+    return response.data;
+  },
+
+  // Lấy mẫu theo test ID
+  getByTestId: async (testId: string) => {
+    const response = await api.get(`/api/Sample/test/${testId}`);
+    return response.data;
+  },
+
+  // Lấy thống kê mẫu
+  getStats: async () => {
+    const response = await api.get('/api/Sample/stats');
+    return response.data;
+  }
+};
+
+// API cho Test Results Management
+export const testResultAPI = {
+  // Lấy tất cả kết quả xét nghiệm
+  getAll: async () => {
+    const response = await api.get('/api/TestResult');
+    return response.data;
+  },
+
+  // Lấy kết quả theo ID
+  getById: async (id: string) => {
+    const response = await api.get(`/api/TestResult/${id}`);
+    return response.data;
+  },
+
+  // Tạo kết quả mới
+  create: async (resultData: any) => {
+    const response = await api.post('/api/TestResult', resultData);
+    return response.data;
+  },
+
+  // Cập nhật kết quả
+  update: async (id: string, resultData: any) => {
+    const response = await api.put(`/api/TestResult/${id}`, resultData);
+    return response.data;
+  },
+
+  // Xóa kết quả
+  delete: async (id: string) => {
+    const response = await api.delete(`/api/TestResult/${id}`);
+    return response.data;
+  },
+
+  // Cập nhật trạng thái kết quả
+  updateStatus: async (id: string, status: string) => {
+    const response = await api.patch(`/api/TestResult/${id}/status`, { status });
+    return response.data;
+  },
+
+  // Lấy kết quả theo test ID
+  getByTestId: async (testId: string) => {
+    const response = await api.get(`/api/TestResult/test/${testId}`);
+    return response.data;
+  },
+
+  // Lấy kết quả cho khách hàng
+  getCustomerResult: async (resultId: string) => {
+    const response = await api.get(`/api/TestResult/customer/${resultId}`);
+    return response.data;
+  },
+
+  // Tải xuống báo cáo PDF
+  downloadReport: async (resultId: string) => {
+    const response = await api.get(`/api/TestResult/${resultId}/download`, {
+      responseType: 'blob'
+    });
+    return response.data;
+  },
+
+  // Gửi kết quả qua email
+  sendByEmail: async (resultId: string, emailData: any) => {
+    const response = await api.post(`/api/TestResult/${resultId}/send-email`, emailData);
+    return response.data;
+  },
+
+  // Lấy thống kê kết quả
+  getStats: async () => {
+    const response = await api.get('/api/TestResult/stats');
+    return response.data;
+  }
+};
+
+// API cho Lab Management
+export const labAPI = {
+  // Lấy thống kê tổng quan phòng lab
+  getDashboardStats: async () => {
+    const response = await api.get('/api/Lab/dashboard');
+    return response.data;
+  },
+
+  // Lấy hoạt động gần đây
+  getRecentActivity: async () => {
+    const response = await api.get('/api/Lab/recent-activity');
+    return response.data;
+  },
+
+  // Lấy tiến độ xử lý mẫu
+  getSampleProgress: async () => {
+    const response = await api.get('/api/Lab/sample-progress');
+    return response.data;
+  },
+
+  // Lấy tiến độ kết quả
+  getResultProgress: async () => {
+    const response = await api.get('/api/Lab/result-progress');
+    return response.data;
+  },
+
+  // Cập nhật trạng thái mẫu hàng loạt
+  updateBatchSampleStatus: async (sampleIds: string[], status: string) => {
+    const response = await api.patch('/api/Lab/batch-update-samples', {
+      sampleIds,
+      status
+    });
+    return response.data;
+  },
+
+  // Cập nhật trạng thái kết quả hàng loạt
+  updateBatchResultStatus: async (resultIds: string[], status: string) => {
+    const response = await api.patch('/api/Lab/batch-update-results', {
+      resultIds,
+      status
+    });
+    return response.data;
+  }
+};
+
+// API cho Marker DNA
+export const markerAPI = {
+  // Lấy tất cả marker DNA
+  getAll: async () => {
+    const response = await api.get('/api/Marker');
+    return response.data;
+  },
+
+  // Lấy marker theo ID
+  getById: async (id: number) => {
+    const response = await api.get(`/api/Marker/${id}`);
+    return response.data;
+  },
+
+  // Tạo marker mới
+  create: async (markerData: any) => {
+    const response = await api.post('/api/Marker', markerData);
+    return response.data;
+  },
+
+  // Cập nhật marker
+  update: async (id: number, markerData: any) => {
+    const response = await api.put(`/api/Marker/${id}`, markerData);
+    return response.data;
+  },
+
+  // Xóa marker
+  delete: async (id: number) => {
+    const response = await api.delete(`/api/Marker/${id}`);
+    return response.data;
+  },
+
+  // Lấy marker theo kit
+  getByKitId: async (kitId: number) => {
+    const response = await api.get(`/api/Marker/kit/${kitId}`);
+    return response.data;
+  }
+};
+
 
 
   
