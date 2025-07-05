@@ -364,42 +364,7 @@ export interface TestRequestResponse extends TestRequest {
   address?: any;
 }
 
-export const testRequestAPI = {
-  create: async (requestData: TestRequest) => {
-    const response = await api.post('/api/TestRequest/api/testrequest', requestData);
-    return response.data as TestRequestResponse;
-  },
 
-  // Lấy tất cả test requests
-  getAll: async () => {
-    const response = await api.get('/api/TestRequest');
-    return response.data as TestRequestResponse[];
-  },
-
-  // Lấy test request theo ID
-  getById: async (id: number) => {
-    const response = await api.get(`/api/TestRequest/${id}`);
-    return response.data as TestRequestResponse;
-  },
-
-  // Lấy test requests theo userId
-  getByUserId: async (userId: number) => {
-    const response = await api.get(`/api/TestRequest/user/${userId}`);
-    return response.data as TestRequestResponse[];
-  },
-
-  // Cập nhật test request
-  update: async (id: number, requestData: Partial<TestRequest>) => {
-    const response = await api.put(`/api/TestRequest/${id}`, requestData);
-    return response.data as TestRequestResponse;
-  },
-
-  // Xóa test request
-  delete: async (id: number) => {
-    const response = await api.delete(`/api/TestRequest/${id}`);
-    return response.data;
-  }
-};
 
 // Thêm API cho TestService
 export interface TestServiceUpdatePayload {
@@ -597,33 +562,7 @@ export const addressAPI = {
   }
 };
 
-// API cho Payment
-export const paymentAPI = {
-  // Tạo payment URL
-  createPaymentUrl: async (requestId: number, amount: number) => {
-    const response = await api.post('/api/Payment/create-payment-url', {
-      requestId,
-      amount,
-    });
 
-    /*
-      Backend có 2 khả năng phản hồi:
-      1. Trả về text/plain chứa trực tiếp URL thanh toán (kiểu string)
-      2. Trả về JSON có cấu trúc { result: "<paymentUrl>", ... }
-      Để an toàn, ta kiểm tra cả 2 trường hợp và chuẩn hóa thành { paymentUrl: string | null }
-    */
-
-    let paymentUrl: string | null = null;
-
-    if (typeof response.data === 'string') {
-      paymentUrl = response.data;
-    } else if (response.data && typeof response.data.result === 'string') {
-      paymentUrl = response.data.result;
-    }
-
-    return { paymentUrl };
-  }
-};
 
 // API cho Sample Management
 export const sampleAPI = {
@@ -634,38 +573,44 @@ export const sampleAPI = {
   },
 
   // Lấy mẫu theo ID
-  getById: async (id: string) => {
+  getById: async (id: number) => {
     const response = await api.get(`/api/Sample/${id}`);
     return response.data;
   },
 
   // Tạo mẫu mới
-  create: async (sampleData: any) => {
+  create: async (sampleData: {
+    request_id: number;
+    collected_by: number;
+    collection_time?: string;
+    received_time?: string;
+    status: 'Waiting' | 'Received' | 'Tested';
+  }) => {
     const response = await api.post('/api/Sample', sampleData);
     return response.data;
   },
 
   // Cập nhật mẫu
-  update: async (id: string, sampleData: any) => {
+  update: async (id: number, sampleData: any) => {
     const response = await api.put(`/api/Sample/${id}`, sampleData);
     return response.data;
   },
 
   // Xóa mẫu
-  delete: async (id: string) => {
+  delete: async (id: number) => {
     const response = await api.delete(`/api/Sample/${id}`);
     return response.data;
   },
 
   // Cập nhật trạng thái mẫu
-  updateStatus: async (id: string, status: string) => {
+  updateStatus: async (id: number, status: 'Waiting' | 'Received' | 'Tested') => {
     const response = await api.patch(`/api/Sample/${id}/status`, { status });
     return response.data;
   },
 
-  // Lấy mẫu theo test ID
-  getByTestId: async (testId: string) => {
-    const response = await api.get(`/api/Sample/test/${testId}`);
+  // Lấy mẫu theo request ID
+  getByRequestId: async (requestId: number) => {
+    const response = await api.get(`/api/Sample/request/${requestId}`);
     return response.data;
   },
 
@@ -685,49 +630,54 @@ export const testResultAPI = {
   },
 
   // Lấy kết quả theo ID
-  getById: async (id: string) => {
+  getById: async (id: number) => {
     const response = await api.get(`/api/TestResult/${id}`);
     return response.data;
   },
 
   // Tạo kết quả mới
-  create: async (resultData: any) => {
+  create: async (resultData: {
+    sample_id: number;
+    uploaded_by: number;
+    result_data: string;
+    staff_id?: number;
+  }) => {
     const response = await api.post('/api/TestResult', resultData);
     return response.data;
   },
 
   // Cập nhật kết quả
-  update: async (id: string, resultData: any) => {
+  update: async (id: number, resultData: any) => {
     const response = await api.put(`/api/TestResult/${id}`, resultData);
     return response.data;
   },
 
   // Xóa kết quả
-  delete: async (id: string) => {
+  delete: async (id: number) => {
     const response = await api.delete(`/api/TestResult/${id}`);
     return response.data;
   },
 
-  // Cập nhật trạng thái kết quả
-  updateStatus: async (id: string, status: string) => {
-    const response = await api.patch(`/api/TestResult/${id}/status`, { status });
+  // Phê duyệt kết quả
+  approve: async (id: number, approvedBy: number) => {
+    const response = await api.patch(`/api/TestResult/${id}/approve`, { approved_by: approvedBy });
     return response.data;
   },
 
-  // Lấy kết quả theo test ID
-  getByTestId: async (testId: string) => {
-    const response = await api.get(`/api/TestResult/test/${testId}`);
+  // Lấy kết quả theo sample ID
+  getBySampleId: async (sampleId: number) => {
+    const response = await api.get(`/api/TestResult/sample/${sampleId}`);
     return response.data;
   },
 
   // Lấy kết quả cho khách hàng
-  getCustomerResult: async (resultId: string) => {
+  getCustomerResult: async (resultId: number) => {
     const response = await api.get(`/api/TestResult/customer/${resultId}`);
     return response.data;
   },
 
   // Tải xuống báo cáo PDF
-  downloadReport: async (resultId: string) => {
+  downloadReport: async (resultId: number) => {
     const response = await api.get(`/api/TestResult/${resultId}/download`, {
       responseType: 'blob'
     });
@@ -735,7 +685,7 @@ export const testResultAPI = {
   },
 
   // Gửi kết quả qua email
-  sendByEmail: async (resultId: string, emailData: any) => {
+  sendByEmail: async (resultId: number, emailData: any) => {
     const response = await api.post(`/api/TestResult/${resultId}/send-email`, emailData);
     return response.data;
   },
@@ -792,42 +742,150 @@ export const labAPI = {
   }
 };
 
-// API cho Marker DNA
-export const markerAPI = {
-  // Lấy tất cả marker DNA
+// API cho TestRequest (Yêu cầu xét nghiệm)
+export const testRequestAPI = {
+  // Lấy tất cả yêu cầu xét nghiệm
   getAll: async () => {
-    const response = await api.get('/api/Marker');
+    const response = await api.get('/api/TestRequest');
     return response.data;
   },
 
-  // Lấy marker theo ID
+  // Lấy yêu cầu theo ID
   getById: async (id: number) => {
-    const response = await api.get(`/api/Marker/${id}`);
+    const response = await api.get(`/api/TestRequest/${id}`);
     return response.data;
   },
 
-  // Tạo marker mới
-  create: async (markerData: any) => {
-    const response = await api.post('/api/Marker', markerData);
+  // Tạo yêu cầu mới
+  create: async (requestData: {
+    user_id: number;
+    service_id: number;
+    collection_type: 'Self' | 'At Clinic' | 'At Home';
+    appointment_date?: string;
+    slot_time?: string;
+    staff_id?: number;
+    address_id?: number;
+  }) => {
+    const response = await api.post('/api/TestRequest', requestData);
     return response.data;
   },
 
-  // Cập nhật marker
-  update: async (id: number, markerData: any) => {
-    const response = await api.put(`/api/Marker/${id}`, markerData);
+  // Cập nhật yêu cầu
+  update: async (id: number, requestData: any) => {
+    const response = await api.put(`/api/TestRequest/${id}`, requestData);
     return response.data;
   },
 
-  // Xóa marker
-  delete: async (id: number) => {
-    const response = await api.delete(`/api/Marker/${id}`);
+  // Cập nhật trạng thái yêu cầu
+  updateStatus: async (id: number, status: 'Pending' | 'On-going' | 'Arrived' | 'Collected' | 'Testing' | 'Completed') => {
+    const response = await api.patch(`/api/TestRequest/${id}/status`, { status });
     return response.data;
   },
 
-  // Lấy marker theo kit
-  getByKitId: async (kitId: number) => {
-    const response = await api.get(`/api/Marker/kit/${kitId}`);
+  // Lấy yêu cầu theo user ID
+  getByUserId: async (userId: number) => {
+    const response = await api.get(`/api/TestRequest/user/${userId}`);
     return response.data;
+  },
+
+  // Lấy yêu cầu theo staff ID
+  getByStaffId: async (staffId: number) => {
+    const response = await api.get(`/api/TestRequest/staff/${staffId}`);
+    return response.data;
+  }
+};
+
+// API cho SubSample
+export const subSampleAPI = {
+  // Lấy tất cả sub-sample
+  getAll: async () => {
+    const response = await api.get('/api/SubSample');
+    return response.data;
+  },
+
+  // Lấy sub-sample theo ID
+  getById: async (id: number) => {
+    const response = await api.get(`/api/SubSample/${id}`);
+    return response.data;
+  },
+
+  // Tạo sub-sample mới
+  create: async (subSampleData: {
+    sample_id: number;
+    description: string;
+  }) => {
+    const response = await api.post('/api/SubSample', subSampleData);
+    return response.data;
+  },
+
+  // Lấy sub-sample theo sample ID
+  getBySampleId: async (sampleId: number) => {
+    const response = await api.get(`/api/SubSample/sample/${sampleId}`);
+    return response.data;
+  }
+};
+
+// API cho Payment
+export const paymentAPI = {
+  // Lấy tất cả thanh toán
+  getAll: async () => {
+    const response = await api.get('/api/Payment');
+    return response.data;
+  },
+
+  // Lấy thanh toán theo ID
+  getById: async (id: number) => {
+    const response = await api.get(`/api/Payment/${id}`);
+    return response.data;
+  },
+
+  // Tạo thanh toán mới
+  create: async (paymentData: {
+    request_id: number;
+    method: string;
+    amount: number;
+    status: 'Pending' | 'Paid' | 'Failed' | 'Refunded';
+    token?: string;
+  }) => {
+    const response = await api.post('/api/Payment', paymentData);
+    return response.data;
+  },
+
+  // Cập nhật trạng thái thanh toán
+  updateStatus: async (id: number, status: 'Pending' | 'Paid' | 'Failed' | 'Refunded') => {
+    const response = await api.patch(`/api/Payment/${id}/status`, { status });
+    return response.data;
+  },
+
+  // Lấy thanh toán theo request ID
+  getByRequestId: async (requestId: number) => {
+    const response = await api.get(`/api/Payment/request/${requestId}`);
+    return response.data;
+  },
+
+  // Tạo payment URL
+  createPaymentUrl: async (requestId: number, amount: number) => {
+    const response = await api.post('/api/Payment/create-payment-url', {
+      requestId,
+      amount,
+    });
+
+    /*
+      Backend có 2 khả năng phản hồi:
+      1. Trả về text/plain chứa trực tiếp URL thanh toán (kiểu string)
+      2. Trả về JSON có cấu trúc { result: "<paymentUrl>", ... }
+      Để an toàn, ta kiểm tra cả 2 trường hợp và chuẩn hóa thành { paymentUrl: string | null }
+    */
+
+    let paymentUrl: string | null = null;
+
+    if (typeof response.data === 'string') {
+      paymentUrl = response.data;
+    } else if (response.data && typeof response.data.result === 'string') {
+      paymentUrl = response.data.result;
+    }
+
+    return { paymentUrl };
   }
 };
 
