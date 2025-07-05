@@ -3,8 +3,32 @@
   "WorkspaceRootPath": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|c:\\users\\nguyen ba tuan anh\\documents\\github\\swp-dnaprojects\\be\\dnaservicessystem\\services\\sampleservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|solutionrelative:services\\sampleservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EE56B4D8-D35D-4E69-A4BB-6F67C13C9AE8}|DNAServicesSystemAPI\\DNAServicesSystemAPI.csproj|c:\\users\\nguyen ba tuan anh\\documents\\github\\swp-dnaprojects\\be\\dnaservicessystem\\dnaservicessystemapi\\controllers\\samplecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EE56B4D8-D35D-4E69-A4BB-6F67C13C9AE8}|DNAServicesSystemAPI\\DNAServicesSystemAPI.csproj|solutionrelative:dnaservicessystemapi\\controllers\\samplecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EE56B4D8-D35D-4E69-A4BB-6F67C13C9AE8}|DNAServicesSystemAPI\\DNAServicesSystemAPI.csproj|c:\\users\\nguyen ba tuan anh\\documents\\github\\swp-dnaprojects\\be\\dnaservicessystem\\dnaservicessystemapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EE56B4D8-D35D-4E69-A4BB-6F67C13C9AE8}|DNAServicesSystemAPI\\DNAServicesSystemAPI.csproj|solutionrelative:dnaservicessystemapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{EE56B4D8-D35D-4E69-A4BB-6F67C13C9AE8}|DNAServicesSystemAPI\\DNAServicesSystemAPI.csproj|c:\\users\\nguyen ba tuan anh\\documents\\github\\swp-dnaprojects\\be\\dnaservicessystem\\dnaservicessystemapi\\controllers\\testresultcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{EE56B4D8-D35D-4E69-A4BB-6F67C13C9AE8}|DNAServicesSystemAPI\\DNAServicesSystemAPI.csproj|solutionrelative:dnaservicessystemapi\\controllers\\testresultcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|c:\\users\\nguyen ba tuan anh\\documents\\github\\swp-dnaprojects\\be\\dnaservicessystem\\services\\testresultservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|solutionrelative:services\\testresultservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|c:\\users\\nguyen ba tuan anh\\documents\\github\\swp-dnaprojects\\be\\dnaservicessystem\\services\\testrequestdto\\testrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|solutionrelative:services\\testrequestdto\\testrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{33A30782-440B-4B65-8A14-EFFC7459E34D}|Repositories\\Repositories.csproj|c:\\users\\nguyen ba tuan anh\\documents\\github\\swp-dnaprojects\\be\\dnaservicessystem\\repositories\\base\\genericrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{33A30782-440B-4B65-8A14-EFFC7459E34D}|Repositories\\Repositories.csproj|solutionrelative:repositories\\base\\genericrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|c:\\users\\nguyen ba tuan anh\\documents\\github\\swp-dnaprojects\\be\\dnaservicessystem\\services\\testresultdto\\testresultdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -25,10 +49,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{EE56B4D8-D35D-4E69-A4BB-6F67C13C9AE8}|DNAServicesSystemAPI\\DNAServicesSystemAPI.csproj|c:\\users\\nguyen ba tuan anh\\documents\\github\\swp-dnaprojects\\be\\dnaservicessystem\\dnaservicessystemapi\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{EE56B4D8-D35D-4E69-A4BB-6F67C13C9AE8}|DNAServicesSystemAPI\\DNAServicesSystemAPI.csproj|solutionrelative:dnaservicessystemapi\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|c:\\users\\nguyen ba tuan anh\\documents\\github\\swp-dnaprojects\\be\\dnaservicessystem\\services\\sampleservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|solutionrelative:services\\sampleservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|c:\\users\\nguyen ba tuan anh\\documents\\github\\swp-dnaprojects\\be\\dnaservicessystem\\services\\paymentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -66,24 +86,106 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 7,
           "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "TestResultDto.cs",
-              "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\TestResultDTO\\TestResultDto.cs",
-              "RelativeDocumentMoniker": "Services\\TestResultDTO\\TestResultDto.cs",
-              "ToolTip": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\TestResultDTO\\TestResultDto.cs",
-              "RelativeToolTip": "Services\\TestResultDTO\\TestResultDto.cs",
-              "ViewState": "AgIAAAcAAAAAAAAAAAAzwAAAAAAAAAAAAAAAAA==",
+              "Title": "SampleController.cs",
+              "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\DNAServicesSystemAPI\\Controllers\\SampleController.cs",
+              "RelativeDocumentMoniker": "DNAServicesSystemAPI\\Controllers\\SampleController.cs",
+              "ToolTip": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\DNAServicesSystemAPI\\Controllers\\SampleController.cs",
+              "RelativeToolTip": "DNAServicesSystemAPI\\Controllers\\SampleController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-05T06:32:11.511Z",
+              "WhenOpened": "2025-07-05T07:50:04.759Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "GenericRepository.cs",
+              "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Repositories\\Base\\GenericRepository.cs",
+              "RelativeDocumentMoniker": "Repositories\\Base\\GenericRepository.cs",
+              "ToolTip": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Repositories\\Base\\GenericRepository.cs",
+              "RelativeToolTip": "Repositories\\Base\\GenericRepository.cs",
+              "ViewState": "AgIAAEcAAAAAAAAAAAAUwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-05T07:32:42.984Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "TestResultService.cs",
+              "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\TestResultService.cs",
+              "RelativeDocumentMoniker": "Services\\TestResultService.cs",
+              "ToolTip": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\TestResultService.cs",
+              "RelativeToolTip": "Services\\TestResultService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-05T07:28:39.347Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\DNAServicesSystemAPI\\Program.cs",
+              "RelativeDocumentMoniker": "DNAServicesSystemAPI\\Program.cs",
+              "ToolTip": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\DNAServicesSystemAPI\\Program.cs",
+              "RelativeToolTip": "DNAServicesSystemAPI\\Program.cs",
+              "ViewState": "AgIAABoAAAAAAAAAAAAQwC0AAAA8AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-05T07:00:59.842Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 5,
+              "Title": "TestRequestDto.cs",
+              "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\TestRequestDTO\\TestRequestDto.cs",
+              "RelativeDocumentMoniker": "Services\\TestRequestDTO\\TestRequestDto.cs",
+              "ToolTip": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\TestRequestDTO\\TestRequestDto.cs",
+              "RelativeToolTip": "Services\\TestRequestDTO\\TestRequestDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-05T06:46:57.78Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "TestResultController.cs",
+              "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\DNAServicesSystemAPI\\Controllers\\TestResultController.cs",
+              "RelativeDocumentMoniker": "DNAServicesSystemAPI\\Controllers\\TestResultController.cs",
+              "ToolTip": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\DNAServicesSystemAPI\\Controllers\\TestResultController.cs",
+              "RelativeToolTip": "DNAServicesSystemAPI\\Controllers\\TestResultController.cs",
+              "ViewState": "AgIAAAgAAAAAAAAAAAAuwBgAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-05T06:24:36.739Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "SampleService.cs",
+              "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\SampleService.cs",
+              "RelativeDocumentMoniker": "Services\\SampleService.cs",
+              "ToolTip": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\SampleService.cs",
+              "RelativeToolTip": "Services\\SampleService.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAA8wBAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-05T06:13:45.399Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\DNAServicesSystemAPI\\appsettings.json",
               "RelativeDocumentMoniker": "DNAServicesSystemAPI\\appsettings.json",
@@ -91,29 +193,23 @@
               "RelativeToolTip": "DNAServicesSystemAPI\\appsettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAOAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-07-05T06:28:23.407Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+              "WhenOpened": "2025-07-05T06:28:23.407Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "TestResultController.cs",
-              "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\DNAServicesSystemAPI\\Controllers\\TestResultController.cs",
-              "RelativeDocumentMoniker": "DNAServicesSystemAPI\\Controllers\\TestResultController.cs",
-              "ToolTip": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\DNAServicesSystemAPI\\Controllers\\TestResultController.cs",
-              "RelativeToolTip": "DNAServicesSystemAPI\\Controllers\\TestResultController.cs",
-              "ViewState": "AgIAAD8AAAAAAAAAAAAkwFAAAAAkAAAAAAAAAA==",
+              "DocumentIndex": 7,
+              "Title": "TestResultDto.cs",
+              "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\TestResultDTO\\TestResultDto.cs",
+              "RelativeDocumentMoniker": "Services\\TestResultDTO\\TestResultDto.cs",
+              "ToolTip": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\TestResultDTO\\TestResultDto.cs",
+              "RelativeToolTip": "Services\\TestResultDTO\\TestResultDto.cs",
+              "ViewState": "AgIAAAcAAAAAAAAAAAAzwAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-05T06:24:36.739Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-05T06:32:11.511Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 9,
               "Title": "TestResultUploadDto.cs",
               "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\DNAServicesSystemAPI\\DTOs\\TestResultUploadDto.cs",
               "RelativeDocumentMoniker": "DNAServicesSystemAPI\\DTOs\\TestResultUploadDto.cs",
@@ -121,12 +217,11 @@
               "RelativeToolTip": "DNAServicesSystemAPI\\DTOs\\TestResultUploadDto.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-05T06:24:22.023Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-05T06:24:22.023Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 8,
               "Title": "TestResultRepository.cs",
               "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Repositories\\TestResultRepository.cs",
               "RelativeDocumentMoniker": "Repositories\\TestResultRepository.cs",
@@ -134,12 +229,11 @@
               "RelativeToolTip": "Repositories\\TestResultRepository.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-05T06:13:49.879Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-05T06:13:49.879Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 12,
               "Title": "PaymentService.cs",
               "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\PaymentService.cs",
               "RelativeDocumentMoniker": "Services\\PaymentService.cs",
@@ -151,7 +245,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 13,
               "Title": "ServiceTypeService.cs",
               "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\ServiceTypeService.cs",
               "RelativeDocumentMoniker": "Services\\ServiceTypeService.cs",
@@ -163,7 +257,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 10,
               "Title": "TestKitService.cs",
               "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\TestKitService.cs",
               "RelativeDocumentMoniker": "Services\\TestKitService.cs",
@@ -171,24 +265,11 @@
               "RelativeToolTip": "Services\\TestKitService.cs",
               "ViewState": "AgIAAAkAAAAAAAAAAAAAABEAAAA4AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-04T07:25:56.103Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-04T07:25:56.103Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "SampleService.cs",
-              "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\SampleService.cs",
-              "RelativeDocumentMoniker": "Services\\SampleService.cs",
-              "ToolTip": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\SampleService.cs",
-              "RelativeToolTip": "Services\\SampleService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-05T06:13:45.399Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 14,
               "Title": "ServiceTypeRepository.cs",
               "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Repositories\\ServiceTypeRepository.cs",
               "RelativeDocumentMoniker": "Repositories\\ServiceTypeRepository.cs",
@@ -200,7 +281,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 15,
               "Title": "ServiceTypeController.cs",
               "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\DNAServicesSystemAPI\\Controllers\\ServiceTypeController.cs",
               "RelativeDocumentMoniker": "DNAServicesSystemAPI\\Controllers\\ServiceTypeController.cs",
@@ -212,7 +293,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 16,
               "Title": "TestKitDto.cs",
               "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\TestKitDTO\\TestKitDto.cs",
               "RelativeDocumentMoniker": "Services\\TestKitDTO\\TestKitDto.cs",
@@ -224,7 +305,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 17,
               "Title": "PaymentController.cs",
               "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\DNAServicesSystemAPI\\Controllers\\PaymentController.cs",
               "RelativeDocumentMoniker": "DNAServicesSystemAPI\\Controllers\\PaymentController.cs",
@@ -236,7 +317,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 18,
               "Title": "TestKit.cs",
               "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Repositories\\Models\\TestKit.cs",
               "RelativeDocumentMoniker": "Repositories\\Models\\TestKit.cs",

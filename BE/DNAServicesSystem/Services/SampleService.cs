@@ -9,31 +9,17 @@ namespace Services
         private readonly SampleRepository _repository;
         public SampleService(SampleRepository repository) { _repository = repository; }
 
-        public async Task<List<SampleDto>> GetAllAsync()
+        public async Task<List<Sample>> GetAllAsync()
         {
             var samples = await _repository.GetAllAsync();
-            return samples.Select(s => new SampleDto
-            {
-                RequestId = s.RequestId,
-                CollectedBy = s.CollectedBy,
-                CollectionTime = s.CollectionTime,
-                ReceivedTime = s.ReceivedTime,
-                Status = s.Status
-            }).ToList();
+            return samples;
         }
 
-        public async Task<SampleDto?> GetByIdAsync(int id)
+        public async Task<Sample?> GetByIdAsync(int id)
         {
             var s = await _repository.GetByIdAsync(id);
             if (s == null) return null;
-            return new SampleDto
-            {
-                RequestId = s.RequestId,
-                CollectedBy = s.CollectedBy,
-                CollectionTime = s.CollectionTime,
-                ReceivedTime = s.ReceivedTime,
-                Status = s.Status
-            };
+            return s;
         }
 
         public async Task<int> CreateAsync(SampleDto dto)

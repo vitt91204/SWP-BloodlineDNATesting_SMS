@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Repositories;
 using Services;
 using Services.VNPayService;
+using Repositories.Base;
+using Repositories.Models;
 
 
 namespace DNAServicesSystemAPI
@@ -41,7 +43,10 @@ namespace DNAServicesSystemAPI
             builder.Services.AddScoped<PaymentService>();
             builder.Services.AddScoped<IVnPayService, PaymentService>();
             builder.Services.AddScoped<ServiceTypeService>();
-
+            builder.Services.AddScoped<TestResultService>();
+            builder.Services.AddScoped<TestResultRepository>();
+            builder.Services.AddScoped<GenericRepository<ResultDatum>>();
+            
 
             // Add services to the container.
 
