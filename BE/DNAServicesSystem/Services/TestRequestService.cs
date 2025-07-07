@@ -94,6 +94,23 @@ namespace Services
             await testRequestReposity.RemoveAsync(testRequest);
         }
 
+        public async Task<TestRequest> UpdateStaffRequestAsync(int requestId, int staffId)
+        {
+            var testRequest = await testRequestReposity.GetByIdAsync(requestId);
+            if (testRequest == null)
+            {
+                throw new KeyNotFoundException($"Test request with ID {requestId} not found.");
+            }
+
+            if (staffId <= 0)
+            {
+                throw new Exception($"{staffId} is not a legitmate ID");
+            }
+            testRequest.StaffId = staffId;
+            await testRequestReposity.UpdateAsync(testRequest);
+            return testRequest;
+        }
+
     }
 
 }

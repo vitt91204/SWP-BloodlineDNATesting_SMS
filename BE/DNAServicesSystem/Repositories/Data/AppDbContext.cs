@@ -204,7 +204,11 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.ReceivedTime)
                 .HasColumnType("datetime")
                 .HasColumnName("received_time");
+            entity.Property(e => e.Relationship).HasMaxLength(50);
             entity.Property(e => e.RequestId).HasColumnName("request_id");
+            entity.Property(e => e.SampleType)
+                .HasMaxLength(50)
+                .HasColumnName("sample_type");
             entity.Property(e => e.Status)
                 .HasMaxLength(20)
                 .IsUnicode(false)
@@ -232,10 +236,17 @@ public partial class AppDbContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
                 .HasColumnName("created_at");
+            entity.Property(e => e.DateOfBirth).HasColumnName("date_of_birth");
             entity.Property(e => e.Description)
                 .HasColumnType("text")
                 .HasColumnName("description");
+            entity.Property(e => e.FullName)
+                .HasMaxLength(50)
+                .HasColumnName("full_name");
             entity.Property(e => e.SampleId).HasColumnName("sample_id");
+            entity.Property(e => e.SampleType)
+                .HasMaxLength(50)
+                .HasColumnName("sample_type");
 
             entity.HasOne(d => d.Sample).WithMany(p => p.SubSamples)
                 .HasForeignKey(d => d.SampleId)

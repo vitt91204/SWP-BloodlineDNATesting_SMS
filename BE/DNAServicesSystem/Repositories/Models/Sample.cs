@@ -17,6 +17,10 @@ public partial class Sample
 
     public string? Status { get; set; }
 
+    public string? SampleType { get; set; }
+
+    public string? Relationship { get; set; }
+
     public virtual User CollectedByNavigation { get; set; } = null!;
 
     public virtual TestRequest Request { get; set; } = null!;

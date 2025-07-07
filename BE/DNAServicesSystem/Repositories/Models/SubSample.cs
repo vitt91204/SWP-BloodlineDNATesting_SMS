@@ -13,5 +13,11 @@ public partial class SubSample
 
     public DateTime? CreatedAt { get; set; }
 
+    public string? FullName { get; set; }
+
+    public DateOnly? DateOfBirth { get; set; }
+
+    public string? SampleType { get; set; }
+
     public virtual Sample Sample { get; set; } = null!;
 }
