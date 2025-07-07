@@ -19,7 +19,7 @@ import {
   FileText,
   FlaskConical
 } from 'lucide-react';
-import { testRequestAPI, sampleAPI, subSampleAPI } from '@/api/axios';
+import { testRequestAPI, sampleAPI, subSampleAPI, userAPI } from '@/api/axios';
 
 interface TestRequest {
   requestId: number;
@@ -109,8 +109,19 @@ export default function SampleSubsampleManagement() {
     description: ''
   });
 
-  // Get staff ID from localStorage
-  const staffId = parseInt(localStorage.getItem('userId') || '1');
+  const [users, setUsers] = useState<any[]>([]);
+
+  // Get staff ID from localStorage (ưu tiên userId, sau đó id)
+  let staffId: number | null = null;
+  try {
+    const userData = localStorage.getItem('userData');
+    if (userData) {
+      const parsed = JSON.parse(userData);
+      staffId = parsed.userId || parsed.id || null;
+    }
+  } catch (e) {
+    staffId = null;
+  }
 
   // Fetch data
   useEffect(() => {
@@ -121,111 +132,25 @@ export default function SampleSubsampleManagement() {
     try {
       setLoading(true);
       setError(null);
-      
       console.log('Fetching data for staff ID:', staffId);
-      
-      // Fetch all test requests and filter by staff
+      // Fetch users
       try {
-        const allRequestsData = await testRequestAPI.getAll();
-        console.log('All test requests data:', allRequestsData);
-        
-        if (Array.isArray(allRequestsData)) {
-          // Filter requests assigned to this staff
-          const filteredRequests = allRequestsData.filter(
-            (request: TestRequest) => request.staffId === staffId
-          );
-          setTestRequests(filteredRequests);
-        } else {
-          setTestRequests([]);
-        }
+        const userList = await userAPI.getAllUsers();
+        setUsers(Array.isArray(userList) ? userList : []);
       } catch (err) {
-        console.error('Error fetching test requests:', err);
-        // Use mock data for testing
-        setTestRequests([
-          {
-            requestId: 1,
-            userId: 1,
-            serviceId: 1,
-            collectionType: 'At Home',
-            status: 'Pending',
-            appointmentDate: '2024-01-08',
-            slotTime: '09:00',
-            createdAt: '2024-01-07T10:00:00Z',
-            staffId: staffId,
-            addressId: 1,
-            feedbacks: [],
-            payments: [],
-            samples: [],
-            service: {
-              serviceId: 1,
-              name: 'Xét nghiệm huyết thống',
-              description: 'Xét nghiệm huyết thống cơ bản',
-              price: 1500000,
-              isActive: true,
-              testKit: null
-            },
-            address: {
-              addressId: 1,
-              street: '123 Đường ABC',
-              city: 'TP.HCM',
-              state: 'Quận 1',
-              country: 'Việt Nam',
-              postalCode: '70000'
-            },
-            user: {
-              userId: 1,
-              username: 'user1',
-              fullName: 'Nguyễn Văn A',
-              email: 'user1@example.com',
-              phone: '0901234567',
-              dateOfBirth: '1990-01-01',
-              gender: 'Male',
-              role: 'Customer'
-            }
-          },
-          {
-            requestId: 2,
-            userId: 2,
-            serviceId: 2,
-            collectionType: 'At Clinic',
-            status: 'On-going',
-            appointmentDate: '2024-01-08',
-            slotTime: '14:00',
-            createdAt: '2024-01-07T11:00:00Z',
-            staffId: staffId,
-            addressId: 2,
-            feedbacks: [],
-            payments: [],
-            samples: [],
-            service: {
-              serviceId: 2,
-              name: 'Xét nghiệm gen',
-              description: 'Xét nghiệm gen ADN',
-              price: 2500000,
-              isActive: true,
-              testKit: null
-            },
-            address: {
-              addressId: 2,
-              street: '456 Đường XYZ',
-              city: 'TP.HCM',
-              state: 'Quận 2',
-              country: 'Việt Nam',
-              postalCode: '70000'
-            },
-            user: {
-              userId: 2,
-              username: 'user2',
-              fullName: 'Trần Thị B',
-              email: 'user2@example.com',
-              phone: '0907654321',
-              dateOfBirth: '1995-05-15',
-              gender: 'Female',
-              role: 'Customer'
-            }
-          }
-        ]);
+        setUsers([]);
       }
+      if (!staffId) {
+        setTestRequests([]);
+        setSamples([]);
+        setSubSamples([]);
+        setLoading(false);
+        return;
+      }
+      // Sử dụng API lấy yêu cầu theo staffId
+      const staffRequests = await testRequestAPI.getByStaffId(staffId);
+      console.log('Test requests for staff:', staffRequests);
+      setTestRequests(Array.isArray(staffRequests) ? staffRequests : []);
       
       // Fetch all samples
       try {
@@ -347,7 +272,7 @@ export default function SampleSubsampleManagement() {
   const filteredRequests = testRequests.filter(request => {
     const matchesSearch = 
       request.user?.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      request.requestId.toString().includes(searchTerm) ||
+      (request.requestId ? request.requestId.toString() : "").includes(searchTerm) ||
       request.service?.name?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || request.status === statusFilter;
@@ -358,13 +283,33 @@ export default function SampleSubsampleManagement() {
   const filteredSamples = samples.filter(sample => {
     const matchesSearch = 
       sample.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sample.sample_id.toString().includes(searchTerm) ||
+      (sample.sample_id ? sample.sample_id.toString() : "").includes(searchTerm) ||
       sample.service_name?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || sample.status === statusFilter;
     
     return matchesSearch && matchesStatus;
   });
+
+  // Helper để chuyển đổi loại thu mẫu sang tiếng Việt
+  const getCollectionTypeVN = (type: string) => {
+    switch ((type || '').toLowerCase()) {
+      case 'at clinic':
+        return 'Tại cơ sở';
+      case 'at home':
+        return 'Tại nhà';
+      case 'self':
+        return 'Tự thu mẫu';
+      default:
+        return type;
+    }
+  };
+
+  // Helper để lấy tên khách hàng từ userId
+  const getUserName = (userId: number) => {
+    const user = users.find(u => u.userId === userId || u.id === userId);
+    return user?.fullName || user?.username || `User ${userId}`;
+  };
 
   if (loading) {
     return (
@@ -399,34 +344,6 @@ export default function SampleSubsampleManagement() {
           </div>
         </CardHeader>
         <CardContent>
-          {/* Tabs */}
-          <div className="flex space-x-1 mb-6">
-            <Button
-              variant={activeTab === 'requests' ? 'default' : 'outline'}
-              onClick={() => setActiveTab('requests')}
-              className="flex items-center gap-2"
-            >
-              <FileText className="w-4 h-4" />
-              Yêu cầu xét nghiệm
-            </Button>
-            <Button
-              variant={activeTab === 'samples' ? 'default' : 'outline'}
-              onClick={() => setActiveTab('samples')}
-              className="flex items-center gap-2"
-            >
-              <TestTube className="w-4 h-4" />
-              Mẫu xét nghiệm
-            </Button>
-            <Button
-              variant={activeTab === 'subsamples' ? 'default' : 'outline'}
-              onClick={() => setActiveTab('subsamples')}
-              className="flex items-center gap-2"
-            >
-              <FlaskConical className="w-4 h-4" />
-              Mẫu con
-            </Button>
-          </div>
-
           {/* Search and Filter */}
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <div className="flex-1">
@@ -477,14 +394,9 @@ export default function SampleSubsampleManagement() {
                   {filteredRequests.map((request) => (
                     <TableRow key={request.requestId}>
                       <TableCell className="font-medium">YC{request.requestId}</TableCell>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">{request.user?.fullName || 'Chưa có tên'}</div>
-                          <div className="text-sm text-gray-500">{request.user?.phone || ''}</div>
-                        </div>
-                      </TableCell>
+                      <TableCell>{getUserName(request.userId)}</TableCell>
                       <TableCell>{request.service?.name || 'Chưa xác định'}</TableCell>
-                      <TableCell>{request.collectionType}</TableCell>
+                      <TableCell>{getCollectionTypeVN(request.collectionType)}</TableCell>
                       <TableCell>
                         <div className="text-sm">
                           <div>{request.appointmentDate}</div>

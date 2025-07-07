@@ -37,7 +37,7 @@ import {
   RefreshCw,
   Filter
 } from "lucide-react";
-import { testRequestAPI, TestRequestResponse } from "@/api/axios";
+import { testRequestAPI, TestRequestResponse, userAPI } from "@/api/axios";
 import { useToast } from "@/components/ui/use-toast";
 
 const statusOptions = [
@@ -58,6 +58,7 @@ const filterOptions = [
 export const AppointmentsPage = () => {
   const { toast } = useToast();
   const [appointments, setAppointments] = useState<TestRequestResponse[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -69,6 +70,44 @@ export const AppointmentsPage = () => {
   const [userIdFilter, setUserIdFilter] = useState("");
   const [staffIdFilter, setStaffIdFilter] = useState("");
   const [selectedAppointment, setSelectedAppointment] = useState<TestRequestResponse | null>(null);
+
+  // Function to fetch all users
+  const fetchUsers = useCallback(async () => {
+    try {
+      console.log('Fetching all users...');
+      const userData = await userAPI.getAllUsers();
+      setUsers(Array.isArray(userData) ? userData : []);
+      console.log(`Successfully fetched ${Array.isArray(userData) ? userData.length : 0} users`);
+    } catch (err: any) {
+      console.error('Failed to fetch users:', err);
+      // Don't show error toast for users fetch, just log it
+    }
+  }, []);
+
+  // Function to find user by ID
+  const findUserById = useCallback((userId: number) => {
+    return users.find(user => 
+      user.userId === userId || 
+      user.id === userId
+    );
+  }, [users]);
+
+  // Function to get user display info
+  const getUserDisplayInfo = useCallback((userId: number) => {
+    const user = findUserById(userId);
+    if (user) {
+      return {
+        fullName: user.fullName || user.username || `User ${userId}`,
+        phone: user.phone || 'Chưa có SĐT',
+        email: user.email || 'Chưa có email'
+      };
+    }
+    return {
+      fullName: `User ID: ${userId}`,
+      phone: 'Chưa có SĐT',
+      email: 'Chưa có email'
+    };
+  }, [findUserById]);
 
   // Hàm fetch appointments với các tùy chọn khác nhau
   const fetchAppointments = useCallback(async () => {
@@ -117,6 +156,7 @@ export const AppointmentsPage = () => {
       
       setAppointments(sortedData);
       console.log(`Successfully fetched ${sortedData.length} appointments`);
+      console.log('Sample appointment data:', sortedData[0]);
       
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || err.message || "Không thể tải danh sách lịch hẹn. Vui lòng thử lại.";
@@ -136,19 +176,25 @@ export const AppointmentsPage = () => {
   // Hàm refresh data
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await fetchAppointments();
+    await Promise.all([
+      fetchAppointments(),
+      fetchUsers()
+    ]);
     setIsRefreshing(false);
     
     toast({
       title: "Làm mới thành công",
-      description: "Dữ liệu lịch hẹn đã được cập nhật.",
+      description: "Dữ liệu lịch hẹn và người dùng đã được cập nhật.",
     });
   };
 
   // Fetch data when component mounts or filter changes
   useEffect(() => {
-    fetchAppointments();
-  }, [fetchAppointments]);
+    Promise.all([
+      fetchAppointments(),
+      fetchUsers()
+    ]);
+  }, [fetchAppointments, fetchUsers]);
 
   // Hàm fetch appointment by ID
   const fetchAppointmentById = async (id: number) => {
@@ -223,11 +269,15 @@ export const AppointmentsPage = () => {
   const filteredAppointments = appointments.filter(appointment => {
     const user = appointment.user;
     const service = appointment.service;
+    const userInfo = getUserDisplayInfo(appointment.userId);
     
     const matchesSearch = searchTerm
       ? (user?.fullName?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (userInfo.fullName?.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (user?.phone?.includes(searchTerm)) ||
-        (appointment.requestId?.toString().includes(searchTerm))
+        (userInfo.phone?.includes(searchTerm)) ||
+        (appointment.requestId?.toString().includes(searchTerm)) ||
+        (appointment.userId?.toString().includes(searchTerm))
       : true;
 
     const matchesStatus = statusFilter === "all" || appointment.status === statusFilter;
@@ -333,16 +383,16 @@ export const AppointmentsPage = () => {
               <TableCell className="font-medium">#{appointment.requestId}</TableCell>
               <TableCell>
                 <div>
-                  <div className="font-medium">{appointment.user?.fullName || 'N/A'}</div>
+                  <div className="font-medium">{appointment.user?.fullName || getUserDisplayInfo(appointment.userId).fullName}</div>
                   <div className="text-sm text-gray-500 flex items-center">
                     <Phone className="w-3 h-3 mr-1" />
-                    {appointment.user?.phone || 'N/A'}
+                    {appointment.user?.phone || getUserDisplayInfo(appointment.userId).phone}
                   </div>
                 </div>
               </TableCell>
               <TableCell>
                 <div>
-                  <div className="font-medium">{appointment.service?.name || 'N/A'}</div>
+                  <div className="font-medium">{appointment.service?.name || `Service ID: ${appointment.serviceId}`}</div>
                   {getAppointmentTypeIcon(appointment.collectionType)}
                 </div>
               </TableCell>
@@ -355,7 +405,7 @@ export const AppointmentsPage = () => {
                   </div>
                 </div>
               </TableCell>
-              <TableCell>{appointment.staff?.fullName || 'Chưa chỉ định'}</TableCell>
+              <TableCell>{appointment.staff?.fullName || (appointment.staffId ? `Staff ID: ${appointment.staffId}` : 'Chưa chỉ định')}</TableCell>
               <TableCell>{getStatusBadge(appointment.status)}</TableCell>
               <TableCell className="text-right">
                 <Button
@@ -382,8 +432,23 @@ export const AppointmentsPage = () => {
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Quản lý lịch hẹn</h1>
-        <p className="text-gray-600 mt-1">Theo dõi và quản lý các lịch hẹn thu mẫu ADN</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Quản lý lịch hẹn</h1>
+            <p className="text-gray-600 mt-1">Theo dõi và quản lý các lịch hẹn thu mẫu ADN</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge className="bg-green-100 text-green-700">
+              API Connected
+            </Badge>
+            <Badge variant="outline">
+              Appointments: {appointments.length}
+            </Badge>
+            <Badge variant="outline">
+              Users: {users.length}
+            </Badge>
+          </div>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -569,7 +634,7 @@ export const AppointmentsPage = () => {
                           <Clock className="w-6 h-6 text-blue-600" />
                         </div>
                         <div>
-                          <div className="font-medium">{appointment.user?.fullName}</div>
+                          <div className="font-medium">{appointment.user?.fullName || getUserDisplayInfo(appointment.userId).fullName}</div>
                           <div className="text-sm text-gray-500">
                             {appointment.slotTime} - {getAppointmentTypeIcon(appointment.collectionType)}
                           </div>
@@ -616,17 +681,19 @@ export const AppointmentsPage = () => {
                 <div>
                   <h4 className="font-medium text-gray-900 mb-2">Thông tin khách hàng</h4>
                   <div className="space-y-2 text-sm">
-                    <p><strong>Họ tên:</strong> {selectedAppointment.user?.fullName || 'N/A'}</p>
-                    <p><strong>Email:</strong> {selectedAppointment.user?.email || 'N/A'}</p>
-                    <p><strong>Số điện thoại:</strong> {selectedAppointment.user?.phone || 'N/A'}</p>
+                    <p><strong>User ID:</strong> {selectedAppointment.userId}</p>
+                    <p><strong>Họ tên:</strong> {selectedAppointment.user?.fullName || getUserDisplayInfo(selectedAppointment.userId).fullName}</p>
+                    <p><strong>Email:</strong> {selectedAppointment.user?.email || getUserDisplayInfo(selectedAppointment.userId).email}</p>
+                    <p><strong>Số điện thoại:</strong> {selectedAppointment.user?.phone || getUserDisplayInfo(selectedAppointment.userId).phone}</p>
                   </div>
                 </div>
                 
                 <div>
                   <h4 className="font-medium text-gray-900 mb-2">Thông tin dịch vụ</h4>
                   <div className="space-y-2 text-sm">
-                    <p><strong>Dịch vụ:</strong> {selectedAppointment.service?.name || 'N/A'}</p>
-                    <p><strong>Giá:</strong> {selectedAppointment.service?.price?.toLocaleString('vi-VN') || 'N/A'} VNĐ</p>
+                    <p><strong>Service ID:</strong> {selectedAppointment.serviceId}</p>
+                    <p><strong>Dịch vụ:</strong> {selectedAppointment.service?.name || 'Chưa có thông tin'}</p>
+                    <p><strong>Giá:</strong> {selectedAppointment.service?.price ? `${selectedAppointment.service.price.toLocaleString('vi-VN')} VNĐ` : 'Chưa có thông tin'}</p>
                     <p><strong>Loại hình:</strong> {getAppointmentTypeIcon(selectedAppointment.collectionType)}</p>
                   </div>
                 </div>
@@ -637,13 +704,26 @@ export const AppointmentsPage = () => {
                 <div className="space-y-2 text-sm">
                   <p><strong>Ngày hẹn:</strong> {new Date(selectedAppointment.appointmentDate).toLocaleDateString('vi-VN')}</p>
                   <p><strong>Giờ hẹn:</strong> {selectedAppointment.slotTime}</p>
-                  <p><strong>Nhân viên:</strong> {selectedAppointment.staff?.fullName || 'Chưa chỉ định'}</p>
+                  <p><strong>Ngày tạo:</strong> {new Date(selectedAppointment.createdAt).toLocaleDateString('vi-VN')}</p>
+                  <p><strong>Nhân viên:</strong> {selectedAppointment.staff?.fullName || (selectedAppointment.staffId ? `Staff ID: ${selectedAppointment.staffId}` : 'Chưa chỉ định')}</p>
                 </div>
               </div>
 
               <div>
                 <h4 className="font-medium text-gray-900 mb-2">Địa chỉ</h4>
-                <p className="text-sm text-gray-600">{selectedAppointment.address ? `${selectedAppointment.address.addressLine}, ${selectedAppointment.address.city}` : 'Không có'}</p>
+                <div className="space-y-2 text-sm">
+                  <p><strong>Address ID:</strong> {selectedAppointment.addressId || 'Chưa có'}</p>
+                  <p className="text-sm text-gray-600">{selectedAppointment.address ? `${selectedAppointment.address.street}, ${selectedAppointment.address.city}` : 'Chưa có thông tin địa chỉ chi tiết'}</p>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-medium text-gray-900 mb-2">Thông tin liên quan</h4>
+                <div className="space-y-2 text-sm">
+                  <p><strong>Số lượng mẫu:</strong> {selectedAppointment.samples?.length || 0}</p>
+                  <p><strong>Số lượng thanh toán:</strong> {selectedAppointment.payments?.length || 0}</p>
+                  <p><strong>Số lượng feedback:</strong> {selectedAppointment.feedbacks?.length || 0}</p>
+                </div>
               </div>
 
               <div>
@@ -661,6 +741,35 @@ export const AppointmentsPage = () => {
                   <option value="Completed">Hoàn thành</option>
                   <option value="Cancelled">Đã hủy</option>
                 </select>
+              </div>
+
+              <div>
+                <h4 className="font-medium text-gray-900 mb-2">Chỉ định nhân viên</h4>
+                <div className="flex gap-2 items-center">
+                  <select
+                    value={selectedAppointment.staffId || ''}
+                    onChange={async (e) => {
+                      const newStaffId = Number(e.target.value);
+                      if (!selectedAppointment.requestId || !newStaffId) return;
+                      try {
+                        await testRequestAPI.assignStaff(selectedAppointment.requestId, newStaffId);
+                        toast({ title: 'Chỉ định thành công', description: `Đã chỉ định nhân viên #${newStaffId} cho lịch hẹn #${selectedAppointment.requestId}` });
+                        setSelectedAppointment({ ...selectedAppointment, staffId: newStaffId, staff: users.find(u => u.userId === newStaffId || u.id === newStaffId) });
+                        fetchAppointments();
+                      } catch (err: any) {
+                        toast({ title: 'Chỉ định thất bại', description: err.message || 'Không thể chỉ định nhân viên', variant: 'destructive' });
+                      }
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Chưa chỉ định</option>
+                    {users.filter(u => u.role?.toLowerCase() === 'staff').map(staff => (
+                      <option key={staff.userId || staff.id} value={staff.userId || staff.id}>
+                        {staff.fullName || staff.username} (ID: {staff.userId || staff.id})
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
           )}

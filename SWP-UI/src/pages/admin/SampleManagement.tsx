@@ -21,6 +21,7 @@ import {
   Package
 } from "lucide-react";
 import { sampleAPI } from "@/api/axios";
+import { subSampleAPI } from "@/api/axios";
 
 interface Sample {
   id: string;
@@ -159,6 +160,9 @@ export default function SampleManagement() {
     kitId: "",
     technician: ""
   });
+  const [showAddSubSampleForm, setShowAddSubSampleForm] = useState(false);
+  const [createdSampleId, setCreatedSampleId] = useState<number | null>(null);
+  const [subSampleDesc, setSubSampleDesc] = useState("");
 
   // Fetch samples from API
   useEffect(() => {
@@ -270,56 +274,39 @@ export default function SampleManagement() {
       alert("Vui lòng điền đầy đủ thông tin bắt buộc");
       return;
     }
-
     try {
       // Map to the API expected format
       const sampleData = {
-        request_id: parseInt(newSample.testId.replace('XN', '')) || 1, // Extract numeric ID from testId
-        collected_by: 1, // Default staff ID - should be from authenticated user
-        collection_time: newSample.collectionDate ? new Date(newSample.collectionDate).toISOString() : undefined,
-        received_time: undefined, // Will be set when status changes to received
+        requestId: parseInt(newSample.testId.replace('XN', '')) || 1,
+        collectedBy: 1,
+        collectionTime: newSample.collectionDate ? new Date(newSample.collectionDate).toISOString() : undefined,
+        receivedTime: undefined,
         status: 'Waiting' as const
       };
-
       const newSampleData = await sampleAPI.create(sampleData);
-      
-      // Create a UI-friendly sample object for the local state
-      const uiSample: Sample = {
-        id: `SMP${newSampleData.id || Math.random().toString().substring(2, 5)}`,
-        testId: newSample.testId,
-        customerName: newSample.customerName,
-        customerPhone: newSample.customerPhone,
-        sampleType: newSample.sampleType,
-        collectionDate: newSample.collectionDate,
-        receivedDate: '',
-        status: 'pending',
-        location: newSample.location,
-        notes: newSample.notes,
-        kitId: parseInt(newSample.kitId) || 1,
-        kitName: "Kit mặc định",
-        technician: newSample.technician,
-        qualityCheck: false,
-        storageCondition: "Nhiệt độ: 2-8°C, Độ ẩm: 60-70%",
-        expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 30 days from now
-      };
-      
-      setSamples(prev => [uiSample, ...prev]);
-      setNewSample({
-        testId: "",
-        customerName: "",
-        customerPhone: "",
-        sampleType: "",
-        collectionDate: "",
-        location: "",
-        notes: "",
-        kitId: "",
-        technician: ""
-      });
+      setCreatedSampleId(newSampleData.id);
       setShowAddForm(false);
-      alert("Thêm mẫu thành công!");
+      setShowAddSubSampleForm(true);
     } catch (err: any) {
       console.error("Error creating sample:", err);
       alert(`Lỗi tạo mẫu: ${err.message}`);
+    }
+  };
+
+  const handleAddSubSample = async () => {
+    if (!createdSampleId || !subSampleDesc) {
+      alert("Vui lòng nhập mô tả mẫu con");
+      return;
+    }
+    try {
+      await subSampleAPI.create({ sample_id: createdSampleId, description: subSampleDesc });
+      setShowAddSubSampleForm(false);
+      setSubSampleDesc("");
+      setCreatedSampleId(null);
+      alert("Tạo mẫu con thành công!");
+      // Có thể gọi lại fetchSamples() nếu muốn cập nhật danh sách
+    } catch (err) {
+      alert("Lỗi tạo mẫu con");
     }
   };
 
@@ -610,10 +597,32 @@ export default function SampleManagement() {
           </div>
 
           <DialogFooter>
-            <Button onClick={handleAddSample}>Thêm mẫu</Button>
+            <Button onClick={handleAddSample}>Tiếp tục</Button>
             <Button variant="outline" onClick={() => setShowAddForm(false)}>
               Hủy
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add SubSample Dialog */}
+      <Dialog open={showAddSubSampleForm} onOpenChange={setShowAddSubSampleForm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Thêm mẫu con cho mẫu vừa tạo</DialogTitle>
+          </DialogHeader>
+          <div>
+            <label className="text-sm font-medium">Mô tả mẫu con</label>
+            <Textarea
+              value={subSampleDesc}
+              onChange={e => setSubSampleDesc(e.target.value)}
+              placeholder="Nhập mô tả mẫu con..."
+              rows={3}
+            />
+          </div>
+          <DialogFooter>
+            <Button onClick={handleAddSubSample}>Lưu mẫu con</Button>
+            <Button variant="outline" onClick={() => setShowAddSubSampleForm(false)}>Hủy</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

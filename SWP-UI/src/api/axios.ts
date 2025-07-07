@@ -358,6 +358,10 @@ export interface TestRequestResponse extends TestRequest {
   testRequestId?: number;
   createdAt?: string;
   updatedAt?: string;
+  addressId?: number | null;
+  feedbacks?: any[];
+  payments?: any[];
+  samples?: any[];
   user?: any; 
   service?: any;
   staff?: any;
@@ -791,6 +795,12 @@ export const testRequestAPI = {
   // Lấy yêu cầu theo staff ID
   getByStaffId: async (staffId: number) => {
     const response = await api.get(`/api/TestRequest/staff/${staffId}`);
+    return response.data;
+  },
+
+  // Chỉ định staff cho yêu cầu xét nghiệm
+  assignStaff: async (requestId: number, staffId: number) => {
+    const response = await api.put(`/api/TestRequest/assign/${requestId}?staffId=${staffId}`);
     return response.data;
   }
 };
