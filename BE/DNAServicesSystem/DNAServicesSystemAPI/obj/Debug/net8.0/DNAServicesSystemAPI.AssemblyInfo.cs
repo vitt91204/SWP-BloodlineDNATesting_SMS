@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DNAServicesSystemAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7f7194e3387a38779b6a2d52765fb0c340e747b4")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+79f6e5bea8f63a5c8ee23d070c22d623411b4bdd")]
 [assembly: System.Reflection.AssemblyProductAttribute("DNAServicesSystemAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DNAServicesSystemAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

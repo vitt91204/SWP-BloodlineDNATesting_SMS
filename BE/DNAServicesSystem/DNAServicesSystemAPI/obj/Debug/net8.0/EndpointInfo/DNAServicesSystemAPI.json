@@ -1248,10 +1248,21 @@
         }
       }
     },
-    "/api/TestResult/upload": {
+    "/api/TestResult/{id}/upload-pdf": {
       "post": {
         "tags": [
           "TestResult"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
         ],
         "requestBody": {
           "content": {
@@ -1259,21 +1270,14 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "ResultDataId": {
-                    "type": "integer",
-                    "format": "int32"
-                  },
-                  "PdfFile": {
+                  "file": {
                     "type": "string",
                     "format": "binary"
                   }
                 }
               },
               "encoding": {
-                "ResultDataId": {
-                  "style": "form"
-                },
-                "PdfFile": {
+                "file": {
                   "style": "form"
                 }
               }
@@ -1287,7 +1291,7 @@
         }
       }
     },
-    "/api/TestResult/resultdata/{id}": {
+    "/api/TestResult/{id}/view-pdf": {
       "get": {
         "tags": [
           "TestResult"

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using Services;
 using Services.TestResultDTO;
 using Repositories;
@@ -15,13 +16,11 @@ namespace DNAServicesSystemAPI.Controllers
     {
         private readonly TestResultService _service;
         private readonly TestResultRepository _testResultRepository;
-        private readonly GenericRepository<ResultDatum> _resultDatumRepository;
 
-        public TestResultController(TestResultService service, TestResultRepository testResultRepository, GenericRepository<ResultDatum> resultDatumRepository)
+        public TestResultController(TestResultService service, TestResultRepository testResultRepository)
         {
             _service = service;
             _testResultRepository = testResultRepository;
-            _resultDatumRepository = resultDatumRepository;
         }
 
         [HttpGet]
@@ -50,48 +49,41 @@ namespace DNAServicesSystemAPI.Controllers
             return NoContent();
         }
 
-        [HttpPost("upload")]
-        public async Task<IActionResult> UploadTestResult([FromForm] TestResultUploadDto dto)
+        [HttpPost("{id}/upload-pdf")]
+        public async Task<IActionResult> UploadPdf(int id, IFormFile file)
         {
-            if (dto.PdfFile == null || dto.PdfFile.Length == 0)
+            if (file == null)
                 return BadRequest("No file uploaded.");
 
-            using var ms = new MemoryStream();
-            await dto.PdfFile.CopyToAsync(ms);
-            var fileBytes = ms.ToArray();
-            var base64String = Convert.ToBase64String(fileBytes);
+            var result = await _service.UploadPdfAsync(id, file);
+            if (!result)
+                return BadRequest("Failed to upload or save PDF.");
 
-            var resultDatum = new ResultDatum
-            {
-                FileName = dto.PdfFile.FileName,
-                FileData = base64String
-            };
-            await _resultDatumRepository.CreateAsync(resultDatum);
-
-            var testResult = new TestResult
-            {
-                ResultId = resultDatum.ResultDataId,
-                UploadedTime = DateTime.UtcNow
-            };
-            await _testResultRepository.CreateAsync(testResult);
-
-            return Ok(new { testResult.ResultId, resultDatum.ResultDataId });
+            return Ok("PDF uploaded and saved successfully.");
         }
 
-        [HttpGet("resultdata/{id}")]
-        public async Task<IActionResult> GetResultData(int id)
+        [HttpGet("{id}/view-pdf")]
+        public async Task<IActionResult> ViewPdf(int id)
         {
-            var resultDatum = await _resultDatumRepository.GetByIdAsync(id);
-            if (resultDatum == null)
-                return NotFound();
+            // Get the TestResult entity
+            var entity = await _testResultRepository.GetByIdAsync(id);
+            if (entity == null || string.IsNullOrEmpty(entity.ResultData))
+                return NotFound("PDF not found for this result.");
 
-            return Ok(new
+            try
             {
-                resultDatum.ResultDataId,
-                resultDatum.FileName,
-                resultDatum.FileData // This is the Base64 string
-            });
+                // Decode the Base64 string to byte array
+                var pdfBytes = Convert.FromBase64String(entity.ResultData);
+
+                // Return the PDF file (browser will try to open it)
+                return File(pdfBytes, "application/pdf");
+            }
+            catch
+            {
+                return BadRequest("Stored data is not a valid PDF file.");
+            }
         }
+
     }
 }
 
@@ -101,6 +93,5 @@ public static class ServiceExtensions
     public static void AddRepositories(this IServiceCollection services)
     {
         services.AddScoped<TestResultRepository>();
-        services.AddScoped<GenericRepository<ResultDatum>>();
     }
 }

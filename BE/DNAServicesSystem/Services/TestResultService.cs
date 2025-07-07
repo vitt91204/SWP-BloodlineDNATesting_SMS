@@ -1,6 +1,8 @@
 using Repositories;
 using Services.TestResultDTO;
 using Repositories.Models;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 
 namespace Services
 {
@@ -20,7 +22,8 @@ namespace Services
                 ApprovedBy = r.ApprovedBy,
                 UploadedTime = r.UploadedTime,
                 ApprovedTime = r.ApprovedTime,
-                StaffId = r.StaffId
+                StaffId = r.StaffId,
+                ResultData = r.ResultData
             }).ToList();
         }
 
@@ -66,6 +69,29 @@ namespace Services
             entity.ApprovedTime = dto.ApprovedTime;
             entity.StaffId = dto.StaffId;
 
+            await _repository.UpdateAsync(entity);
+            return true;
+        }
+
+        public async Task<bool> UploadPdfAsync(int resultId, IFormFile pdfFile)
+        {
+            if (pdfFile == null || pdfFile.Length == 0)
+                return false;
+
+            // Only allow PDF files
+            if (!pdfFile.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            using var ms = new MemoryStream();
+            await pdfFile.CopyToAsync(ms);
+            var fileBytes = ms.ToArray();
+            var base64String = Convert.ToBase64String(fileBytes);
+
+            var entity = await _repository.GetByIdAsync(resultId);
+            if (entity == null)
+                return false;
+
+            entity.ResultData = base64String;
             await _repository.UpdateAsync(entity);
             return true;
         }
