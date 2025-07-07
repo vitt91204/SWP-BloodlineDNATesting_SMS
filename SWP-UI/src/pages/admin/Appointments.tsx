@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Table,
   TableBody,
@@ -33,7 +33,9 @@ import {
   AlertCircle,
   Loader2,
   TestTube,
-  Users
+  Users,
+  RefreshCw,
+  Filter
 } from "lucide-react";
 import { testRequestAPI, TestRequestResponse } from "@/api/axios";
 import { useToast } from "@/components/ui/use-toast";
@@ -46,39 +48,123 @@ const statusOptions = [
   { value: "Cancelled", label: "Đã hủy" }
 ];
 
+const filterOptions = [
+  { value: "all", label: "Tất cả lịch hẹn" },
+  { value: "user", label: "Theo khách hàng" },
+  { value: "staff", label: "Theo nhân viên" },
+  { value: "today", label: "Hôm nay" },
+];
+
 export const AppointmentsPage = () => {
   const { toast } = useToast();
   const [appointments, setAppointments] = useState<TestRequestResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [userIdFilter, setUserIdFilter] = useState("");
+  const [staffIdFilter, setStaffIdFilter] = useState("");
   const [selectedAppointment, setSelectedAppointment] = useState<TestRequestResponse | null>(null);
 
-  useEffect(() => {
-    const fetchAppointments = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const data = await testRequestAPI.getAll();
-        // Sắp xếp lịch hẹn mới nhất lên đầu
-        setAppointments(data.sort((a, b) => {
-          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-          return dateB - dateA;
-        }));
-      } catch (err) {
-        setError("Không thể tải danh sách lịch hẹn. Vui lòng thử lại.");
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Hàm fetch appointments với các tùy chọn khác nhau
+  const fetchAppointments = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      let data: TestRequestResponse[] = [];
 
+      // Sử dụng các API GET endpoints khác nhau dựa trên filter type
+      switch (filterType) {
+        case "user":
+          if (userIdFilter && !isNaN(Number(userIdFilter))) {
+            console.log(`Fetching appointments for user ID: ${userIdFilter}`);
+            data = await testRequestAPI.getByUserId(Number(userIdFilter));
+          } else {
+            // Nếu không có user ID, fetch tất cả
+            data = await testRequestAPI.getAll();
+          }
+          break;
+          
+        case "staff":
+          if (staffIdFilter && !isNaN(Number(staffIdFilter))) {
+            console.log(`Fetching appointments for staff ID: ${staffIdFilter}`);
+            data = await testRequestAPI.getByStaffId(Number(staffIdFilter));
+          } else {
+            // Nếu không có staff ID, fetch tất cả
+            data = await testRequestAPI.getAll();
+          }
+          break;
+          
+        case "today":
+        case "all":
+        default:
+          console.log('Fetching all appointments');
+          data = await testRequestAPI.getAll();
+          break;
+      }
+
+      // Sắp xếp lịch hẹn mới nhất lên đầu
+      const sortedData = data.sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
+      
+      setAppointments(sortedData);
+      console.log(`Successfully fetched ${sortedData.length} appointments`);
+      
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || err.message || "Không thể tải danh sách lịch hẹn. Vui lòng thử lại.";
+      setError(errorMessage);
+      console.error('Failed to fetch appointments:', err);
+      
+      toast({
+        title: "Lỗi tải dữ liệu",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [filterType, userIdFilter, staffIdFilter, toast]);
+
+  // Hàm refresh data
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchAppointments();
+    setIsRefreshing(false);
+    
+    toast({
+      title: "Làm mới thành công",
+      description: "Dữ liệu lịch hẹn đã được cập nhật.",
+    });
+  };
+
+  // Fetch data when component mounts or filter changes
+  useEffect(() => {
     fetchAppointments();
-  }, []);
+  }, [fetchAppointments]);
+
+  // Hàm fetch appointment by ID
+  const fetchAppointmentById = async (id: number) => {
+    try {
+      console.log(`Fetching appointment details for ID: ${id}`);
+      const appointment = await testRequestAPI.getById(id);
+      setSelectedAppointment(appointment);
+    } catch (err: any) {
+      console.error('Failed to fetch appointment details:', err);
+      toast({
+        title: "Lỗi tải chi tiết",
+        description: "Không thể tải thông tin chi tiết lịch hẹn.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     const statusLower = status?.toLowerCase();
@@ -149,29 +235,37 @@ export const AppointmentsPage = () => {
     const matchesDate = dateFilter
       ? new Date(appointment.appointmentDate).toISOString().split('T')[0] === dateFilter
       : true;
+
+    // Filter for today's appointments
+    if (filterType === "today") {
+      const today = new Date().toISOString().split('T')[0];
+      const appointmentDate = new Date(appointment.appointmentDate).toISOString().split('T')[0];
+      return matchesSearch && matchesStatus && appointmentDate === today;
+    }
     
     return matchesSearch && matchesStatus && matchesDate;
   });
 
   const updateAppointmentStatus = async (appointmentId: number, newStatus: string) => {
     try {
+      // Sử dụng API update hoặc updateStatus
       await testRequestAPI.update(appointmentId, { status: newStatus });
-      setAppointments(prev =>
-        prev.map(appointment =>
-          appointment.requestId === appointmentId ? { ...appointment, status: newStatus } : appointment
-        )
-      );
+      
+      // Refresh lại appointment đó hoặc toàn bộ danh sách
+      await fetchAppointments();
+      
       toast({
         title: "Cập nhật thành công!",
         description: `Lịch hẹn #${appointmentId} đã được chuyển sang trạng thái "${newStatus}".`,
       });
-    } catch (err) {
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || err.message || "Không thể cập nhật trạng thái. Vui lòng thử lại.";
       toast({
         title: "Cập nhật thất bại!",
-        description: "Không thể cập nhật trạng thái. Vui lòng thử lại.",
+        description: errorMessage,
         variant: "destructive",
       });
-      console.error(err);
+      console.error('Failed to update appointment status:', err);
     }
   };
 
@@ -267,7 +361,13 @@ export const AppointmentsPage = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setSelectedAppointment(appointment)}
+                  onClick={() => {
+                    if (appointment.requestId) {
+                      fetchAppointmentById(appointment.requestId);
+                    } else {
+                      setSelectedAppointment(appointment);
+                    }
+                  }}
                 >
                   <Eye className="w-4 h-4" />
                 </Button>
@@ -343,8 +443,64 @@ export const AppointmentsPage = () => {
         <TabsContent value="all" className="space-y-6">
           <div className="bg-white rounded-lg border">
             <div className="p-4 border-b">
-              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-                <div className="relative md:col-span-1">
+              {/* Filter Type Selection */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Filter className="w-4 h-4 inline mr-1" />
+                  Loại bộ lọc
+                </label>
+                <select
+                  value={filterType}
+                  onChange={(e) => {
+                    setFilterType(e.target.value);
+                    // Reset filter values when changing type
+                    setUserIdFilter("");
+                    setStaffIdFilter("");
+                  }}
+                  className="w-full md:w-auto px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {filterOptions.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Dynamic Filter Inputs */}
+              {filterType === "user" && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    ID Khách hàng
+                  </label>
+                  <Input
+                    type="number"
+                    placeholder="Nhập ID khách hàng..."
+                    value={userIdFilter}
+                    onChange={(e) => setUserIdFilter(e.target.value)}
+                    className="w-full md:w-64"
+                  />
+                </div>
+              )}
+
+              {filterType === "staff" && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    ID Nhân viên
+                  </label>
+                  <Input
+                    type="number"
+                    placeholder="Nhập ID nhân viên..."
+                    value={staffIdFilter}
+                    onChange={(e) => setStaffIdFilter(e.target.value)}
+                    className="w-full md:w-64"
+                  />
+                </div>
+              )}
+
+              {/* Main Filter Row */}
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="relative flex-1 min-w-[250px]">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <Input
                     className="pl-9"
@@ -353,16 +509,18 @@ export const AppointmentsPage = () => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
+
                 <Input
                   type="date"
                   value={dateFilter}
                   onChange={(e) => setDateFilter(e.target.value)}
-                  className="w-full"
+                  className="w-full md:w-auto"
                 />
+
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full md:w-auto px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {statusOptions.map(option => (
                     <option key={option.value} value={option.value}>
@@ -370,7 +528,25 @@ export const AppointmentsPage = () => {
                     </option>
                   ))}
                 </select>
+
+                <Button
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  Làm mới
+                </Button>
               </div>
+
+              {/* Filter Summary */}
+              {filteredAppointments.length !== appointments.length && (
+                <div className="mt-3 text-sm text-gray-600">
+                  Hiển thị {filteredAppointments.length} / {appointments.length} lịch hẹn
+                  {filterType !== "all" && ` (Lọc ${filterOptions.find(f => f.value === filterType)?.label.toLowerCase()})`}
+                </div>
+              )}
             </div>
             {renderContent()}
           </div>
@@ -404,7 +580,13 @@ export const AppointmentsPage = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setSelectedAppointment(appointment)}
+                          onClick={() => {
+                            if (appointment.requestId) {
+                              fetchAppointmentById(appointment.requestId);
+                            } else {
+                              setSelectedAppointment(appointment);
+                            }
+                          }}
                         >
                           Xem chi tiết
                         </Button>
