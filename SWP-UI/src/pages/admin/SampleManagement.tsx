@@ -274,10 +274,10 @@ export default function SampleManagement() {
     try {
       // Map to the API expected format
       const sampleData = {
-        request_id: parseInt(newSample.testId.replace('XN', '')) || 1, // Extract numeric ID from testId
-        collected_by: 1, // Default staff ID - should be from authenticated user
-        collection_time: newSample.collectionDate ? new Date(newSample.collectionDate).toISOString() : undefined,
-        received_time: undefined, // Will be set when status changes to received
+        requestId: parseInt(newSample.testId.replace('XN', '')) || 1, // Extract numeric ID from testId
+        collectedBy: 1, // Default staff ID - should be from authenticated user
+        collectionTime: newSample.collectionDate ? new Date(newSample.collectionDate).toISOString() : undefined,
+        receivedTime: undefined, // Will be set when status changes to received
         status: 'Waiting' as const
       };
 

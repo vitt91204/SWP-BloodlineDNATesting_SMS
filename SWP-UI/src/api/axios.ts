@@ -364,8 +364,6 @@ export interface TestRequestResponse extends TestRequest {
   address?: any;
 }
 
-
-
 // Thêm API cho TestService
 export interface TestServiceUpdatePayload {
   name: string;
@@ -561,8 +559,6 @@ export const addressAPI = {
     return response.data;
   }
 };
-
-
 
 // API cho Sample Management
 export const sampleAPI = {
@@ -888,6 +884,9 @@ export const paymentAPI = {
     return { paymentUrl };
   }
 };
+
+// Bổ sung role 'manager' vào các interface/type liên quan user nếu có
+export type UserRole = 'admin' | 'staff' | 'customer' | 'manager';
 
 
 

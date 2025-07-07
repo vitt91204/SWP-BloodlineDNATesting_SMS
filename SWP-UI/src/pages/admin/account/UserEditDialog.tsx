@@ -92,6 +92,7 @@ export default function UserEditDialog({
               <SelectContent>
                 <SelectItem value="Customer">Customer</SelectItem>
                 <SelectItem value="Staff">Staff</SelectItem>
+                <SelectItem value="Manager">Manager</SelectItem>
               </SelectContent>
             </Select>
           </div>
