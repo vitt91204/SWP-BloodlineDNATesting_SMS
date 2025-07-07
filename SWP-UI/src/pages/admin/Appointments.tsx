@@ -372,6 +372,7 @@ export const AppointmentsPage = () => {
             <TableHead>Khách hàng</TableHead>
             <TableHead>Dịch vụ</TableHead>
             <TableHead>Ngày & Giờ</TableHead>
+            <TableHead>Giá trị</TableHead>
             <TableHead>Nhân viên</TableHead>
             <TableHead>Trạng thái</TableHead>
             <TableHead className="text-right">Thao tác</TableHead>
@@ -404,6 +405,9 @@ export const AppointmentsPage = () => {
                     <div className="text-sm text-gray-500">{appointment.slotTime}</div>
                   </div>
                 </div>
+              </TableCell>
+              <TableCell>
+                {appointment.service?.price ? `${appointment.service.price.toLocaleString('vi-VN')} VNĐ` : 'Chưa có'}
               </TableCell>
               <TableCell>{appointment.staff?.fullName || (appointment.staffId ? `Staff ID: ${appointment.staffId}` : 'Chưa chỉ định')}</TableCell>
               <TableCell>{getStatusBadge(appointment.status)}</TableCell>

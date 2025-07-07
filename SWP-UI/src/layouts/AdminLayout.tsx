@@ -58,11 +58,7 @@ const navigation = [
     href: "/admin/test-results",
     icon: BarChart3
   },
-  {
-    name: "Quản lý phòng lab",
-    href: "/admin/lab",
-    icon: Microscope
-  },
+ 
   {
     name: "Quản lý loại dịch vụ",
     href: "/admin/test-services",

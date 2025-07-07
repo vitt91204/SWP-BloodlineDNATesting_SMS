@@ -30,7 +30,6 @@ import TestServiceManagement from "@/pages/admin/TestServiceManagement";
 import TestKitManagement from "@/pages/admin/TestKitManagement";
 import SampleManagement from "@/pages/admin/SampleManagement";
 import TestResultsManagement from "@/pages/admin/TestResultsManagement";
-import LabManagement from "@/pages/admin/LabManagement";
 
 // Staff pages
 import StaffDashboard from "@/pages/staff/Dashboard";
@@ -87,7 +86,6 @@ function App() {
               <Route path="test-kits" element={<TestKitManagement />} />
               <Route path="samples" element={<SampleManagement />} />
               <Route path="test-results" element={<TestResultsManagement />} />
-              <Route path="lab" element={<LabManagement />} />
             </Route>
           </Routes>
         </Router>
