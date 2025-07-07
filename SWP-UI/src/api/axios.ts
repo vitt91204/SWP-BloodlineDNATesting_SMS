@@ -758,15 +758,15 @@ export const testRequestAPI = {
 
   // Tạo yêu cầu mới
   create: async (requestData: {
-    user_id: number;
-    service_id: number;
-    collection_type: 'Self' | 'At Clinic' | 'At Home';
-    appointment_date?: string;
-    slot_time?: string;
-    staff_id?: number;
-    address_id?: number;
+    userId: number;
+    serviceId: number;
+    collectionType: string;
+    status: string;
+    appointmentDate: string;
+    slotTime: string;
+    staffId: number | null;
   }) => {
-    const response = await api.post('/api/TestRequest', requestData);
+    const response = await api.post('/api/TestRequest/api/testrequest', requestData);
     return response.data;
   },
 

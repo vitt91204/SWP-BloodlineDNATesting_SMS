@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { testRequestAPI, testServiceAPI, addressAPI, TestRequest } from '@/api/axios';
+import { testRequestAPI, testServiceAPI, addressAPI, bookingAPI, TestRequest } from '@/api/axios';
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -439,154 +439,154 @@ export default function Booking() {
 
   // Hàm xử lý khi nhấn "Xác nhận đặt lịch" - chuyển đến trang thanh toán
   const handleConfirmBooking = async () => {
-  try {
-    setIsSubmittingBooking(true);
-    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-    const userId = userData?.id || userData?.userId;
-    
-    // Sử dụng serviceId từ API thay vì mapping cứng
-    const serviceId = parseInt(selectedServiceData?.serviceId || selectedRelationship);
-
-    if (!userId || !serviceId) {
-      toast({
-        title: "Lỗi đặt lịch",
-        description: "Vui lòng đăng nhập và chọn dịch vụ hợp lệ trước khi đặt lịch!",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Double-check time slot conflicts trước khi submit
-    const needsAppointment = (selectedLocation === 'home' && selectedHomeOption === 'staff_visit') || selectedLocation === 'facility';
-    if (needsAppointment && selectedTimeSlot && bookedTimeSlots.includes(selectedTimeSlot)) {
-      // Refresh lại booked slots để đảm bảo data mới nhất
-      await loadBookedTimeSlots(selectedDate);
-      toast({
-        title: "Khung giờ đã được đặt",
-        description: "Khung giờ bạn chọn vừa có người đặt. Vui lòng chọn khung giờ khác.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Không cho phép đặt lịch trong quá khứ (double-check trước khi gửi server)
-    if (needsAppointment && selectedTimeSlot && isSlotInPast(selectedDate, selectedTimeSlot)) {
-      toast({
-        title: "Khung giờ không hợp lệ",
-        description: "Không thể đặt lịch trong quá khứ. Vui lòng chọn khung giờ khác.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Tạo địa chỉ mới trước (optional, để lưu thông tin địa chỉ của khách hàng)
-    let addressId = null;
     try {
-      // Nếu dùng địa chỉ có sẵn, lấy addressId từ selection
-      if (useExistingAddress && selectedAddressId) {
-        addressId = parseInt(selectedAddressId);
-        console.log('📍 Sử dụng địa chỉ có sẵn:', addressId);
-      } else if (formData.addressLine && formData.city && formData.province) {
-        // Tạo địa chỉ mới
-        const addressData = {
-          label: formData.addressLabel || 'Địa chỉ booking',
-          addressLine: formData.addressLine,
-          city: formData.city,
-          province: formData.province,
-          postalCode: formData.postalCode || '',
-          country: formData.country,
-          isPrimary: formData.isPrimary
-        };
-        
-        console.log('📍 Tạo địa chỉ:', addressData);
-        const addressResponse = await addressAPI.create(userId, addressData);
-        addressId = addressResponse?.id || addressResponse?.addressId;
-        console.log('✅ Địa chỉ đã tạo:', addressResponse);
+      setIsSubmittingBooking(true);
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const userId = userData?.id || userData?.userId;
+      
+      // Sử dụng serviceId từ API thay vì mapping cứng
+      const serviceId = parseInt(selectedServiceData?.serviceId || selectedRelationship);
+
+      if (!userId || !serviceId) {
+        toast({
+          title: "Lỗi đặt lịch",
+          description: "Vui lòng đăng nhập và chọn dịch vụ hợp lệ trước khi đặt lịch!",
+          variant: "destructive"
+        });
+        return;
       }
-    } catch (addressError) {
-      console.warn('⚠️ Không thể tạo địa chỉ:', addressError);
-      // Vẫn tiếp tục với booking ngay cả khi tạo địa chỉ thất bại
-    }
 
-    // Đảm bảo collectionType đúng định dạng theo API
-    let collectionType = 'At Clinic';
-    if (selectedLocation === 'home') {
-      collectionType = selectedHomeOption === 'diy_kit' ? 'Self' : 'At Home';
-    }
-
-    // Tạo booking data theo đúng API schema
-    const bookingData: TestRequest = {
-      userId: parseInt(userId),
-      serviceId: serviceId,
-      collectionType: collectionType,
-      status: 'Pending',
-      appointmentDate: selectedDate || new Date().toISOString().split('T')[0],
-      slotTime: selectedTimeSlot || '',
-      staffId: null
-    };
-
-    console.log('📦 Gửi booking theo API schema:', bookingData);
-    const response = await testRequestAPI.create(bookingData);
-    console.log('✅ Booking thành công:', response);
-
-    // Lưu thông tin booking và user info để sử dụng sau
-    const bookingInfo = {
-      ...response,
-      userInfo: {
-        fullName: formData.fullName,
-        phone: formData.phone,
-        email: formData.email,
-        addressId: addressId,
-        fullAddress: [
-          formData.addressLine,
-          formData.city,
-          formData.province,
-          formData.postalCode,
-          formData.country
-        ].filter(Boolean).join(', '),
-        notes: formData.notes
-      },
-      serviceInfo: selectedServiceData
-    };
-
-    // Lưu vào localStorage để sử dụng ở payment page
-    localStorage.setItem('currentBooking', JSON.stringify(bookingInfo));
-    
-    const bookingId = response?.id || response?.requestId || response?.testRequestId;
-    
-    // Hiển thị thông báo thành công
-    toast({
-      title: "Đặt lịch thành công! 🎉",
-      description: `Mã đặt lịch: ${bookingId || 'N/A'}. Đang chuyển đến trang thanh toán...`,
-    });
-
-    // Chuyển đến trang thanh toán sau 1 giây
-    setTimeout(() => {
-      if (bookingId) {
-        localStorage.setItem('bookingId', bookingId.toString());
-        navigate(`/payment?bookingId=${bookingId}`);
-      } else {
-        navigate('/payment');
+      // Double-check time slot conflicts trước khi submit
+      const needsAppointment = (selectedLocation === 'home' && selectedHomeOption === 'staff_visit') || selectedLocation === 'facility';
+      if (needsAppointment && selectedTimeSlot && bookedTimeSlots.includes(selectedTimeSlot)) {
+        // Refresh lại booked slots để đảm bảo data mới nhất
+        await loadBookedTimeSlots(selectedDate);
+        toast({
+          title: "Khung giờ đã được đặt",
+          description: "Khung giờ bạn chọn vừa có người đặt. Vui lòng chọn khung giờ khác.",
+          variant: "destructive"
+        });
+        return;
       }
-    }, 1000);
-  } catch (error) {
-    let message = 'Đặt lịch thất bại. Vui lòng thử lại!';
-    if (error?.response?.data?.message) {
-      message = error.response.data.message;
-    } else if (error?.message) {
-      message = error.message;
+
+      // Không cho phép đặt lịch trong quá khứ (double-check trước khi gửi server)
+      if (needsAppointment && selectedTimeSlot && isSlotInPast(selectedDate, selectedTimeSlot)) {
+        toast({
+          title: "Khung giờ không hợp lệ",
+          description: "Không thể đặt lịch trong quá khứ. Vui lòng chọn khung giờ khác.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Tạo địa chỉ mới trước (optional, để lưu thông tin địa chỉ của khách hàng)
+      let addressId = null;
+      try {
+        // Nếu dùng địa chỉ có sẵn, lấy addressId từ selection
+        if (useExistingAddress && selectedAddressId) {
+          addressId = parseInt(selectedAddressId);
+          console.log('📍 Sử dụng địa chỉ có sẵn:', addressId);
+        } else if (formData.addressLine && formData.city && formData.province) {
+          // Tạo địa chỉ mới
+          const addressData = {
+            label: formData.addressLabel || 'Địa chỉ booking',
+            addressLine: formData.addressLine,
+            city: formData.city,
+            province: formData.province,
+            postalCode: formData.postalCode || '',
+            country: formData.country,
+            isPrimary: formData.isPrimary
+          };
+          
+          console.log('📍 Tạo địa chỉ:', addressData);
+          const addressResponse = await addressAPI.create(userId, addressData);
+          addressId = addressResponse?.id || addressResponse?.addressId;
+          console.log('✅ Địa chỉ đã tạo:', addressResponse);
+        }
+      } catch (addressError) {
+        console.warn('⚠️ Không thể tạo địa chỉ:', addressError);
+        // Vẫn tiếp tục với booking ngay cả khi tạo địa chỉ thất bại
+      }
+
+      // Đảm bảo collectionType đúng định dạng theo API
+      let collectionType = 'At Clinic';
+      if (selectedLocation === 'home') {
+        collectionType = selectedHomeOption === 'diy_kit' ? 'Self' : 'At Home';
+      }
+
+      // Tạo booking data theo đúng API schema (camelCase, đủ trường)
+      const bookingData = {
+        userId: parseInt(userId),
+        serviceId: serviceId,
+        collectionType: collectionType, // 'Self' | 'At Clinic' | 'At Home'
+        status: 'Pending',
+        appointmentDate: selectedDate || new Date().toISOString().split('T')[0],
+        slotTime: selectedTimeSlot || '',
+        staffId: null
+      };
+
+      console.log('📦 Gửi booking theo API schema:', bookingData);
+      const response = await testRequestAPI.create(bookingData);
+      console.log('✅ Booking thành công:', response);
+
+      // Lưu thông tin booking và user info để sử dụng sau
+      const bookingInfo = {
+        ...response,
+        userInfo: {
+          fullName: formData.fullName,
+          phone: formData.phone,
+          email: formData.email,
+          addressId: addressId,
+          fullAddress: [
+            formData.addressLine,
+            formData.city,
+            formData.province,
+            formData.postalCode,
+            formData.country
+          ].filter(Boolean).join(', '),
+          notes: formData.notes
+        },
+        serviceInfo: selectedServiceData
+      };
+
+      // Lưu vào localStorage để sử dụng ở payment page
+      localStorage.setItem('currentBooking', JSON.stringify(bookingInfo));
+      
+      const bookingId = response?.id || response?.requestId || response?.testRequestId;
+      
+      // Hiển thị thông báo thành công
+      toast({
+        title: "Đặt lịch thành công! 🎉",
+        description: `Mã đặt lịch: ${bookingId || 'N/A'}. Đang chuyển đến trang thanh toán...`,
+      });
+
+      // Chuyển đến trang thanh toán sau 1 giây
+      setTimeout(() => {
+        if (bookingId) {
+          localStorage.setItem('bookingId', bookingId.toString());
+          navigate(`/payment?bookingId=${bookingId}`);
+        } else {
+          navigate('/payment');
+        }
+      }, 1000);
+    } catch (error) {
+      let message = 'Đặt lịch thất bại. Vui lòng thử lại!';
+      if (error?.response?.data?.message) {
+        message = error.response.data.message;
+      } else if (error?.message) {
+        message = error.message;
+      }
+      
+      toast({
+        title: "Đặt lịch thất bại!",
+        description: message,
+        variant: "destructive"
+      });
+      console.error('❌ Booking lỗi:', error);
+    } finally {
+      setIsSubmittingBooking(false);
     }
-    
-    toast({
-      title: "Đặt lịch thất bại!",
-      description: message,
-      variant: "destructive"
-    });
-    console.error('❌ Booking lỗi:', error);
-  } finally {
-    setIsSubmittingBooking(false);
-  }
-};
+  };
 
 
   const BookingSteps = () => {
