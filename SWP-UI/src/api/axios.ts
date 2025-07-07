@@ -580,10 +580,10 @@ export const sampleAPI = {
 
   // Tạo mẫu mới
   create: async (sampleData: {
-    request_id: number;
-    collected_by: number;
-    collection_time?: string;
-    received_time?: string;
+    requestId: number;
+    collectedBy: number;
+    collectionTime?: string;
+    receivedTime?: string;
     status: 'Waiting' | 'Received' | 'Tested';
   }) => {
     const response = await api.post('/api/Sample', sampleData);

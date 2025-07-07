@@ -126,6 +126,20 @@ const statusOptions = [
   { value: "rejected", label: "Từ chối" }
 ];
 
+// Helper function to map API status to UI status
+const mapApiStatusToUI = (apiStatus: string): Sample['status'] => {
+  switch (apiStatus) {
+    case 'Waiting':
+      return 'pending';
+    case 'Received':
+      return 'received';
+    case 'Tested':
+      return 'completed';
+    default:
+      return 'pending';
+  }
+};
+
 export default function SampleManagement() {
   const [samples, setSamples] = useState<Sample[]>([]);
   const [loading, setLoading] = useState(true);
@@ -153,11 +167,33 @@ export default function SampleManagement() {
         setLoading(true);
         setError(null);
         const data = await sampleAPI.getAll();
-        setSamples(Array.isArray(data) ? data : []);
+        
+        // Map API response to UI format
+        const mappedSamples = Array.isArray(data) ? data.map((apiSample: any) => ({
+          id: `SMP${apiSample.id || Math.random().toString().substring(2, 5)}`,
+          testId: `XN${apiSample.request_id || Math.random().toString().substring(2, 5)}`,
+          customerName: apiSample.customer_name || "Không xác định",
+          customerPhone: apiSample.customer_phone || "",
+          sampleType: apiSample.sample_type || "Không xác định",
+          collectionDate: apiSample.collection_time ? new Date(apiSample.collection_time).toISOString().split('T')[0] : "",
+          receivedDate: apiSample.received_time ? new Date(apiSample.received_time).toISOString().split('T')[0] : "",
+          status: mapApiStatusToUI(apiSample.status),
+          location: apiSample.location || "Chưa xác định",
+          notes: apiSample.notes || "",
+          kitId: apiSample.kit_id || 1,
+          kitName: apiSample.kit_name || "Kit mặc định",
+          technician: apiSample.technician_name || "Chưa phân công",
+          qualityCheck: apiSample.quality_check || false,
+          storageCondition: apiSample.storage_condition || "Nhiệt độ: 2-8°C, Độ ẩm: 60-70%",
+          expiryDate: apiSample.expiry_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        })) : initialSamples; // Fallback to initial samples if API fails
+        
+        setSamples(mappedSamples);
       } catch (err: any) {
         console.error("Error fetching samples:", err);
         setError(`Không thể tải danh sách mẫu: ${err.message || 'Lỗi kết nối API'}`);
-        setSamples([]);
+        // Use initial samples as fallback
+        setSamples(initialSamples);
       } finally {
         setLoading(false);
       }
@@ -197,7 +233,27 @@ export default function SampleManagement() {
 
   const updateSampleStatus = async (sampleId: string, newStatus: string) => {
     try {
-      await sampleAPI.updateStatus(sampleId, newStatus);
+      // Convert sample ID to number and map status values
+      const numericId = parseInt(sampleId.replace('SMP', ''));
+      let apiStatus: 'Waiting' | 'Received' | 'Tested';
+      
+      switch (newStatus) {
+        case 'pending':
+        case 'collected':
+          apiStatus = 'Waiting';
+          break;
+        case 'received':
+        case 'processing':
+          apiStatus = 'Received';
+          break;
+        case 'completed':
+          apiStatus = 'Tested';
+          break;
+        default:
+          apiStatus = 'Waiting';
+      }
+      
+      await sampleAPI.updateStatus(numericId, apiStatus);
       setSamples(prev => 
         prev.map(sample => 
           sample.id === sampleId ? { ...sample, status: newStatus as any } : sample
@@ -216,21 +272,38 @@ export default function SampleManagement() {
     }
 
     try {
+      // Map to the API expected format
       const sampleData = {
+        request_id: parseInt(newSample.testId.replace('XN', '')) || 1, // Extract numeric ID from testId
+        collected_by: 1, // Default staff ID - should be from authenticated user
+        collection_time: newSample.collectionDate ? new Date(newSample.collectionDate).toISOString() : undefined,
+        received_time: undefined, // Will be set when status changes to received
+        status: 'Waiting' as const
+      };
+
+      const newSampleData = await sampleAPI.create(sampleData);
+      
+      // Create a UI-friendly sample object for the local state
+      const uiSample: Sample = {
+        id: `SMP${newSampleData.id || Math.random().toString().substring(2, 5)}`,
         testId: newSample.testId,
         customerName: newSample.customerName,
         customerPhone: newSample.customerPhone,
         sampleType: newSample.sampleType,
         collectionDate: newSample.collectionDate,
+        receivedDate: '',
+        status: 'pending',
         location: newSample.location,
         notes: newSample.notes,
         kitId: parseInt(newSample.kitId) || 1,
+        kitName: "Kit mặc định",
         technician: newSample.technician,
-        status: "pending"
+        qualityCheck: false,
+        storageCondition: "Nhiệt độ: 2-8°C, Độ ẩm: 60-70%",
+        expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 30 days from now
       };
-
-      const newSampleData = await sampleAPI.create(sampleData);
-      setSamples(prev => [newSampleData, ...prev]);
+      
+      setSamples(prev => [uiSample, ...prev]);
       setNewSample({
         testId: "",
         customerName: "",

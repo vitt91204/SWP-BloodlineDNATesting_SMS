@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '../../hooks/use-toast';
 import HomeCollections from './HomeCollections';
-import TestProgress from './TestProgress';
+import SampleSubsampleManagement from './SampleSubsampleManagement';
 import ResultsDelivery from './ResultsDelivery';
 import BlogManagement from './BlogManagement';
 
@@ -100,9 +100,9 @@ export default function StaffDashboard() {
               <Home className="w-4 h-4" />
               Lịch lấy mẫu tại nhà
             </TabsTrigger>
-            <TabsTrigger value="test-progress" className="flex items-center gap-2">
+            <TabsTrigger value="sample-management" className="flex items-center gap-2">
               <TestTube className="w-4 h-4" />
-              Tiến độ xét nghiệm
+              Quản lý mẫu
             </TabsTrigger>
             <TabsTrigger value="results-delivery" className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
@@ -118,8 +118,8 @@ export default function StaffDashboard() {
             <HomeCollections />
           </TabsContent>
 
-          <TabsContent value="test-progress" className="space-y-4">
-            <TestProgress />
+          <TabsContent value="sample-management" className="space-y-4">
+            <SampleSubsampleManagement />
           </TabsContent>
 
           <TabsContent value="results-delivery" className="space-y-4">
