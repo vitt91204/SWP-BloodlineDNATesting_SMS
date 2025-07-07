@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui
 import { Button } from '../../../components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../../../components/ui/alert-dialog';
 import { Pencil, Trash2 } from 'lucide-react';
+import { TableHead, TableCell } from '../../../components/ui/table';
 
 interface User {
   userId: number;
@@ -50,6 +51,7 @@ export default function UserTable({ users, searchTerm, userType, onEdit, onDelet
                   <th className="text-left p-4 font-medium text-gray-600">Email</th>
                   <th className="text-left p-4 font-medium text-gray-600">Số điện thoại</th>
                   <th className="text-left p-4 font-medium text-gray-600">Ngày đăng ký</th>
+                  <th className="text-left p-4 font-medium text-gray-600">Quản lý</th>
                   <th className="text-left p-4 font-medium text-gray-600">Thao tác</th>
                 </tr>
               </thead>
@@ -60,7 +62,11 @@ export default function UserTable({ users, searchTerm, userType, onEdit, onDelet
                     <td className="p-4">
                       <div>
                         <div className="font-medium text-gray-900">{user.username}</div>
-                        <div className="text-sm text-gray-500">{user.role}</div>
+                        <div className="text-sm text-gray-500">
+                          {user.role === "Manager" && <span className="text-blue-600 font-semibold">Manager</span>}
+                          {user.role === "Staff" && <span className="text-green-600 font-semibold">Staff</span>}
+                          {user.role === "Customer" && <span>Customer</span>}
+                        </div>
                       </div>
                     </td>
                     <td className="p-4 text-gray-600">{user.email}</td>

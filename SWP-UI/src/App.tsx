@@ -35,6 +35,9 @@ import TestResultsManagement from "@/pages/admin/TestResultsManagement";
 import StaffDashboard from "@/pages/staff/Dashboard";
 import BlogDetail from "./pages/Blogdetails";
 
+// Manager pages
+import ManagerDashboard from "@/pages/manager/Dashboard";
+
 const queryClient = new QueryClient();
 
 function App() {
@@ -71,6 +74,10 @@ function App() {
             {/* Staff routes */}
             <Route path="/staff" element={<StaffDashboard />} />
             
+            {/* Manager routes */}
+            <Route path="/manager/dashboard" element={<ManagerDashboard />} />
+
+            {/* Blog routes */}
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:id" element={<BlogDetail />} />
 

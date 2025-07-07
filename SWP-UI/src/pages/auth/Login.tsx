@@ -81,6 +81,11 @@ export default function Login() {
       const userRole = userData?.role || userData?.userRole || user?.role || user?.userRole;
       console.log('User role:', userRole);
       
+      if (user.role === "Manager") {
+        navigate("/manager/dashboard");
+        return;
+      }
+      
       // Wait a bit then navigate based on role
       setTimeout(() => {
         if (userRole === 'admin' || userRole === 'Admin' || userRole === 'ADMIN') {
