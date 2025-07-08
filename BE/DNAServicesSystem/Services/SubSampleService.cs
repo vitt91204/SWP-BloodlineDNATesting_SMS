@@ -16,7 +16,10 @@ namespace Services
             {
                 SampleId = s.SampleId,
                 Description = s.Description,
-                CreatedAt = s.CreatedAt
+                CreatedAt = s.CreatedAt,
+                FullName = s.FullName,
+                DateOfBirth = s.DateOfBirth ?? default,
+                SampleType = s.SampleType
             }).ToList();
         }
 
@@ -28,7 +31,10 @@ namespace Services
             {
                 SampleId = s.SampleId,
                 Description = s.Description,
-                CreatedAt = s.CreatedAt
+                CreatedAt = s.CreatedAt,
+                FullName = s.FullName,
+                DateOfBirth = s.DateOfBirth ?? default,
+                SampleType = s.SampleType
             };
         }
 
@@ -38,7 +44,10 @@ namespace Services
             {
                 SampleId = dto.SampleId,
                 Description = dto.Description,
-                CreatedAt = dto.CreatedAt ?? DateTime.UtcNow
+                CreatedAt = dto.CreatedAt ?? DateTime.UtcNow,
+                FullName = dto.FullName,
+                DateOfBirth = dto.DateOfBirth == default ? null : dto.DateOfBirth,
+                SampleType = dto.SampleType
             };
             return await _repository.CreateAsync(entity);
         }
@@ -51,6 +60,9 @@ namespace Services
             entity.SampleId = dto.SampleId;
             entity.Description = dto.Description;
             entity.CreatedAt = dto.CreatedAt ?? entity.CreatedAt;
+            entity.FullName = dto.FullName;
+            entity.DateOfBirth = dto.DateOfBirth == default ? entity.DateOfBirth : dto.DateOfBirth;
+            entity.SampleType = dto.SampleType;
 
             await _repository.UpdateAsync(entity);
             return true;

@@ -30,7 +30,9 @@ namespace Services
                 CollectedBy = dto.CollectedBy,
                 CollectionTime = dto.CollectionTime,
                 ReceivedTime = dto.ReceivedTime,
-                Status = dto.Status
+                Status = dto.Status,
+                SampleType = dto.SampleType,
+                Relationship = dto.Relationship
             };
             return await _repository.CreateAsync(entity);
         }
@@ -45,6 +47,8 @@ namespace Services
             entity.CollectionTime = dto.CollectionTime;
             entity.ReceivedTime = dto.ReceivedTime;
             entity.Status = dto.Status;
+            entity.SampleType = dto.SampleType;
+            entity.Relationship = dto.Relationship;
 
             await _repository.UpdateAsync(entity);
             return true;

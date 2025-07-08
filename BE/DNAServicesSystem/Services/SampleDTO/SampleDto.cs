@@ -14,6 +14,8 @@ namespace Services.SampleDTO
 
         [Required(AllowEmptyStrings = false)]
         [StringLength(50)]
-        public string Status { get; set; } = string.Empty;
+        public string ? Status { get; set; } 
+        public string ? Relationship { get; set; } 
+        public string ? SampleType { get; set; }  
     }
 }

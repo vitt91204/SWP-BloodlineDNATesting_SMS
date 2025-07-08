@@ -2001,6 +2001,14 @@
             "maxLength": 50,
             "minLength": 0,
             "type": "string"
+          },
+          "relationship": {
+            "type": "string",
+            "nullable": true
+          },
+          "sampleType": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -2024,6 +2032,18 @@
           "createdAt": {
             "type": "string",
             "format": "date-time",
+            "nullable": true
+          },
+          "fullName": {
+            "type": "string",
+            "nullable": true
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date"
+          },
+          "sampleType": {
+            "type": "string",
             "nullable": true
           }
         },
