@@ -582,11 +582,26 @@ export const sampleAPI = {
   create: async (sampleData: {
     requestId: number;
     collectedBy: number;
-    collectionTime?: string;
-    receivedTime?: string;
-    status: 'Waiting' | 'Received' | 'Tested';
+    collectionTime: string;
+    receivedTime?: string | null;
+    status: string;
+    relationship?: string;
+    sampleType?: string;
   }) => {
-    const response = await api.post('/api/Sample', sampleData);
+    // Prepare the payload to match API specification exactly
+    const payload = {
+      requestId: sampleData.requestId,
+      collectedBy: sampleData.collectedBy,
+      collectionTime: sampleData.collectionTime,
+      receivedTime: sampleData.receivedTime,
+      status: sampleData.status,
+      relationship: sampleData.relationship || '',
+      sampleType: sampleData.sampleType || ''
+    };
+    
+    console.log('Sending sample creation request:', payload);
+    
+    const response = await api.post('/api/Sample', payload);
     return response.data;
   },
 
@@ -817,8 +832,12 @@ export const subSampleAPI = {
 
   // Tạo sub-sample mới
   create: async (subSampleData: {
-    sample_id: number;
+    sampleId: number;
     description: string;
+    createdAt?: string;
+    fullName?: string;
+    dateOfBirth?: string;
+    sampleType?: string;
   }) => {
     const response = await api.post('/api/SubSample', subSampleData);
     return response.data;

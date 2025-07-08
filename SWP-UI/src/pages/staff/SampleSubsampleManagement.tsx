@@ -20,6 +20,7 @@ import {
   FlaskConical
 } from 'lucide-react';
 import { testRequestAPI, sampleAPI, subSampleAPI, userAPI } from '@/api/axios';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface TestRequest {
   requestId: number;
@@ -64,22 +65,40 @@ interface TestRequest {
 }
 
 interface Sample {
-  id: number;
-  sample_id: number;
-  request_id: number;
-  collected_by: number;
-  collection_time: string;
-  received_time: string;
+  sampleId: number;
+  requestId: number;
+  collectedBy: number;
+  collectionTime: string;
+  receivedTime: string | null;
   status: string;
+  sampleType: string | null;
+  relationship: string | null;
+  collectedByNavigation: any | null;
+  request: any | null;
+  subSamples: any[];
+  testResults: any[];
+  // Legacy properties for backward compatibility
+  id?: number;
+  sample_id?: number;
+  request_id?: number;
+  collected_by?: number;
+  collection_time?: string;
+  received_time?: string;
   customer_name?: string;
   service_name?: string;
 }
 
 interface SubSample {
-  id: number;
-  sample_id: number;
+  sampleId: number;
   description: string;
-  created_at: string;
+  createdAt: string;
+  fullName: string;
+  dateOfBirth: string;
+  sampleType: string;
+  // Legacy fields for backward compatibility
+  id?: number;
+  sample_id?: number;
+  created_at?: string;
 }
 
 export default function SampleSubsampleManagement() {
@@ -102,11 +121,17 @@ export default function SampleSubsampleManagement() {
   const [sampleForm, setSampleForm] = useState({
     collection_time: '',
     received_time: '',
-    status: 'Waiting' as const
+    status: 'Waiting' as const,
+    relationship: '',
+    sampleType: ''
   });
   
   const [subSampleForm, setSubSampleForm] = useState({
-    description: ''
+    description: '',
+    createdAt: '',
+    fullName: '',
+    dateOfBirth: '',
+    sampleType: ''
   });
 
   const [users, setUsers] = useState<any[]>([]);
@@ -133,30 +158,60 @@ export default function SampleSubsampleManagement() {
       setLoading(true);
       setError(null);
       console.log('Fetching data for staff ID:', staffId);
+      
       // Fetch users
       try {
         const userList = await userAPI.getAllUsers();
         setUsers(Array.isArray(userList) ? userList : []);
+        console.log('Users fetched successfully:', userList?.length || 0);
       } catch (err) {
+        console.error('Error fetching users:', err);
         setUsers([]);
       }
+      
       if (!staffId) {
+        console.warn('No staff ID found, clearing data');
         setTestRequests([]);
         setSamples([]);
         setSubSamples([]);
         setLoading(false);
         return;
       }
-      // Sử dụng API lấy yêu cầu theo staffId
-      const staffRequests = await testRequestAPI.getByStaffId(staffId);
-      console.log('Test requests for staff:', staffRequests);
-      setTestRequests(Array.isArray(staffRequests) ? staffRequests : []);
+      
+      // Fetch test requests assigned to this staff
+      try {
+        const staffRequests = await testRequestAPI.getByStaffId(staffId);
+        console.log('Test requests for staff:', staffRequests);
+        setTestRequests(Array.isArray(staffRequests) ? staffRequests : []);
+      } catch (err) {
+        console.error('Error fetching test requests:', err);
+        setTestRequests([]);
+      }
       
       // Fetch all samples
       try {
         const samplesData = await sampleAPI.getAll();
-        console.log('Samples data:', samplesData);
-        setSamples(Array.isArray(samplesData) ? samplesData : []);
+        console.log('Raw samples data from API:', samplesData);
+        
+        // Validate samples data structure
+        if (Array.isArray(samplesData)) {
+          const validSamples = samplesData.filter(sample => {
+            const hasValidId = sample.sampleId || sample.sample_id || sample.id;
+            if (!hasValidId) {
+              console.warn('Sample missing valid ID:', sample);
+            }
+            return hasValidId;
+          });
+          
+          setSamples(validSamples);
+          console.log('Valid samples set:', validSamples.length);
+          if (validSamples.length > 0) {
+            console.log('Sample structure example:', validSamples[0]);
+          }
+        } else {
+          console.warn('Samples data is not an array:', samplesData);
+          setSamples([]);
+        }
       } catch (err) {
         console.error('Error fetching samples:', err);
         setSamples([]);
@@ -173,7 +228,7 @@ export default function SampleSubsampleManagement() {
       }
       
     } catch (err: any) {
-      console.error('Error fetching data:', err);
+      console.error('Error in fetchData:', err);
       setError('Không thể tải dữ liệu');
     } finally {
       setLoading(false);
@@ -206,21 +261,28 @@ export default function SampleSubsampleManagement() {
       return;
     }
     
+    // Validate staffId
+    if (!staffId || typeof staffId !== 'number') {
+      alert('Lỗi: Không tìm thấy thông tin nhân viên. Vui lòng đăng nhập lại.');
+      return;
+    }
+    
     try {
       const sampleData = {
         requestId: selectedRequest.requestId,
         collectedBy: staffId,
         collectionTime: sampleForm.collection_time ? new Date(sampleForm.collection_time).toISOString() : new Date().toISOString(),
-        receivedTime: sampleForm.received_time ? new Date(sampleForm.received_time).toISOString() : undefined,
-        status: sampleForm.status
+        receivedTime: sampleForm.received_time ? new Date(sampleForm.received_time).toISOString() : null,
+        status: sampleForm.status,
+        relationship: sampleForm.relationship || '',
+        sampleType: sampleForm.sampleType || ''
       };
       
       console.log('Creating sample with data:', sampleData);
+      console.log('API endpoint: POST /api/Sample');
       
-      await sampleAPI.create(sampleData);
-      
-      // Update test request status to 'Collected'
-      await testRequestAPI.updateStatus(selectedRequest.requestId, 'Collected');
+      const response = await sampleAPI.create(sampleData);
+      console.log('Sample created successfully:', response);
       
       // Refresh data
       await fetchData();
@@ -230,25 +292,87 @@ export default function SampleSubsampleManagement() {
       setSampleForm({
         collection_time: '',
         received_time: '',
-        status: 'Waiting'
+        status: 'Waiting',
+        relationship: '',
+        sampleType: ''
       });
       setSelectedRequest(null);
       
       alert('Tạo mẫu thành công!');
     } catch (err: any) {
       console.error('Error creating sample:', err);
-      alert(`Lỗi tạo mẫu: ${err.message}`);
+      console.error('Request data that failed:', {
+        requestId: selectedRequest.requestId,
+        collectedBy: staffId,
+        status: sampleForm.status
+      });
+      
+      let errorMessage = 'Lỗi tạo mẫu';
+      if (err.response?.data?.message) {
+        errorMessage += `: ${err.response.data.message}`;
+      } else if (err.response?.data?.errors) {
+        // Handle validation errors from ASP.NET Core
+        const errors = err.response.data.errors;
+        const errorDetails = Object.keys(errors).map(key => `${key}: ${errors[key].join(', ')}`).join('; ');
+        errorMessage += `: ${errorDetails}`;
+      } else if (err.response?.status === 400) {
+        errorMessage += ': Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin.';
+      } else if (err.response?.status === 500) {
+        errorMessage += ': Lỗi máy chủ. Vui lòng thử lại sau.';
+      } else {
+        errorMessage += `: ${err.message || 'Lỗi không xác định'}`;
+      }
+      
+      alert(errorMessage);
     }
   };
 
   const handleCreateSubSample = async () => {
     if (!selectedSample) return;
     
+    // Validation
+    if (!subSampleForm.description.trim()) {
+      alert('Vui lòng nhập mô tả mẫu con');
+      return;
+    }
+    
     try {
+      // Verify that the sample exists and get the correct ID
+      let sampleId: number;
+      
+      // Handle different possible property names for sample ID (prioritize API response format)
+      if (selectedSample.sampleId) {
+        sampleId = selectedSample.sampleId;
+      } else if (selectedSample.sample_id) {
+        sampleId = selectedSample.sample_id;
+      } else if (selectedSample.id) {
+        sampleId = selectedSample.id;
+      } else {
+        throw new Error('Không tìm thấy ID của mẫu gốc');
+      }
+
+      console.log('Creating subsample for sample ID:', sampleId);
+      console.log('Selected sample info:', selectedSample);
+
+      // Verify the sample exists by fetching it first
+      try {
+        await sampleAPI.getById(sampleId);
+        console.log('Sample exists in database');
+      } catch (error) {
+        console.error('Sample verification failed:', error);
+        throw new Error('Mẫu gốc không tồn tại trong hệ thống. Vui lòng làm mới trang và thử lại.');
+      }
+      
       const subSampleData = {
-        sample_id: selectedSample.sample_id,
-        description: subSampleForm.description
+        sampleId: sampleId,
+        description: subSampleForm.description.trim(),
+        createdAt: subSampleForm.createdAt ? new Date(subSampleForm.createdAt).toISOString() : new Date().toISOString(),
+        fullName: subSampleForm.fullName.trim() || undefined,
+        dateOfBirth: subSampleForm.dateOfBirth || undefined,
+        sampleType: subSampleForm.sampleType.trim() || undefined
       };
+      
+      console.log('Creating subsample with data:', subSampleData);
       
       await subSampleAPI.create(subSampleData);
       
@@ -257,15 +381,41 @@ export default function SampleSubsampleManagement() {
       
       // Close dialog and reset form
       setShowCreateSubSampleDialog(false);
-      setSubSampleForm({
-        description: ''
+      setSubSampleForm({ 
+        description: '', 
+        createdAt: '', 
+        fullName: '', 
+        dateOfBirth: '', 
+        sampleType: '' 
       });
       setSelectedSample(null);
       
       alert('Tạo mẫu con thành công!');
     } catch (err: any) {
       console.error('Error creating subsample:', err);
-      alert(`Lỗi tạo mẫu con: ${err.message}`);
+      console.error('Error details:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        statusText: err.response?.statusText
+      });
+      
+      // Hiển thị thông báo lỗi chi tiết hơn
+      let errorMessage = 'Lỗi tạo mẫu con';
+      if (err.response?.data?.message) {
+        errorMessage += `: ${err.response.data.message}`;
+      } else if (err.response?.data?.errors) {
+        // Handle validation errors
+        const errors = err.response.data.errors;
+        const errorDetails = Object.keys(errors).map(key => `${key}: ${errors[key].join(', ')}`).join('; ');
+        errorMessage += `: ${errorDetails}`;
+      } else if (err.response?.data) {
+        errorMessage += `: ${JSON.stringify(err.response.data)}`;
+      } else if (err.message) {
+        errorMessage += `: ${err.message}`;
+      }
+      
+      alert(errorMessage);
     }
   };
 
@@ -281,15 +431,70 @@ export default function SampleSubsampleManagement() {
   });
 
   const filteredSamples = samples.filter(sample => {
-    const matchesSearch = 
-      sample.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (sample.sample_id ? sample.sample_id.toString() : "").includes(searchTerm) ||
-      sample.service_name?.toLowerCase().includes(searchTerm.toLowerCase());
+    // Allow searching by multiple possible identifiers using correct API property names
+    const sampleId = sample.sampleId || sample.sample_id || sample.id || '';
+    const customerName = sample.customer_name || '';
+    const serviceName = sample.service_name || '';
+    const requestId = sample.requestId || sample.request_id || '';
+    
+    const matchesSearch = searchTerm === '' || 
+      customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      sampleId.toString().includes(searchTerm) ||
+      serviceName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      requestId.toString().includes(searchTerm) ||
+      `SP${sampleId}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      `YC${requestId}`.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || sample.status === statusFilter;
     
     return matchesSearch && matchesStatus;
   });
+
+  // Helper function to get display name for customer
+  const getCustomerDisplayName = (sample: Sample) => {
+    if (sample.customer_name) return sample.customer_name;
+    
+    // Try to get name from collectedBy (using correct property name)
+    const collectedById = sample.collectedBy || sample.collected_by;
+    if (collectedById) {
+      const collector = users.find(u => u.userId === collectedById || u.id === collectedById);
+      if (collector) return collector.fullName || collector.username;
+    }
+    
+    // Try to get name from request if available in testRequests
+    const requestId = sample.requestId || sample.request_id;
+    if (requestId) {
+      const request = testRequests.find(r => r.requestId === requestId);
+      if (request?.user?.fullName) return request.user.fullName;
+    }
+    
+    // Try to get from embedded request object if available
+    if (sample.request?.user?.fullName) {
+      return sample.request.user.fullName;
+    }
+    
+    const sampleId = sample.sampleId || sample.sample_id || sample.id;
+    return `Mẫu ${sampleId}`;
+  };
+
+  // Helper function to get service name
+  const getServiceDisplayName = (sample: Sample) => {
+    if (sample.service_name) return sample.service_name;
+    
+    // Try to get service from request if available in testRequests
+    const requestId = sample.requestId || sample.request_id;
+    if (requestId) {
+      const request = testRequests.find(r => r.requestId === requestId);
+      if (request?.service?.name) return request.service.name;
+    }
+    
+    // Try to get from embedded request object if available
+    if (sample.request?.service?.name) {
+      return sample.request.service.name;
+    }
+    
+    return 'Chưa xác định';
+  };
 
   // Helper để chuyển đổi loại thu mẫu sang tiếng Việt
   const getCollectionTypeVN = (type: string) => {
@@ -344,6 +549,15 @@ export default function SampleSubsampleManagement() {
           </div>
         </CardHeader>
         <CardContent>
+          {/* Debug Information */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
+              <strong>Debug Info:</strong> Raw samples: {samples.length} | Filtered samples: {filteredSamples.length} | 
+              Search: "{searchTerm}" | Status filter: {statusFilter} | 
+              Staff ID: {staffId}
+            </div>
+          )}
+          
           {/* Search and Filter */}
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <div className="flex-1">
@@ -375,142 +589,169 @@ export default function SampleSubsampleManagement() {
             </div>
           </div>
 
-          {/* Test Requests Tab */}
-          {activeTab === 'requests' && (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Mã yêu cầu</TableHead>
-                    <TableHead>Khách hàng</TableHead>
-                    <TableHead>Dịch vụ</TableHead>
-                    <TableHead>Loại thu mẫu</TableHead>
-                    <TableHead>Ngày hẹn</TableHead>
-                    <TableHead>Trạng thái</TableHead>
-                    <TableHead className="text-right">Thao tác</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredRequests.map((request) => (
-                    <TableRow key={request.requestId}>
-                      <TableCell className="font-medium">YC{request.requestId}</TableCell>
-                      <TableCell>{getUserName(request.userId)}</TableCell>
-                      <TableCell>{request.service?.name || 'Chưa xác định'}</TableCell>
-                      <TableCell>{getCollectionTypeVN(request.collectionType)}</TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          <div>{request.appointmentDate}</div>
-                          <div className="text-gray-500">{request.slotTime}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{getStatusBadge(request.status)}</TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedRequest(request);
-                            setShowCreateSampleDialog(true);
-                          }}
-                          disabled={request.status === 'Completed' || request.status === 'Collected'}
-                        >
-                          <Plus className="w-4 h-4 mr-1" />
-                          Tạo mẫu
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="requests" className="flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                Yêu cầu xét nghiệm
+              </TabsTrigger>
+              <TabsTrigger value="samples" className="flex items-center gap-2">
+                <TestTube className="w-4 h-4" />
+                Mẫu xét nghiệm
+              </TabsTrigger>
+              <TabsTrigger value="subsamples" className="flex items-center gap-2">
+                <FlaskConical className="w-4 h-4" />
+                Mẫu con
+              </TabsTrigger>
+            </TabsList>
 
-          {/* Samples Tab */}
-          {activeTab === 'samples' && (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Mã mẫu</TableHead>
-                    <TableHead>Mã yêu cầu</TableHead>
-                    <TableHead>Khách hàng</TableHead>
-                    <TableHead>Ngày thu</TableHead>
-                    <TableHead>Ngày nhận</TableHead>
-                    <TableHead>Trạng thái</TableHead>
-                    <TableHead className="text-right">Thao tác</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredSamples.map((sample) => (
-                    <TableRow key={sample.sample_id}>
-                      <TableCell className="font-medium">SP{sample.sample_id}</TableCell>
-                      <TableCell>YC{sample.request_id}</TableCell>
-                      <TableCell>{sample.customer_name || 'Chưa có tên'}</TableCell>
-                      <TableCell>{sample.collection_time ? new Date(sample.collection_time).toLocaleDateString('vi-VN') : 'Chưa thu'}</TableCell>
-                      <TableCell>{sample.received_time ? new Date(sample.received_time).toLocaleDateString('vi-VN') : 'Chưa nhận'}</TableCell>
-                      <TableCell>{getStatusBadge(sample.status)}</TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedSample(sample);
-                            setShowCreateSubSampleDialog(true);
-                          }}
-                        >
-                          <Plus className="w-4 h-4 mr-1" />
-                          Tạo mẫu con
-                        </Button>
-                      </TableCell>
+            <TabsContent value="requests" className="mt-6">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Mã yêu cầu</TableHead>
+                      <TableHead>Khách hàng</TableHead>
+                      <TableHead>Dịch vụ</TableHead>
+                      <TableHead>Loại thu mẫu</TableHead>
+                      <TableHead>Ngày hẹn</TableHead>
+                      <TableHead>Trạng thái</TableHead>
+                      <TableHead className="text-right">Thao tác</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
+                  </TableHeader>
+                  <TableBody>
+                    {filteredRequests.map((request, index) => (
+                      <TableRow key={request.requestId || `request-${index}`}>
+                        <TableCell className="font-medium">YC{request.requestId}</TableCell>
+                        <TableCell>{getUserName(request.userId)}</TableCell>
+                        <TableCell>{request.service?.name || 'Chưa xác định'}</TableCell>
+                        <TableCell>{getCollectionTypeVN(request.collectionType)}</TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            <div>{request.appointmentDate}</div>
+                            <div className="text-gray-500">{request.slotTime}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{getStatusBadge(request.status)}</TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedRequest(request);
+                              setShowCreateSampleDialog(true);
+                            }}
+                            disabled={request.status === 'Completed' || request.status === 'Collected'}
+                          >
+                            <Plus className="w-4 h-4 mr-1" />
+                            Tạo mẫu
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              {filteredRequests.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  Không có yêu cầu xét nghiệm nào được phân công cho bạn
+                </div>
+              )}
+            </TabsContent>
 
-          {/* SubSamples Tab */}
-          {activeTab === 'subsamples' && (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Mã mẫu gốc</TableHead>
-                    <TableHead>Mô tả</TableHead>
-                    <TableHead>Ngày tạo</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {subSamples.map((subSample) => (
-                    <TableRow key={subSample.id}>
-                      <TableCell className="font-medium">{subSample.id}</TableCell>
-                      <TableCell>SP{subSample.sample_id}</TableCell>
-                      <TableCell>{subSample.description}</TableCell>
-                      <TableCell>{new Date(subSample.created_at).toLocaleDateString('vi-VN')}</TableCell>
+            <TabsContent value="samples" className="mt-6">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Mã mẫu</TableHead>
+                      <TableHead>Mã yêu cầu</TableHead>
+                      <TableHead>Khách hàng</TableHead>
+                      <TableHead>Dịch vụ</TableHead>
+                      <TableHead>Ngày thu</TableHead>
+                      <TableHead>Ngày nhận</TableHead>
+                      <TableHead>Trạng thái</TableHead>
+                      <TableHead className="text-right">Thao tác</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
+                  </TableHeader>
+                  <TableBody>
+                    {filteredSamples.map((sample, index) => {
+                      const sampleId = sample.sampleId || sample.sample_id || sample.id;
+                      const requestId = sample.requestId || sample.request_id;
+                      const collectionTime = sample.collectionTime || sample.collection_time;
+                      const receivedTime = sample.receivedTime || sample.received_time;
+                      
+                      return (
+                        <TableRow key={sampleId || `sample-${index}`}>
+                          <TableCell className="font-medium">SP{sampleId}</TableCell>
+                          <TableCell>YC{requestId}</TableCell>
+                          <TableCell>{getCustomerDisplayName(sample)}</TableCell>
+                          <TableCell>{getServiceDisplayName(sample)}</TableCell>
+                          <TableCell>{collectionTime ? new Date(collectionTime).toLocaleDateString('vi-VN') : 'Chưa thu'}</TableCell>
+                          <TableCell>{receivedTime ? new Date(receivedTime).toLocaleDateString('vi-VN') : 'Chưa nhận'}</TableCell>
+                          <TableCell>{getStatusBadge(sample.status)}</TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedSample(sample);
+                                setShowCreateSubSampleDialog(true);
+                              }}
+                              disabled={!sampleId}
+                            >
+                              <Plus className="w-4 h-4 mr-1" />
+                              Tạo mẫu con
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+              {filteredSamples.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  {samples.length === 0 ? 'Không có mẫu xét nghiệm nào' : 'Không tìm thấy mẫu phù hợp với bộ lọc'}
+                </div>
+              )}
+            </TabsContent>
 
-          {/* Empty states */}
-          {activeTab === 'requests' && filteredRequests.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              Không có yêu cầu xét nghiệm nào được phân công cho bạn
-            </div>
-          )}
-          {activeTab === 'samples' && filteredSamples.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              Không có mẫu xét nghiệm nào
-            </div>
-          )}
-          {activeTab === 'subsamples' && subSamples.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              Không có mẫu con nào
-            </div>
-          )}
+            <TabsContent value="subsamples" className="mt-6">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Mã mẫu gốc</TableHead>
+                      <TableHead>Mô tả</TableHead>
+                      <TableHead>Ngày tạo</TableHead>
+                      <TableHead>Họ tên</TableHead>
+                      <TableHead>Ngày sinh</TableHead>
+                      <TableHead>Loại mẫu</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {subSamples.map((subSample, index) => (
+                      <TableRow key={subSample.sampleId || subSample.sample_id || subSample.id || `subsample-${index}`}>
+                        <TableCell>SP{subSample.sampleId || subSample.sample_id}</TableCell>
+                        <TableCell>{subSample.description}</TableCell>
+                        <TableCell>{new Date(subSample.createdAt || subSample.created_at).toLocaleDateString('vi-VN')}</TableCell>
+                        <TableCell>{subSample.fullName}</TableCell>
+                        <TableCell>{subSample.dateOfBirth}</TableCell>
+                        <TableCell>{subSample.sampleType}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              {subSamples.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  Không có mẫu con nào
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 
@@ -588,6 +829,26 @@ export default function SampleSubsampleManagement() {
                 </SelectContent>
               </Select>
             </div>
+
+            <div>
+              <label className="text-sm font-medium">Mối quan hệ (relationship)</label>
+              <Input
+                type="text"
+                value={sampleForm.relationship}
+                onChange={e => setSampleForm({ ...sampleForm, relationship: e.target.value })}
+                placeholder="Nhập mối quan hệ (nếu có)"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Loại mẫu (sampleType)</label>
+              <Input
+                type="text"
+                value={sampleForm.sampleType}
+                onChange={e => setSampleForm({ ...sampleForm, sampleType: e.target.value })}
+                placeholder="Nhập loại mẫu (nếu có)"
+              />
+            </div>
           </div>
 
           <DialogFooter>
@@ -605,18 +866,68 @@ export default function SampleSubsampleManagement() {
           <DialogHeader>
             <DialogTitle>Tạo mẫu con</DialogTitle>
             <DialogDescription>
-              Tạo mẫu con cho mẫu SP{selectedSample?.sample_id}
+              Tạo mẫu con cho mẫu SP{selectedSample?.sampleId || selectedSample?.sample_id || selectedSample?.id}
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium">Mô tả mẫu con</label>
+              <label className="text-sm font-medium">Mô tả mẫu con <span className="text-red-500">*</span></label>
               <Textarea
                 value={subSampleForm.description}
-                onChange={(e) => setSubSampleForm({...subSampleForm, description: e.target.value})}
-                placeholder="Nhập mô tả chi tiết cho mẫu con..."
+                onChange={e => setSubSampleForm({ ...subSampleForm, description: e.target.value })}
+                placeholder="Nhập mô tả mẫu con... (bắt buộc)"
                 rows={3}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Thời gian tạo</label>
+              <div className="flex gap-2">
+                <Input
+                  type="datetime-local"
+                  value={subSampleForm.createdAt}
+                  onChange={e => setSubSampleForm({ ...subSampleForm, createdAt: e.target.value })}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const now = new Date();
+                    const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                    setSubSampleForm({...subSampleForm, createdAt: localDateTime});
+                  }}
+                >
+                  Hiện tại
+                </Button>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Để trống sẽ tự động sử dụng thời gian hiện tại</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Họ tên (tùy chọn)</label>
+              <Input
+                type="text"
+                value={subSampleForm.fullName}
+                onChange={e => setSubSampleForm({ ...subSampleForm, fullName: e.target.value })}
+                placeholder="Nhập họ tên (tùy chọn)"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Ngày sinh (tùy chọn)</label>
+              <Input
+                type="date"
+                value={subSampleForm.dateOfBirth}
+                onChange={e => setSubSampleForm({ ...subSampleForm, dateOfBirth: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Loại mẫu (tùy chọn)</label>
+              <Input
+                type="text"
+                value={subSampleForm.sampleType}
+                onChange={e => setSubSampleForm({ ...subSampleForm, sampleType: e.target.value })}
+                placeholder="Nhập loại mẫu (tùy chọn)"
               />
             </div>
           </div>

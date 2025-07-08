@@ -128,18 +128,7 @@ const statusOptions = [
 ];
 
 // Helper function to map API status to UI status
-const mapApiStatusToUI = (apiStatus: string): Sample['status'] => {
-  switch (apiStatus) {
-    case 'Waiting':
-      return 'pending';
-    case 'Received':
-      return 'received';
-    case 'Tested':
-      return 'completed';
-    default:
-      return 'pending';
-  }
-};
+
 
 export default function SampleManagement() {
   const [samples, setSamples] = useState<Sample[]>([]);
@@ -148,62 +137,8 @@ export default function SampleManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedSample, setSelectedSample] = useState<Sample | null>(null);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [newSample, setNewSample] = useState({
-    testId: "",
-    customerName: "",
-    customerPhone: "",
-    sampleType: "",
-    collectionDate: "",
-    location: "",
-    notes: "",
-    kitId: "",
-    technician: ""
-  });
-  const [showAddSubSampleForm, setShowAddSubSampleForm] = useState(false);
-  const [createdSampleId, setCreatedSampleId] = useState<number | null>(null);
-  const [subSampleDesc, setSubSampleDesc] = useState("");
 
-  // Fetch samples from API
-  useEffect(() => {
-    const fetchSamples = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await sampleAPI.getAll();
-        
-        // Map API response to UI format
-        const mappedSamples = Array.isArray(data) ? data.map((apiSample: any) => ({
-          id: `SMP${apiSample.id || Math.random().toString().substring(2, 5)}`,
-          testId: `XN${apiSample.request_id || Math.random().toString().substring(2, 5)}`,
-          customerName: apiSample.customer_name || "Không xác định",
-          customerPhone: apiSample.customer_phone || "",
-          sampleType: apiSample.sample_type || "Không xác định",
-          collectionDate: apiSample.collection_time ? new Date(apiSample.collection_time).toISOString().split('T')[0] : "",
-          receivedDate: apiSample.received_time ? new Date(apiSample.received_time).toISOString().split('T')[0] : "",
-          status: mapApiStatusToUI(apiSample.status),
-          location: apiSample.location || "Chưa xác định",
-          notes: apiSample.notes || "",
-          kitId: apiSample.kit_id || 1,
-          kitName: apiSample.kit_name || "Kit mặc định",
-          technician: apiSample.technician_name || "Chưa phân công",
-          qualityCheck: apiSample.quality_check || false,
-          storageCondition: apiSample.storage_condition || "Nhiệt độ: 2-8°C, Độ ẩm: 60-70%",
-          expiryDate: apiSample.expiry_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-        })) : initialSamples; // Fallback to initial samples if API fails
-        
-        setSamples(mappedSamples);
-      } catch (err: any) {
-        console.error("Error fetching samples:", err);
-        setError(`Không thể tải danh sách mẫu: ${err.message || 'Lỗi kết nối API'}`);
-        // Use initial samples as fallback
-        setSamples(initialSamples);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchSamples();
-  }, []);
+  
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -269,47 +204,6 @@ export default function SampleManagement() {
     }
   };
 
-  const handleAddSample = async () => {
-    if (!newSample.testId || !newSample.customerName) {
-      alert("Vui lòng điền đầy đủ thông tin bắt buộc");
-      return;
-    }
-    try {
-      // Map to the API expected format
-      const sampleData = {
-        requestId: parseInt(newSample.testId.replace('XN', '')) || 1, // Extract numeric ID from testId
-        collectedBy: 1, // Default staff ID - should be from authenticated user
-        collectionTime: newSample.collectionDate ? new Date(newSample.collectionDate).toISOString() : undefined,
-        receivedTime: undefined, // Will be set when status changes to received
-        status: 'Waiting' as const
-      };
-      const newSampleData = await sampleAPI.create(sampleData);
-      setCreatedSampleId(newSampleData.id);
-      setShowAddForm(false);
-      setShowAddSubSampleForm(true);
-    } catch (err: any) {
-      console.error("Error creating sample:", err);
-      alert(`Lỗi tạo mẫu: ${err.message}`);
-    }
-  };
-
-  const handleAddSubSample = async () => {
-    if (!createdSampleId || !subSampleDesc) {
-      alert("Vui lòng nhập mô tả mẫu con");
-      return;
-    }
-    try {
-      await subSampleAPI.create({ sample_id: createdSampleId, description: subSampleDesc });
-      setShowAddSubSampleForm(false);
-      setSubSampleDesc("");
-      setCreatedSampleId(null);
-      alert("Tạo mẫu con thành công!");
-      // Có thể gọi lại fetchSamples() nếu muốn cập nhật danh sách
-    } catch (err) {
-      alert("Lỗi tạo mẫu con");
-    }
-  };
-
   return (
     <div className="max-w-7xl mx-auto py-8 px-4">
       <Card>
@@ -319,10 +213,6 @@ export default function SampleManagement() {
               <TestTube className="w-6 h-6" />
               Quản lý mẫu xét nghiệm
             </CardTitle>
-            <Button onClick={() => setShowAddForm(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Thêm mẫu mới
-            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -498,131 +388,6 @@ export default function SampleManagement() {
             <Button variant="outline" onClick={() => setSelectedSample(null)}>
               Đóng
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Add Sample Dialog */}
-      <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Thêm mẫu xét nghiệm mới</DialogTitle>
-            <DialogDescription>
-              Nhập thông tin mẫu xét nghiệm mới
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium">Mã xét nghiệm *</label>
-                <Input
-                  value={newSample.testId}
-                  onChange={(e) => setNewSample({...newSample, testId: e.target.value})}
-                  placeholder="XN001"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Tên khách hàng *</label>
-                <Input
-                  value={newSample.customerName}
-                  onChange={(e) => setNewSample({...newSample, customerName: e.target.value})}
-                  placeholder="Nguyễn Văn A"
-                />
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium">Số điện thoại</label>
-                <Input
-                  value={newSample.customerPhone}
-                  onChange={(e) => setNewSample({...newSample, customerPhone: e.target.value})}
-                  placeholder="0901234567"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Loại mẫu</label>
-                <Select value={newSample.sampleType} onValueChange={(value) => setNewSample({...newSample, sampleType: value})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn loại mẫu" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Máu">Máu</SelectItem>
-                    <SelectItem value="Nước bọt">Nước bọt</SelectItem>
-                    <SelectItem value="Tóc">Tóc</SelectItem>
-                    <SelectItem value="Móng tay">Móng tay</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium">Ngày thu mẫu</label>
-                <Input
-                  type="date"
-                  value={newSample.collectionDate}
-                  onChange={(e) => setNewSample({...newSample, collectionDate: e.target.value})}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Vị trí lưu trữ</label>
-                <Input
-                  value={newSample.location}
-                  onChange={(e) => setNewSample({...newSample, location: e.target.value})}
-                  placeholder="Kho lạnh A - Ngăn 1"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium">Kỹ thuật viên</label>
-              <Input
-                value={newSample.technician}
-                onChange={(e) => setNewSample({...newSample, technician: e.target.value})}
-                placeholder="Nguyễn Thị B"
-              />
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium">Ghi chú</label>
-              <Textarea
-                value={newSample.notes}
-                onChange={(e) => setNewSample({...newSample, notes: e.target.value})}
-                placeholder="Ghi chú về mẫu..."
-                rows={3}
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button onClick={handleAddSample}>Tiếp tục</Button>
-            <Button variant="outline" onClick={() => setShowAddForm(false)}>
-              Hủy
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Add SubSample Dialog */}
-      <Dialog open={showAddSubSampleForm} onOpenChange={setShowAddSubSampleForm}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Thêm mẫu con cho mẫu vừa tạo</DialogTitle>
-          </DialogHeader>
-          <div>
-            <label className="text-sm font-medium">Mô tả mẫu con</label>
-            <Textarea
-              value={subSampleDesc}
-              onChange={e => setSubSampleDesc(e.target.value)}
-              placeholder="Nhập mô tả mẫu con..."
-              rows={3}
-            />
-          </div>
-          <DialogFooter>
-            <Button onClick={handleAddSubSample}>Lưu mẫu con</Button>
-            <Button variant="outline" onClick={() => setShowAddSubSampleForm(false)}>Hủy</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
