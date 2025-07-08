@@ -93,7 +93,9 @@ export default function ManagerDashboard() {
       setUsers(allUsers);
       
       // Filter staff users
-      const staffUsers = allUsers.filter((u: any) => u.role === "staff");
+      const staffUsers = allUsers.filter((u: any) => 
+        typeof u.role === "string" && u.role.toLowerCase() === "staff"
+      );
       setStaffList(staffUsers);
       
     } catch (err: any) {
@@ -377,36 +379,35 @@ export default function ManagerDashboard() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      {!request.staffId ? (
-                        <div className="flex items-center gap-2">
-                          <Select
-                            value={selectedStaff[request.requestId]?.toString() || ""}
-                            onValueChange={val => setSelectedStaff(prev => ({ ...prev, [request.requestId]: Number(val) }))}
-                          >
-                            <SelectTrigger className="w-40">
-                              <SelectValue placeholder="Chọn staff" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {staffList.map((staff) => (
-                                <SelectItem key={staff.userId || staff.id} value={(staff.userId || staff.id).toString()}>
-                                  {staff.fullName || staff.username}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <Button
-                            size="sm"
-                            disabled={assigning[request.requestId] || !selectedStaff[request.requestId]}
-                            onClick={() => handleAssign(request.requestId)}
-                          >
-                            {assigning[request.requestId] ? "Đang giao..." : "Giao việc"}
-                          </Button>
-                        </div>
-                      ) : (
-                        <Badge variant="secondary" className="text-green-600">
-                          Đã phân công
-                        </Badge>
-                      )}
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={request.staffId || ""}
+                          onChange={async (e) => {
+                            const newStaffId = Number(e.target.value);
+                            if (!request.requestId || !newStaffId) return;
+                            try {
+                              await testRequestAPI.assignStaff(request.requestId, newStaffId);
+                              alert(`Đã chỉ định nhân viên #${newStaffId} cho yêu cầu #${request.requestId}`);
+                              fetchData();
+                            } catch (err: any) {
+                              alert(err.message || "Không thể chỉ định nhân viên");
+                            }
+                          }}
+                          className="w-40 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="">Chọn staff</option>
+                          {staffList.map(staff => (
+                            <option key={staff.userId || staff.id} value={staff.userId || staff.id}>
+                              {staff.fullName || staff.username} (ID: {staff.userId || staff.id})
+                            </option>
+                          ))}
+                        </select>
+                        {request.staffId && (
+                          <Badge variant="secondary" className="text-green-600">
+                            Đã phân công
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
