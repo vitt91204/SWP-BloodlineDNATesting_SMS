@@ -10,7 +10,7 @@ import {
   Phone,
   CheckCircle
 } from 'lucide-react';
-import axios from '@/api/axios';
+import { testRequestAPI } from '@/api/axios';
 
 interface HomeCollection {
   id: string;
@@ -33,10 +33,24 @@ export default function HomeCollections() {
       try {
         setLoading(true);
         setError(null);
-        // Thay đổi endpoint cho đúng với API backend của bạn
-        const response = await axios.get('/api/home-collections');
-        setHomeCollections(response.data);
-      } catch (err: any) {
+        const allRequests = await testRequestAPI.getAll();
+        // Lọc các yêu cầu lấy mẫu tại nhà
+        const homeRequests = (allRequests || []).filter(
+          (req) => req.collectionType?.toLowerCase() === 'at home'
+        );
+        setHomeCollections(
+          homeRequests.map((req) => ({
+            id: req.requestId || req.id,
+            customerName: req.user?.fullName || req.user?.username || 'Khách hàng',
+            phone: req.user?.phone || '',
+            address: req.address?.street || '',
+            date: req.appointmentDate,
+            timeSlot: req.slotTime,
+            status: req.status,
+            testType: req.service?.name || '',
+          }))
+        );
+      } catch (err) {
         setError('Không thể tải dữ liệu lịch lấy mẫu tại nhà');
       } finally {
         setLoading(false);

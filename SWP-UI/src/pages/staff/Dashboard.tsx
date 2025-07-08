@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { Button } from '../../components/ui/button';
@@ -17,17 +17,28 @@ import HomeCollections from './HomeCollections';
 import SampleSubsampleManagement from './SampleSubsampleManagement';
 import ResultsDelivery from './ResultsDelivery';
 import BlogManagement from './BlogManagement';
+import { userAPI } from '../../api/axios';
 
 export default function StaffDashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  
-  // Lấy thông tin staff từ localStorage
-  const staffInfo = {
-    name: localStorage.getItem('username') || 'Nhân viên',
-    role: 'Staff',
-    id: localStorage.getItem('userId') || 'ST001'
-  };
+  const [staffInfo, setStaffInfo] = useState<{ name?: string; role?: string; id?: string } | null>(null);
+
+  useEffect(() => {
+    const fetchStaffInfo = async () => {
+      try {
+        const user = await userAPI.getUserInfo();
+        setStaffInfo({
+          name: user.fullName || user.username || 'Nhân viên',
+          role: user.role || 'Staff',
+          id: user.userId || user.id || 'ST001'
+        });
+      } catch {
+        setStaffInfo({ name: 'Nhân viên', role: 'Staff', id: 'ST001' });
+      }
+    };
+    fetchStaffInfo();
+  }, []);
 
   const handleLogout = () => {
     // Xóa thông tin đăng nhập từ localStorage
@@ -63,8 +74,8 @@ export default function StaffDashboard() {
                   <User className="w-6 h-6 text-blue-600" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Xin chào, {staffInfo.name}</h1>
-                  <p className="text-gray-600">Vai trò: {staffInfo.role} | ID: {staffInfo.id}</p>
+                  <h1 className="text-2xl font-bold text-gray-900">Xin chào, {staffInfo?.name || <span className="italic text-gray-400">Đang tải...</span>}</h1>
+                  <p className="text-gray-600">Vai trò: {staffInfo?.role || <span className="italic text-gray-400">Đang tải...</span>} | ID: {staffInfo?.id || <span className="italic text-gray-400">Đang tải...</span>}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
