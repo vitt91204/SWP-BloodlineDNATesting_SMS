@@ -16,8 +16,21 @@ import {
   FileText,
   FlaskConical,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  LogOut,
+  Home
 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 interface TestRequest {
   requestId: number;
@@ -190,6 +203,13 @@ export default function ManagerDashboard() {
     return matchesSearch && matchesStatus && matchesCollectionType;
   });
 
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userData');
+    localStorage.removeItem('isAuthenticated');
+    window.location.href = "/login";
+  };
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto py-8">
@@ -216,6 +236,43 @@ export default function ManagerDashboard() {
 
   return (
     <div className="max-w-7xl mx-auto py-8 space-y-6">
+      {/* Nút Trang chủ và Đăng xuất với xác nhận */}
+      <div className="flex justify-end gap-2 mb-4">
+        <Button
+          variant="ghost"
+          className="gap-2"
+          onClick={() => window.location.href = "/"}
+        >
+          <Home className="h-4 w-4" />
+          Trang chủ
+        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="ghost"
+              className="gap-2 text-red-600 hover:bg-red-50"
+            >
+              <LogOut className="h-4 w-4" />
+              Đăng xuất
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Xác nhận đăng xuất</AlertDialogTitle>
+              <AlertDialogDescription>
+                Bạn có chắc chắn muốn đăng xuất khỏi hệ thống? Bạn sẽ cần đăng nhập lại để tiếp tục sử dụng.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Hủy</AlertDialogCancel>
+              <AlertDialogAction onClick={handleLogout}>
+                Đăng xuất
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+
       {/* Header Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>

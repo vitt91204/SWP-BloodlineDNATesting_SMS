@@ -187,7 +187,15 @@ export const Navigation = () => {
                         <span>Bảng điều khiển nhân viên</span>
                       </Link>
                     </DropdownMenuItem>
-                  )} 
+                  )}
+                  {(userData?.role === 'manager' || userData?.role === 'Manager' || userData?.role === 'MANAGER' || userData?.userRole === 'manager') && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/manager/dashboard" className="cursor-pointer">
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>Bảng điều khiển quản lý</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                        
                   <DropdownMenuItem
@@ -219,118 +227,6 @@ export const Navigation = () => {
                 </Button>
               </>
             )}
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
-            <Sheet open={isOpen} onOpenChange={setIsOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Menu className="w-5 h-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right">
-                <SheetHeader>
-                  <SheetTitle>Menu</SheetTitle>
-                  <SheetDescription>
-                    Xét nghiệm ADN chuyên nghiệp
-                  </SheetDescription>
-                </SheetHeader>
-                <div className="mt-6 flex flex-col space-y-4">
-                  {navItems.map((item) => (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className={`flex items-center space-x-2 text-sm font-medium transition-colors hover:text-blue-600 ${
-                        location.pathname === item.href ? "text-blue-600" : "text-gray-700"
-                      }`}
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.name}</span>
-                    </Link>
-                  ))}
-                  <div className="pt-4 flex flex-col space-y-2">
-                    {isAuthenticated ? (
-                      <>
-                        <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={userData?.avatar} alt={userData?.fullName || userData?.username} />
-                            <AvatarFallback className="bg-gradient-to-r from-blue-600 to-green-600 text-white">
-                              {getUserInitials(userData)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex flex-col">
-                            {userData?.fullName && (
-                              <p className="font-medium text-sm">{userData.fullName}</p>
-                            )}
-                            {userData?.email && (
-                              <p className="text-xs text-muted-foreground">{userData.email}</p>
-                            )}
-                          </div>
-                        </div>
-                        <Button variant="outline" asChild>
-                          <Link to="/profile" onClick={() => setIsOpen(false)}>
-                            <User className="w-4 h-4 mr-2" />
-                            Hồ sơ cá nhân
-                          </Link>
-                        </Button>
-                        {(userData?.role === 'admin' || userData?.role === 'Admin' || userData?.role === 'ADMIN' || userData?.userRole === 'admin') && (
-                          <Button variant="outline" asChild>
-                            <Link to="/admin" onClick={() => setIsOpen(false)}>
-                              <Settings className="w-4 h-4 mr-2" />
-                              Quản trị
-                            </Link>
-                          </Button>
-                        )}
-                        {(userData?.role === 'staff' || userData?.role === 'Staff' || userData?.role === 'STAFF' || userData?.userRole === 'staff') && (
-                          <Button variant="outline" asChild>
-                            <Link to="/staff" onClick={() => setIsOpen(false)}>
-                              <Settings className="w-4 h-4 mr-2" />
-                              Bảng điều khiển nhân viên
-                            </Link>
-                          </Button>
-                        )}
-                        <Button variant="outline" asChild>
-                          <Link to="/settings" onClick={() => setIsOpen(false)}>
-                            <Settings className="w-4 h-4 mr-2" />
-                            Cài đặt
-                          </Link>
-                        </Button>
-                        <Button 
-                          variant="destructive"
-                          onClick={() => {
-                            handleLogout();
-                            setIsOpen(false);
-                          }}
-                        >
-                          <LogOut className="w-4 h-4 mr-2" />
-                          Đăng xuất
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <Button variant="outline" asChild>
-                          <Link to="/login" onClick={() => setIsOpen(false)}>
-                            <LogIn className="w-4 h-4 mr-2" />
-                            Đăng nhập
-                          </Link>
-                        </Button>
-                        <Button 
-                          className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
-                          asChild
-                        >
-                          <Link to="/register" onClick={() => setIsOpen(false)}>
-                            <UserPlus className="w-4 h-4 mr-2" />
-                            Đăng ký
-                          </Link>
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
           </div>
         </div>
       </div>
