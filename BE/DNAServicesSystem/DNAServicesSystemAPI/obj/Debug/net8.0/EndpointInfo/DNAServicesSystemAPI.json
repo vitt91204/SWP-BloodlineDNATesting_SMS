@@ -1090,14 +1090,14 @@
         }
       }
     },
-    "/api/TestRequest/service/{serviceId}": {
+    "/api/TestRequest/staff/{staffId}": {
       "get": {
         "tags": [
           "TestRequest"
         ],
         "parameters": [
           {
-            "name": "serviceId",
+            "name": "staffId",
             "in": "path",
             "required": true,
             "schema": {
@@ -1137,6 +1137,37 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TestRequest/assign/{requestId}": {
+      "put": {
+        "tags": [
+          "TestRequest"
+        ],
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "staffId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"

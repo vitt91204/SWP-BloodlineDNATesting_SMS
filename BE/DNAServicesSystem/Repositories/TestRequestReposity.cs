@@ -16,29 +16,17 @@ namespace Repositories
         {
         }
 
-        public async Task<TestRequest?> GetRequestByUserIdAsync(int userId)
+        public async Task<IEnumerable<TestRequest>> GetRequestsByStaffIdAsync(int staffId)
         {
             return await context.TestRequests
-                .FirstOrDefaultAsync(tr => tr.UserId == userId);
+                .Where(tr => tr.StaffId == staffId)
+                .ToListAsync();
         }
         public async Task<IEnumerable<TestRequest>> GetRequestsByUserIdAsync(int userId)
         {
             return await context.TestRequests
                 .Where(tr => tr.UserId == userId)
                 .ToListAsync();
-        }
-        public async Task<TestRequest?> GetRequestByServiceIdAsync(int serviceId)
-        {
-            return await context.TestRequests
-                .FirstOrDefaultAsync(tr => tr.ServiceId == serviceId);
-        }
-
-        public async Task<IEnumerable<TestRequest>> GetRequestsByServiceIdAsync(int serviceId)
-        {
-            return await context.TestRequests
-                .Where(tr => tr.ServiceId == serviceId)
-                .ToListAsync();
-
         }
     }
 }

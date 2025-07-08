@@ -8,11 +8,17 @@ namespace DNAServicesSystemAPI.Controllers
     [ApiController]
     public class TestRequestController : ControllerBase
     {
+        private readonly TestRequestService testRequestService;
+
+        public TestRequestController()
+        {
+            testRequestService = new TestRequestService();
+        }
+
         [HttpGet]
         [Route("{requestId:int}")]
         public async Task<IActionResult> GetTestRequest(int requestId)
         {
-            var testRequestService = new TestRequestService();
             try
             {
                 var testRequest = await testRequestService.GetRequestAsync(requestId);
@@ -27,7 +33,6 @@ namespace DNAServicesSystemAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllTestRequests()
         {
-            var testRequestService = new TestRequestService();
             var testRequests = await testRequestService.GetAllRequestsAsync();
             return Ok(testRequests);
         }
@@ -36,7 +41,6 @@ namespace DNAServicesSystemAPI.Controllers
         [Route("user/{userId:int}")]
         public async Task<IActionResult> GetTestRequestByUserId(int userId)
         {
-            var testRequestService = new TestRequestService();
             try
             {
                 var testRequest = await testRequestService.GetTestRequestsByUserIdAsync(userId);
@@ -49,13 +53,12 @@ namespace DNAServicesSystemAPI.Controllers
         }
 
         [HttpGet]
-        [Route("service/{serviceId:int}")]
-        public async Task<IActionResult> GetTestRequestsByServiceId(int serviceId)
+        [Route("staff/{staffId:int}")]
+        public async Task<IActionResult> GetTestRequestsByStaffId(int staffId)
         {
-            var testRequestService = new TestRequestService();
             try
             {
-                var testRequest = await testRequestService.GetTestRequestsByServiceIdAsync(serviceId);
+                var testRequest = await testRequestService.GetTestRequestsByStaffIdAsync(staffId);
                 return Ok(testRequest);
             }
             catch (KeyNotFoundException ex)
@@ -72,7 +75,6 @@ namespace DNAServicesSystemAPI.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var testRequestService = new TestRequestService();
             var testRequest = await testRequestService.CreateTestRequestAsync(testRequestDto);
             return CreatedAtAction(nameof(GetTestRequest), new { requestId = testRequest.RequestId }, testRequest);
         }
@@ -80,7 +82,6 @@ namespace DNAServicesSystemAPI.Controllers
         [Route("{requestId:int}")]
         public async Task<IActionResult> DeleteTestRequest(int requestId)
         {
-            var testRequestService = new TestRequestService();
             try
             {
                 await testRequestService.DeleteTestRequestAsync(requestId);
@@ -99,7 +100,6 @@ namespace DNAServicesSystemAPI.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var testRequestService = new TestRequestService();
             try
             {
                 return Ok(await testRequestService.UpdateTestRequestAsync(requestId, updateTestRequestDto));
@@ -108,6 +108,18 @@ namespace DNAServicesSystemAPI.Controllers
             {
                 return NotFound(ex.Message);
             }
+        }
+        [HttpPut]
+        [Route("assign/{requestId:int}")]
+
+        public async Task<IActionResult> AssignStaff(int requestId, int staffId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var testRequest = await testRequestService.UpdateStaffRequestAsync(requestId, staffId);
+            return Ok(testRequest);
         }
     }
 }

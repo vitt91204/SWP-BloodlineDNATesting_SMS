@@ -701,14 +701,35 @@
   },
   {
     "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
-    "Method": "GetTestRequestsByServiceId",
-    "RelativePath": "api/TestRequest/service/{serviceId}",
+    "Method": "AssignStaff",
+    "RelativePath": "api/TestRequest/assign/{requestId}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "staffId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
+    "Method": "GetTestRequestsByStaffId",
+    "RelativePath": "api/TestRequest/staff/{staffId}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "serviceId",
+        "Name": "staffId",
         "Type": "System.Int32",
         "IsRequired": true
       }

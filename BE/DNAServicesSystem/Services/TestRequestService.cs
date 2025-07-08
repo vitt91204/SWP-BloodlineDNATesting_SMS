@@ -12,10 +12,12 @@ namespace Services
     public class TestRequestService
     {
         private readonly TestRequestReposity testRequestReposity;
+        private readonly UserRepository userRepository;
 
         public TestRequestService()
         {
             testRequestReposity = new TestRequestReposity();
+            userRepository = new UserRepository();
         }
 
         public async Task<TestRequest> CreateTestRequestAsync(TestRequestDto testRequestDto)
@@ -61,9 +63,9 @@ namespace Services
             return await testRequestReposity.GetRequestsByUserIdAsync(userId);
         }
 
-        public async Task<IEnumerable<TestRequest>> GetTestRequestsByServiceIdAsync(int serviceId)
+        public async Task<IEnumerable<TestRequest>> GetTestRequestsByStaffIdAsync(int staffId)
         {
-            return await testRequestReposity.GetRequestsByServiceIdAsync(serviceId);
+            return await testRequestReposity.GetRequestsByStaffIdAsync(staffId);
         }
 
         public async Task<TestRequest> UpdateTestRequestAsync(int requestId, TestRequestDto testRequestDto)
@@ -102,11 +104,17 @@ namespace Services
                 throw new KeyNotFoundException($"Test request with ID {requestId} not found.");
             }
 
-            if (staffId <= 0)
+            var user = await userRepository.GetByIdAsync(staffId);
+            if (user == null)
             {
-                throw new Exception($"{staffId} is not a legitmate ID");
+                throw new Exception($" User {staffId} does not exist");
             }
-            testRequest.StaffId = staffId;
+
+            if (user.Role != "Staff")
+            {
+                throw new Exception($"Cannot assign non-Staff user!");
+            }
+            testRequest.StaffId = user.UserId;
             await testRequestReposity.UpdateAsync(testRequest);
             return testRequest;
         }
