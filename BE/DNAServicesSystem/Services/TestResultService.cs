@@ -57,6 +57,32 @@ namespace Services
             return await _repository.CreateAsync(entity);
         }
 
+        public async Task<int> CreateWithPdfAsync(TestResultDto dto)
+        {
+            string? base64String = null;
+            if (dto.PdfFile != null && dto.PdfFile.Length > 0)
+            {
+                if (!dto.PdfFile.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
+                    throw new ArgumentException("Only PDF files are allowed.");
+
+                using var ms = new MemoryStream();
+                await dto.PdfFile.CopyToAsync(ms);
+                base64String = Convert.ToBase64String(ms.ToArray());
+            }
+
+            var entity = new TestResult
+            {
+                SampleId = dto.SampleId,
+                UploadedBy = dto.UploadedBy,
+                ApprovedBy = dto.ApprovedBy,
+                UploadedTime = dto.UploadedTime,
+                ApprovedTime = dto.ApprovedTime,
+                StaffId = dto.StaffId,
+                ResultData = base64String
+            };
+            return await _repository.CreateAsync(entity);
+        }
+
         public async Task<bool> UpdateAsync(int id, TestResultDto dto)
         {
             var entity = await _repository.GetByIdAsync(id);

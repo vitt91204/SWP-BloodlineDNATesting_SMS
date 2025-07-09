@@ -53,5 +53,12 @@ namespace Services
             await _repository.UpdateAsync(entity);
             return true;
         }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var entity = await _repository.GetByIdAsync(id);
+            if (entity == null) return false;
+            return await _repository.RemoveAsync(entity);
+        }
     }
 }

@@ -84,6 +84,12 @@ namespace DNAServicesSystemAPI.Controllers
             }
         }
 
+        [HttpPost("create-with-pdf")]
+        public async Task<IActionResult> CreateWithPdf([FromForm] TestResultDto dto)
+        {
+            var id = await _service.CreateWithPdfAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id }, dto);
+        }
     }
 }
 

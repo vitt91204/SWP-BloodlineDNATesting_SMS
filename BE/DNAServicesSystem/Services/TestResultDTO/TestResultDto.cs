@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -18,5 +19,6 @@ namespace Services.TestResultDTO
         public DateTime? UploadedTime { get; set; }
         public DateTime? ApprovedTime { get; set; }
         public int? StaffId { get; set; }
+        public IFormFile? PdfFile { get; set; }
     }
 }

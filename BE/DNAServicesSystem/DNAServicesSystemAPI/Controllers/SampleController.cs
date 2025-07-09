@@ -36,5 +36,13 @@ namespace DNAServicesSystemAPI.Controllers
             if (!updated) return NotFound();
             return NoContent();
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var deleted = await _service.DeleteAsync(id);
+            if (!deleted) return NotFound();
+            return NoContent();
+        }
     }
 }

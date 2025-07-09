@@ -1345,6 +1345,98 @@
         }
       }
     },
+    "/api/TestResult/create-with-pdf": {
+      "post": {
+        "tags": [
+          "TestResult"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "SampleId"
+                ],
+                "type": "object",
+                "properties": {
+                  "ResultId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "SampleId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "ResultData": {
+                    "maxLength": 500,
+                    "minLength": 0,
+                    "type": "string"
+                  },
+                  "UploadedBy": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "ApprovedBy": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "UploadedTime": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "ApprovedTime": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "StaffId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "PdfFile": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "ResultId": {
+                  "style": "form"
+                },
+                "SampleId": {
+                  "style": "form"
+                },
+                "ResultData": {
+                  "style": "form"
+                },
+                "UploadedBy": {
+                  "style": "form"
+                },
+                "ApprovedBy": {
+                  "style": "form"
+                },
+                "UploadedTime": {
+                  "style": "form"
+                },
+                "ApprovedTime": {
+                  "style": "form"
+                },
+                "StaffId": {
+                  "style": "form"
+                },
+                "PdfFile": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/TestService": {
       "get": {
         "tags": [
@@ -2204,6 +2296,11 @@
           "staffId": {
             "type": "integer",
             "format": "int32",
+            "nullable": true
+          },
+          "pdfFile": {
+            "type": "string",
+            "format": "binary",
             "nullable": true
           }
         },
