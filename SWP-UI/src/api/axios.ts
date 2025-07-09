@@ -652,12 +652,34 @@ export const testResultAPI = {
 
   // Tạo kết quả mới
   create: async (resultData: {
-    sample_id: number;
-    uploaded_by: number;
-    result_data: string;
-    staff_id?: number;
+    resultId: number;
+    sampleId: number;
+    requestId: number;
+    resultData: string;
+    approvedBy: number;
+    uploadedBy: number;
+    uploadedTime: string;
+    approvedTime: string;
+    staffId: number;
   }) => {
     const response = await api.post('/api/TestResult', resultData);
+    return response.data;
+  },
+
+  // Tạo kết quả mới với file PDF
+  createWithPdf: async (formData: FormData) => {
+    console.log('Making API call to /api/TestResult/create-with-pdf');
+    console.log('FormData entries:');
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
+    
+    const response = await api.post('/api/TestResult/create-with-pdf', formData, {
+      headers: {
+        // Không set Content-Type, để browser tự động set với boundary
+      },
+    });
+    console.log('API response:', response);
     return response.data;
   },
 
@@ -916,6 +938,26 @@ export const paymentAPI = {
 
 // Bổ sung role 'manager' vào các interface/type liên quan user nếu có
 export type UserRole = 'admin' | 'staff' | 'customer' | 'manager';
+
+// API cho Staff (sử dụng /api/User với role staff)
+export const staffAPI = {
+  // Lấy tất cả staff
+  getAll: async () => {
+    const response = await api.get('/api/User');
+    // Filter chỉ lấy user có role là staff
+    return response.data.filter((user: any) => user.role === 'staff');
+  },
+
+  // Lấy staff theo ID
+  getById: async (id: number) => {
+    const response = await api.get('/api/User');
+    // Tìm user có ID và role là staff
+    const staff = response.data.find((user: any) => 
+      (user.id === id || user.userId === id) && user.role === 'staff'
+    );
+    return staff || null;
+  },
+};
 
 
 

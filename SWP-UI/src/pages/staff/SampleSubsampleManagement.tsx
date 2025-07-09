@@ -549,14 +549,7 @@ export default function SampleSubsampleManagement() {
           </div>
         </CardHeader>
         <CardContent>
-          {/* Debug Information */}
-          {process.env.NODE_ENV === 'development' && (
-            <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
-              <strong>Debug Info:</strong> Raw samples: {samples.length} | Filtered samples: {filteredSamples.length} | 
-              Search: "{searchTerm}" | Status filter: {statusFilter} | 
-              Staff ID: {staffId}
-            </div>
-          )}
+          
           
           {/* Search and Filter */}
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
