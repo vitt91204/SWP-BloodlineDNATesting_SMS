@@ -10,9 +10,6 @@ namespace Services.TestResultDTO
         [Required]
         public int SampleId { get; set; }
 
-        [Required]
-        public int RequestId { get; set; }
-
         [StringLength(500)]
         public string? ResultData { get; set; }
 

@@ -2163,7 +2163,6 @@
       },
       "TestResultDto": {
         "required": [
-          "requestId",
           "sampleId"
         ],
         "type": "object",
@@ -2173,10 +2172,6 @@
             "format": "int32"
           },
           "sampleId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "requestId": {
             "type": "integer",
             "format": "int32"
           },
