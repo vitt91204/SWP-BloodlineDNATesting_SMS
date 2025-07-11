@@ -358,3 +358,8 @@ D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemA
 D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemAPI\obj\Debug\net8.0\DNAServicesSystemAPI.pdb
 D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemAPI\obj\Debug\net8.0\DNAServicesSystemAPI.genruntimeconfig.cache
 D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemAPI\obj\Debug\net8.0\ref\DNAServicesSystemAPI.dll
+C:\Users\Nguyen Ba Tuan Anh\Documents\GitHub\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemAPI\bin\Debug\net8.0\BouncyCastle.Cryptography.dll
+C:\Users\Nguyen Ba Tuan Anh\Documents\GitHub\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemAPI\bin\Debug\net8.0\MailKit.dll
+C:\Users\Nguyen Ba Tuan Anh\Documents\GitHub\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemAPI\bin\Debug\net8.0\MimeKit.dll
+C:\Users\Nguyen Ba Tuan Anh\Documents\GitHub\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemAPI\bin\Debug\net8.0\System.Security.Cryptography.Pkcs.dll
+C:\Users\Nguyen Ba Tuan Anh\Documents\GitHub\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemAPI\bin\Debug\net8.0\runtimes\win\lib\net8.0\System.Security.Cryptography.Pkcs.dll
