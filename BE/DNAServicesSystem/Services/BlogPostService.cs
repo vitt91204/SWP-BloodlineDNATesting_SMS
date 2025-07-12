@@ -19,31 +19,6 @@ namespace Services
             return posts;
         }
 
-        //public async Task<List<BlogPostDto>> GetAllAsync()
-        //{
-        //    var posts = await _repository.GetAllAsync();
-        //    return posts.Select(p => new BlogPostDto
-        //    {
-        //        AuthorId = p.AuthorId ?? 0, // Explicitly handle nullable value
-        //        Title = p.Title,
-        //        Content = p.Content,
-        //        CreatedAt = p.CreatedAt ?? DateTime.MinValue
-        //    }).ToList();
-        //}
-
-        //public async Task<BlogPostDto?> GetByIdAsync(int id)
-        //{
-        //    var post = await _repository.GetByIdAsync(id);
-        //    if (post == null) return null;
-        //    return new BlogPostDto
-        //    {
-        //        AuthorId = post.AuthorId ?? 0, // Explicitly handle nullable value
-        //        Title = post.Title,
-        //        Content = post.Content,
-        //        CreatedAt = post.CreatedAt ?? DateTime.MinValue
-        //    };
-        //}
-
         public async Task<BlogPost?> GetByIdAsync(int id)
         {
             return await _repository.GetByIdAsync(id);
@@ -53,7 +28,6 @@ namespace Services
         {
             var post = new BlogPost
             {
-                AuthorId = dto.AuthorId,
                 Title = dto.Title,
                 Content = dto.Content,
                 CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"))
@@ -68,7 +42,6 @@ namespace Services
 
             post.Title = dto.Title;
             post.Content = dto.Content;
-            post.AuthorId = dto.AuthorId;
             post.UpdatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
 
             await _repository.UpdateAsync(post);

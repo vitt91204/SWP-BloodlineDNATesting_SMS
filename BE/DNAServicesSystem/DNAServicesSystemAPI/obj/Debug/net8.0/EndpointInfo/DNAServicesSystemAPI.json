@@ -1913,16 +1913,11 @@
     "schemas": {
       "BlogPostDto": {
         "required": [
-          "authorId",
           "content",
           "title"
         ],
         "type": "object",
         "properties": {
-          "authorId": {
-            "type": "integer",
-            "format": "int32"
-          },
           "title": {
             "maxLength": 200,
             "minLength": 0,
