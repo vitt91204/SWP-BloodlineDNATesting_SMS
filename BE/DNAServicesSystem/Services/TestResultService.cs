@@ -57,7 +57,7 @@ namespace Services
             return await _repository.CreateAsync(entity);
         }
 
-        public async Task<int> CreateWithPdfAsync(TestResultDto dto)
+        public async Task<int> CreateWithPdfAsync(ResultUploadRequest dto)
         {
             string? base64String = null;
             if (dto.PdfFile != null && dto.PdfFile.Length > 0)
@@ -74,9 +74,9 @@ namespace Services
             {
                 SampleId = dto.SampleId,
                 UploadedBy = dto.UploadedBy,
-                ApprovedBy = dto.ApprovedBy,
-                UploadedTime = dto.UploadedTime,
-                ApprovedTime = dto.ApprovedTime,
+                ApprovedBy = dto.UploadedBy,
+                UploadedTime = DateTime.UtcNow,
+                ApprovedTime = DateTime.UtcNow,
                 StaffId = dto.StaffId,
                 ResultData = base64String
             };

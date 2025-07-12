@@ -925,38 +925,13 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "ResultId",
-        "Type": "System.Int32",
-        "IsRequired": false
-      },
-      {
         "Name": "SampleId",
         "Type": "System.Int32",
         "IsRequired": false
       },
       {
-        "Name": "ResultData",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
         "Name": "UploadedBy",
         "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
-        "IsRequired": false
-      },
-      {
-        "Name": "ApprovedBy",
-        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
-        "IsRequired": false
-      },
-      {
-        "Name": "UploadedTime",
-        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
-        "IsRequired": false
-      },
-      {
-        "Name": "ApprovedTime",
-        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
         "IsRequired": false
       },
       {
