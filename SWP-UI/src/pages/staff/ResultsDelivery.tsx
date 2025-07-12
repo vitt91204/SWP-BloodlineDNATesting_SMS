@@ -12,7 +12,7 @@ import {
   Send,
   Eye
 } from 'lucide-react';
-import { testResultAPI, sampleAPI, staffAPI, testRequestAPI } from '@/api/axios';
+import { testResultAPI, testResultAPIForm, sampleAPI, staffAPI, testRequestAPI } from '@/api/axios';
 
 interface TestResult {
   id: string;
@@ -161,10 +161,17 @@ export default function ResultsDelivery() {
   };
 
   const handleUploadResult = async (testId: string) => {
-    if (selectedFile) {
-      setIsUploading(true);
-      console.log('Starting upload for testId:', testId);
-      console.log('Selected file:', selectedFile);
+    if (!testId) {
+      alert('Lỗi: Không tìm thấy ID yêu cầu xét nghiệm');
+      return;
+    }
+    
+    if (!selectedFile) {
+      alert('Vui lòng chọn file PDF trước khi upload');
+      return;
+    }
+    
+    setIsUploading(true);
       
       try {
         // Get current staff ID
@@ -180,7 +187,6 @@ export default function ResultsDelivery() {
           const foundSample = allSamples.find(s => String(s.requestId) === String(testId));
           if (foundSample) {
             sampleId = foundSample.id || foundSample.sampleId;
-            console.log('SampleId lấy từ API /api/Sample:', sampleId);
           }
         } catch (err) {
           console.error('Lỗi khi lấy sample từ API:', err);
@@ -193,32 +199,55 @@ export default function ResultsDelivery() {
 
         // Tạo FormData để gửi file
         const formData = new FormData();
-        formData.append('file', selectedFile);
-        formData.append('sampleId', sampleId.toString()); // BẮT BUỘC
-        formData.append('requestId', testId);
-        formData.append('uploadedBy', currentStaffId.toString());
-        formData.append('staffId', currentStaffId.toString());
-        formData.append('resultData', 'Test result data');
+        formData.append('SampleId', sampleId.toString()); // integer as string
+        formData.append('UploadedBy', currentStaffId.toString()); // integer as string
+        formData.append('StaffId', currentStaffId.toString()); // integer as string
+        formData.append('PdfFile', selectedFile); // file PDF
         
-        // Log FormData content
-        console.log('FormData content:');
+        // Debug: Log FormData content
+        console.log('=== FORMDATA DEBUG ===');
         for (let [key, value] of formData.entries()) {
           console.log(`${key}:`, value);
+          if (value instanceof File) {
+            console.log(`${key} file info:`, {
+              name: value.name,
+              size: value.size,
+              type: value.type
+            });
+          }
         }
+        console.log('=== END FORMDATA DEBUG ===');
         
-        // Gọi API upload
-        console.log('Calling testResultAPI.createWithPdf...');
+        // Gọi API upload với FormData instance
+        let response;
         try {
-          const response = await testResultAPI.createWithPdf(formData);
-          console.log('Upload response:', response);
+          response = await testResultAPIForm.createWithPdf(formData);
+          
+          // Debug: Log response để kiểm tra
+          console.log('=== API RESPONSE DEBUG ===');
+          console.log('API Response:', response);
+          console.log('Response type:', typeof response);
+          console.log('Response is null/undefined:', response === null || response === undefined);
+          console.log('Response is empty object:', response && Object.keys(response).length === 0);
+          console.log('Response keys:', response ? Object.keys(response) : 'No response');
+          console.log('Response stringified:', JSON.stringify(response, null, 2));
+          console.log('=== END DEBUG ===');
+          
+          // Validate response
+          if (!response) {
+            throw new Error('Không nhận được response từ server');
+          }
+          
         } catch (uploadError) {
-          console.error('Detailed upload error:', uploadError);
-          console.error('Error response data:', uploadError.response?.data);
+          console.error('=== UPLOAD ERROR DEBUG ===');
+          console.error('Upload error:', uploadError);
+          console.error('Error message:', uploadError.message);
           console.error('Error response status:', uploadError.response?.status);
+          console.error('Error response data:', uploadError.response?.data);
           console.error('Error response headers:', uploadError.response?.headers);
+          console.error('=== END ERROR DEBUG ===');
           throw uploadError; // Re-throw để xử lý ở catch block bên ngoài
         }
-        const response = await testResultAPI.createWithPdf(formData);
         
         // Get thông tin sample và staff
         let sampleInfo = null;
@@ -248,19 +277,18 @@ export default function ResultsDelivery() {
                   ...result, 
                   status: 'Ready', 
                   resultFile: selectedFile.name,
-                  // Thêm thông tin từ response
-                  resultId: response.resultId,
-                  sampleId: response.sampleId,
-                  resultData: response.resultData,
-                  uploadedBy: response.uploadedBy,
-                  approvedBy: response.approvedBy,
-                  uploadedTime: response.uploadedTime,
-                  approvedTime: response.approvedTime,
-                  staffId: response.staffId,
-                  pdfFile: response.pdfFile,
+                  // Thêm thông tin từ response với safety checks
+                  resultId: response?.resultId || 0,
+                  sampleId: response?.sampleId || null,
+                  resultData: typeof response?.resultData === 'string' ? response.resultData : 'Test result data',
+                  uploadedBy: response?.uploadedBy || null,
+                  approvedBy: response?.approvedBy || null,
+                  uploadedTime: response?.uploadedTime || new Date().toISOString(),
+                  approvedTime: response?.approvedTime || null,
+                  staffId: response?.staffId || null,
+                  pdfFile: typeof response?.pdfFile === 'string' ? response.pdfFile : selectedFile.name,
                   sampleInfo,
                   staffInfo
-                  // XÓA relatedTestRequest
                 }
               : result
           )
@@ -270,25 +298,16 @@ export default function ResultsDelivery() {
         setIsUploadMode(false);
         setUploadingResultId(null);
         
-        console.log('Upload successful:', response);
+        // Hiển thị thông báo thành công
+        alert(`✅ Upload thành công!\n\nFile: ${selectedFile.name}\nResult ID: ${response?.resultId || 'N/A'}\nSample ID: ${response?.sampleId || 'N/A'}\nStaff ID: ${response?.staffId || 'N/A'}`);
       } catch (error) {
         console.error('Upload failed:', error);
-        console.error('Error details:', {
-          message: error.message,
-          status: error.response?.status,
-          statusText: error.response?.statusText,
-          data: error.response?.data
-        });
         
         // Hiển thị thông báo lỗi cho user
         alert(`Upload failed: ${error.response?.data?.message || error.message}`);
       } finally {
         setIsUploading(false);
       }
-    } else {
-      console.log('No file selected');
-      alert('Vui lòng chọn file PDF trước khi upload');
-    }
   };
 
   const handleDeliverResult = (testId: string) => {
@@ -308,12 +327,12 @@ export default function ResultsDelivery() {
 
   const handleDownloadResult = (testId: string) => {
     // Logic để tải xuống file kết quả
-    console.log('Download result for test:', testId);
+    // TODO: Implement download functionality
   };
 
   const handleViewResult = (testId: string) => {
     // Logic để xem trước kết quả
-    console.log('View result for test:', testId);
+    // TODO: Implement view functionality
   };
 
   const loadResultDetails = async (testId: string) => {
@@ -370,22 +389,6 @@ export default function ResultsDelivery() {
               <PlusCircle className="w-4 h-4 mr-2" />
               Thêm kết quả mới
             </Button>
-            <Button 
-              variant="outline" 
-              onClick={async () => {
-                try {
-                  console.log('Testing API connection...');
-                  const response = await testResultAPI.getAll();
-                  console.log('API test successful:', response);
-                  alert('API connection OK');
-                } catch (error) {
-                  console.error('API test failed:', error);
-                  alert('API connection failed: ' + error.message);
-                }
-              }}
-            >
-              Test API
-            </Button>
           </div>
         </div>
       </CardHeader>
@@ -418,8 +421,14 @@ export default function ResultsDelivery() {
                     )}
                     <div className="flex gap-2">
                       <Button
-                        onClick={() => uploadingResultId && handleUploadResult(uploadingResultId)}
-                        disabled={!selectedFile || isUploading}
+                        onClick={() => {
+                          if (uploadingResultId) {
+                            handleUploadResult(uploadingResultId);
+                          } else {
+                            alert('Lỗi: Không tìm thấy ID yêu cầu xét nghiệm');
+                          }
+                        }}
+                        disabled={!selectedFile || isUploading || !uploadingResultId}
                       >
                         {isUploading ? (
                           <>
@@ -456,10 +465,10 @@ export default function ResultsDelivery() {
                   <CardContent className="pt-6">
                     <div className="flex justify-between items-start mb-4">
                       <div className="space-y-2">
-                        <h3 className="font-semibold text-lg">{result.testName}</h3>
-                        <p className="text-gray-600">Khách hàng: {result.customerName}</p>
+                        <h3 className="font-semibold text-lg">{result.testName || 'Unknown Test'}</h3>
+                        <p className="text-gray-600">Khách hàng: {result.customerName || 'Unknown Customer'}</p>
                         <p className="text-sm text-gray-500">
-                          Ngày xét nghiệm: {new Date(result.testDate).toLocaleDateString('vi-VN')}
+                          Ngày xét nghiệm: {result.testDate ? new Date(result.testDate).toLocaleDateString('vi-VN') : 'N/A'}
                         </p>
                         {result.deliveryDate && (
                           <p className="text-sm text-green-600">
@@ -478,6 +487,9 @@ export default function ResultsDelivery() {
                             {result.approvedTime && (
                               <p>Approved: {new Date(result.approvedTime).toLocaleDateString('vi-VN')}</p>
                             )}
+                            {result.resultData && (
+                              <p>Result Data: {typeof result.resultData === 'string' ? result.resultData : 'Data available'}</p>
+                            )}
                           </div>
                         )}
                         
@@ -485,8 +497,8 @@ export default function ResultsDelivery() {
                         {result.sampleInfo && (
                           <div className="text-xs bg-gray-50 p-2 rounded">
                             <p className="font-medium">Sample Info:</p>
-                            <p>Status: {result.sampleInfo.status}</p>
-                            <p>Type: {result.sampleInfo.sampleType}</p>
+                            <p>Status: {result.sampleInfo.status || 'N/A'}</p>
+                            <p>Type: {result.sampleInfo.sampleType || 'N/A'}</p>
                             {result.sampleInfo.collectionTime && (
                               <p>Collected: {new Date(result.sampleInfo.collectionTime).toLocaleDateString('vi-VN')}</p>
                             )}
@@ -497,8 +509,8 @@ export default function ResultsDelivery() {
                         {result.staffInfo && (
                           <div className="text-xs bg-blue-50 p-2 rounded">
                             <p className="font-medium">Staff Info:</p>
-                            <p>Name: {result.staffInfo.name || result.staffInfo.fullName}</p>
-                            <p>Role: {result.staffInfo.role}</p>
+                            <p>Name: {result.staffInfo.name || result.staffInfo.fullName || 'N/A'}</p>
+                            <p>Role: {result.staffInfo.role || 'N/A'}</p>
                             {result.staffInfo.email && <p>Email: {result.staffInfo.email}</p>}
                           </div>
                         )}
@@ -507,10 +519,14 @@ export default function ResultsDelivery() {
                         {getStatusBadge(result.status)}
                         <p className="text-sm text-gray-500 mt-1">ID: {result.id}</p>
                         {result.resultFile && (
-                          <p className="text-xs text-blue-600 mt-1">{result.resultFile}</p>
+                          <p className="text-xs text-blue-600 mt-1">
+                            {typeof result.resultFile === 'string' ? result.resultFile : 'File uploaded'}
+                          </p>
                         )}
                         {result.pdfFile && (
-                          <p className="text-xs text-green-600 mt-1">PDF: {result.pdfFile}</p>
+                          <p className="text-xs text-green-600 mt-1">
+                            PDF: {typeof result.pdfFile === 'string' ? result.pdfFile : 'File uploaded'}
+                          </p>
                         )}
                       </div>
                     </div>
