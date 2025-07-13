@@ -954,16 +954,16 @@ export const reportAPI = {
     const response = await api.get(`/monthly-revenue?month=${month}&year=${year}`);
     return response.data;
   },
-  getThisMonthPayments: async () => {
-    const response = await api.get('/this-month-payments');
+  getThisMonthPayments: async (month: number, year: number) => {
+    const response = await api.get(`/this-month-payments?month=${month}&year=${year}`);
     return response.data;
   },
-  getThisMonthRequests: async () => {
-    const response = await api.get('/this-month-requests');
+  getThisMonthRequests: async (month: number, year: number) => {
+    const response = await api.get(`/this-month-requests?month=${month}&year=${year}`);
     return response.data;
   },
-  getMonthlyRequests: async () => {
-    const response = await api.get('/monthly-requests');
+  getMonthlyRequests: async (month: number, year: number) => {
+    const response = await api.get(`/monthly-requests?month=${month}&year=${year}`);
     return response.data;
   },
   getDailyRequests: async (month: number, year: number) => {
