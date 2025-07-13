@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TestTube, Download, Eye } from "lucide-react";
 import axios from '@/api/axios';
+import { testResultAPI, testRequestAPI, sampleAPI } from '@/api/axios';
 
 interface TestHistory {
   id: string;
@@ -29,9 +30,44 @@ export default function TestHistory() {
       try {
         setLoading(true);
         setError(null);
-        // Thay đổi endpoint cho đúng với API backend của bạn
-        const response = await axios.get('/api/customer/test-history');
-        setTestHistory(response.data);
+        // Lấy userId từ localStorage
+        const userData = localStorage.getItem('userData');
+        let userId = null;
+        if (userData) {
+          const parsed = JSON.parse(userData);
+          userId = parsed.userId || parsed.id;
+        }
+        if (!userId) {
+          setError('Không tìm thấy thông tin người dùng');
+          setLoading(false);
+          return;
+        }
+        // Gọi API lấy lịch sử xét nghiệm
+        const response = await testRequestAPI.getByUserId(Number(userId));
+        let mapped: any[] = [];
+        if (Array.isArray(response)) {
+          mapped = await Promise.all(response.map(async (item: any) => {
+            let sampleId = null;
+            try {
+              const sampleRes = await sampleAPI.getByRequestId(item.id || item.requestId || item.testRequestId);
+              if (Array.isArray(sampleRes) && sampleRes.length > 0) {
+                sampleId = sampleRes[0].id || sampleRes[0].sampleId;
+              }
+            } catch (e) {
+              // Không có sample cũng không sao
+            }
+            return {
+              id: String(item.id || item.requestId || item.testRequestId),
+              testName: item.service?.name || 'Chưa rõ',
+              date: item.appointmentDate || '',
+              status: item.status || '',
+              result: item.resultStatus || (item.status === 'Completed' ? 'Có kết quả' : 'Chờ kết quả'),
+              price: item.service?.price ? item.service.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) : '',
+              sampleId, // Thêm sampleId vào object
+            };
+          }));
+        }
+        setTestHistory(mapped);
       } catch (err: any) {
         setError('Không thể tải dữ liệu lịch sử xét nghiệm');
       } finally {
@@ -60,6 +96,17 @@ export default function TestHistory() {
     };
     const config = resultConfig[result as ResultType] || { className: "bg-gray-100 text-gray-800" };
     return <Badge className={config.className}>{result}</Badge>;
+  };
+
+  // Thêm hàm xem PDF
+  const handleViewPdf = async (id: string) => {
+    try {
+      const blob = await testResultAPI.viewPdf(Number(id));
+      const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+      window.open(url, '_blank');
+    } catch (err) {
+      alert('Không thể xem file PDF!');
+    }
   };
 
   return (
@@ -112,13 +159,23 @@ export default function TestHistory() {
                       Xem chi tiết
                     </Button>
                     {test.result === "Có kết quả" && (
-                      <Button 
-                        size="sm"
-                        onClick={() => navigate(`/test-result/${test.id}`)}
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Tải kết quả
-                      </Button>
+                      <>
+                        <Button 
+                          size="sm"
+                          onClick={() => navigate(`/test-result/${test.id}`)}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Tải kết quả
+                        </Button>
+                        <Button 
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleViewPdf(test.id)}
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          Xem file PDF
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>

@@ -9,6 +9,49 @@ const api = axios.create({
   },
 });
 
+// Create axios instance for FormData requests
+// QUAN TRỌNG: Khi gửi FormData, KHÔNG được set Content-Type header
+// Browser sẽ tự động set Content-Type với boundary cho multipart/form-data
+const apiForm = axios.create({
+  baseURL: '', // Use relative URL, Vite proxy will handle routing
+  timeout: 30000, // Longer timeout for file uploads
+  // Don't set Content-Type header - let browser set it with boundary for FormData
+});
+
+// Helper function to ensure FormData requests are sent correctly
+// Đảm bảo FormData được gửi với Content-Type đúng (multipart/form-data với boundary)
+const sendFormData = async (url: string, formData: FormData, method: 'post' | 'put' | 'patch' = 'post') => {
+  console.log(`Sending FormData to ${url} with method ${method}`);
+  console.log('FormData entries:');
+  for (let [key, value] of formData.entries()) {
+    console.log(`${key}:`, value);
+  }
+  
+  try {
+    const response = await apiForm[method](url, formData, {
+      // KHÔNG set headers để browser tự động set Content-Type với boundary cho FormData
+      transformResponse: [(data) => {
+        console.log('Raw response data:', data);
+        if (typeof data === 'string') {
+          try {
+            return JSON.parse(data);
+          } catch (e) {
+            console.log('Response is not JSON, returning as string');
+            return data;
+          }
+        }
+        return data;
+      }]
+    });
+    
+    console.log('FormData API response:', response);
+    return response.data;
+  } catch (error) {
+    console.error('FormData API error:', error);
+    throw error;
+  }
+};
+
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
@@ -32,6 +75,47 @@ api.interceptors.response.use(
   (error) => {
     // Log error details for debugging
     console.error('API Error:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+      url: error.config?.url,
+    });
+
+    // Handle common errors
+    if (error.response?.status === 401) {
+      // Token expired or invalid
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userData');
+      localStorage.removeItem('isAuthenticated');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Request interceptor for FormData API
+apiForm.interceptors.request.use(
+  (config) => {
+    // Add auth token if available
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor for FormData API
+apiForm.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    // Log error details for debugging
+    console.error('FormData API Error:', {
       message: error.message,
       status: error.response?.status,
       data: error.response?.data,
@@ -674,19 +758,7 @@ export const testResultAPI = {
 
   // Tạo kết quả mới với file PDF
   createWithPdf: async (formData: FormData) => {
-    console.log('Making API call to /api/TestResult/create-with-pdf');
-    console.log('FormData entries:');
-    for (let [key, value] of formData.entries()) {
-      console.log(`${key}:`, value);
-    }
-    
-    const response = await api.post('/api/TestResult/create-with-pdf', formData, {
-      headers: {
-        // Không set Content-Type, để browser tự động set với boundary
-      },
-    });
-    console.log('API response:', response);
-    return response.data;
+    return sendFormData('/api/TestResult/create-with-pdf', formData);
   },
 
   // Cập nhật kết quả
@@ -737,6 +809,32 @@ export const testResultAPI = {
   getStats: async () => {
     const response = await api.get('/api/TestResult/stats');
     return response.data;
+  },
+  // Xem file PDF kết quả xét nghiệm
+  viewPdf: async (id: number) => {
+    const response = await api.get(`/api/TestResult/${id}/view-pdf`, {
+      responseType: 'blob'
+    });
+    return response.data;
+  }
+};
+
+// FormData API instance for Test Results Management
+// Sử dụng helper function sendFormData để đảm bảo FormData được gửi đúng cách
+export const testResultAPIForm = {
+  // Tạo kết quả mới với file PDF (FormData version)
+  createWithPdf: async (formData: FormData) => {
+    return sendFormData('/api/TestResult/create-with-pdf', formData);
+  },
+
+  // Upload file PDF cho kết quả đã tồn tại
+  uploadPdf: async (resultId: number, formData: FormData) => {
+    return sendFormData(`/api/TestResult/${resultId}/upload-pdf`, formData);
+  },
+
+  // Upload multiple files
+  uploadMultipleFiles: async (formData: FormData) => {
+    return sendFormData('/api/TestResult/upload-multiple', formData);
   }
 };
 
