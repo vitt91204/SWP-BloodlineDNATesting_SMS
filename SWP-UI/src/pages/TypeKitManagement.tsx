@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { typeKitAPI } from "@/api/axios";
+import { testKitAPI } from "@/api/axios";
 import { toast } from "@/components/ui/use-toast";
 
 const TypeKitManagement: React.FC = () => {
@@ -19,7 +19,7 @@ const TypeKitManagement: React.FC = () => {
   const fetchTypeKits = async () => {
     setLoading(true);
     try {
-      const data = await typeKitAPI.getAll();
+      const data = await testKitAPI.getAll();
       setTypeKits(data);
     } catch (e) {
       toast({ title: "Lỗi khi lấy loại kit", variant: "destructive" });
@@ -31,7 +31,7 @@ const TypeKitManagement: React.FC = () => {
   const handleAdd = async () => {
     if (!newTypeKit.name) return toast({ title: "Tên loại kit không được để trống", variant: "destructive" });
     try {
-      await typeKitAPI.create(newTypeKit);
+      await testKitAPI.create(newTypeKit);
       setNewTypeKit({ name: "", description: "" });
       fetchTypeKits();
       toast({ title: "Thêm loại kit thành công" });
@@ -47,7 +47,7 @@ const TypeKitManagement: React.FC = () => {
 
   const handleUpdate = async () => {
     try {
-      await typeKitAPI.update(editingId, editingData);
+      await testKitAPI.update(editingId, editingData);
       setEditingId(null);
       fetchTypeKits();
       toast({ title: "Cập nhật thành công" });
@@ -59,7 +59,7 @@ const TypeKitManagement: React.FC = () => {
   const handleDelete = async (id: any) => {
     if (!window.confirm("Xác nhận xoá loại kit?")) return;
     try {
-      await typeKitAPI.delete(id);
+      await testKitAPI.delete(id);
       fetchTypeKits();
       toast({ title: "Đã xoá loại kit" });
     } catch {

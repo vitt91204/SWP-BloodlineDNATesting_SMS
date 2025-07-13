@@ -11,6 +11,8 @@ import {
   XCircle,
   AlertCircle
 } from "lucide-react";
+import React, { useEffect, useState } from 'react';
+import { reportAPI } from '@/api/axios';
 
 // Temporary data for demonstration
 const stats = [
@@ -118,98 +120,164 @@ const getStatusBadge = (status: string) => {
   }
 };
 
+// Hàm kiểm tra dữ liệu trả về từ API
+const safeValue = (val, key) => {
+  if (val == null) return '...';
+  if (typeof val === 'object') {
+    if (Array.isArray(val)) return val.length;
+    if (key && val[key] !== undefined) return val[key];
+    const firstKey = Object.keys(val)[0];
+    return val[firstKey];
+  }
+  if (typeof val === 'string' && val.startsWith('<!DOCTYPE html>')) {
+    return 'Lỗi API!';
+  }
+  return val;
+};
+
 export const AdminDashboard = () => {
-  return (  
-    <div className="w-full px-8 py-6"> 
+  const now = new Date();
+  const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+  const [monthlyRevenue, setMonthlyRevenue] = useState(null);
+  const [thisMonthPayments, setThisMonthPayments] = useState('');
+  const [thisMonthRequests, setThisMonthRequests] = useState('');
+  const [monthlyRequests, setMonthlyRequests] = useState('');
+  const [dailyRequests, setDailyRequests] = useState('');
 
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const revenue = await reportAPI.getMonthlyRevenue(selectedMonth, selectedYear);
+        setMonthlyRevenue(revenue);
+        const [payments, requests, monthly, daily] = await Promise.all([
+          reportAPI.getThisMonthPayments(),
+          reportAPI.getThisMonthRequests(),
+          reportAPI.getMonthlyRequests(),
+          reportAPI.getDailyRequests(selectedMonth, selectedYear)
+        ]);
+        console.log('API DATA:', { revenue, payments, requests, monthly, daily });
+        setThisMonthPayments(payments);
+        setThisMonthRequests(requests);
+        setMonthlyRequests(monthly);
+        setDailyRequests(daily);
+      } catch (e) {
+        console.error('API ERROR:', e);
+      }
+    }
+    fetchData();
+  }, [selectedMonth, selectedYear]);
 
+  // Tạo danh sách tháng và năm cho select
+  const months = Array.from({ length: 12 }, (_, i) => i + 1);
+  const years = Array.from({ length: 6 }, (_, i) => now.getFullYear() - 2 + i);
+
+  return (
+    <div className="w-full px-8 py-6">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600">Xem tổng quan về hoạt động của hệ thống</p>
+        <p className="text-gray-600">Tổng quan số liệu hệ thống</p>
+        <div className="flex gap-4 mt-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Tháng</label>
+            <select
+              className="border rounded px-2 py-1"
+              value={selectedMonth}
+              onChange={e => setSelectedMonth(Number(e.target.value))}
+            >
+              {months.map(m => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Năm</label>
+            <select
+              className="border rounded px-2 py-1"
+              value={selectedYear}
+              onChange={e => setSelectedYear(Number(e.target.value))}
+            >
+              {years.map(y => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <Card key={stat.name}>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Icon className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <div className={`text-sm font-medium ${
-                    stat.trend === 'up' ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {stat.change}
-                  </div>
-                </div>
-                <div className="mt-4">
-                  <h3 className="text-sm font-medium text-gray-600">{stat.name}</h3>
-                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      <div className="grid lg:grid-cols-3 gap-8 mb-8">
-        {/* Recent Tests */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Đơn xét nghiệm gần đây</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentTests.map((test) => (
-                <div
-                  key={test.id}
-                  className="flex items-center justify-between p-4 border rounded-lg"
-                >
-                  <div>
-                    <div className="font-medium">{test.customer}</div>
-                    <div className="text-sm text-gray-600">
-                      {test.type} - {test.date}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    {getStatusBadge(test.status)}
-                    <Button variant="ghost" size="sm">
-                      Chi tiết
-                    </Button>
-                  </div>
-                </div>
-              ))}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-sm font-medium text-gray-600 mb-2">Doanh thu tháng này</div>
+            <div className="text-2xl font-bold text-gray-900">
+              {(monthlyRevenue as unknown) && typeof monthlyRevenue === 'object' && monthlyRevenue !== null ? (monthlyRevenue as any).totalRevenue : '...'}
             </div>
           </CardContent>
         </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-sm font-medium text-gray-600 mb-2">Số thanh toán tháng này</div>
+            <div className="text-2xl font-bold text-gray-900">
+              {Array.isArray(thisMonthPayments) ? thisMonthPayments.length : '...'}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-sm font-medium text-gray-600 mb-2">Số đơn xét nghiệm tháng này</div>
+            <div className="text-2xl font-bold text-gray-900">
+              {Array.isArray(thisMonthRequests) ? thisMonthRequests.filter(x => x != null).length : '...'}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-        {/* Upcoming Appointments */}
+      {/* Monthly Requests Table */}
+      <div className="mb-8">
         <Card>
           <CardHeader>
-            <CardTitle>Lịch hẹn sắp tới</CardTitle>
+            <CardTitle>Thống kê đơn xét nghiệm theo tháng</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {appointments.map((appointment) => (
-                <div
-                  key={appointment.id}
-                  className="p-4 border rounded-lg"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="font-medium">{appointment.customer}</div>
-                    <Badge variant="outline">{appointment.time}</Badge>
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    {appointment.type}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {appointment.date}
-                  </div>
-                </div>
-              ))}
+            <div className="text-2xl font-bold text-gray-900">
+              {typeof monthlyRequests === 'number' ? monthlyRequests : '...'}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Daily Requests Table */}
+      <div className="mb-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Thống kê đơn xét nghiệm theo ngày</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div style={{ maxHeight: 300, overflowY: 'auto' }}>
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr>
+                    <th className="text-left p-2">Ngày</th>
+                    <th className="text-left p-2">Số đơn</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(() => {
+                    const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
+                    const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+                    return daysArray.map(day => {
+                      const found = Array.isArray(dailyRequests) && dailyRequests.find(d => d.day === day);
+                      return (
+                        <tr key={day}>
+                          <td className="p-2">{day}</td>
+                          <td className="p-2">{found ? found.count : 0}</td>
+                        </tr>
+                      );
+                    });
+                  })()}
+                </tbody>
+              </table>
             </div>
           </CardContent>
         </Card>

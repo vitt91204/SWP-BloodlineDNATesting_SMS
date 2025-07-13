@@ -12,7 +12,7 @@ import {
   Send,
   Eye
 } from 'lucide-react';
-import { testResultAPI, testResultAPIForm, sampleAPI, staffAPI, testRequestAPI } from '@/api/axios';
+import { testResultAPI, sampleAPI, staffAPI, testRequestAPI } from '@/api/axios';
 
 interface TestResult {
   id: string;
@@ -221,7 +221,7 @@ export default function ResultsDelivery() {
         // Gọi API upload với FormData instance
         let response;
         try {
-          response = await testResultAPIForm.createWithPdf(formData);
+          response = await testResultAPI.createWithPdf(formData);
           
           // Debug: Log response để kiểm tra
           console.log('=== API RESPONSE DEBUG ===');

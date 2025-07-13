@@ -23,7 +23,12 @@ export default defineConfig(({ mode }) => ({
             'ngrok-skip-browser-warning': 'true'
           }
         })
-      }
+      },
+      '/monthly-revenue': { target: API_TARGET, changeOrigin: true, secure: true },
+      '/this-month-payments': { target: API_TARGET, changeOrigin: true, secure: true },
+      '/this-month-requests': { target: API_TARGET, changeOrigin: true, secure: true },
+      '/monthly-requests': { target: API_TARGET, changeOrigin: true, secure: true },
+      '/daily-requests': { target: API_TARGET, changeOrigin: true, secure: true },
     }
   },
   plugins: [
