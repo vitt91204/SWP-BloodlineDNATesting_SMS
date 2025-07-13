@@ -471,6 +471,12 @@ export const blogAPI = {
     const response = await api.put(`/api/BlogPost/${id}`, data);
     return response.data;
   },
+
+  // Xoá bài viết blog
+  delete: async (id: number | string) => {
+    const response = await api.delete(`/api/BlogPost/${id}`);
+    return response.data;
+  },
 };
 export const feedbackAPI = {
   create: async (data: any) => {

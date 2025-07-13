@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { Edit, Save } from "lucide-react";
+import { Edit, Save, Trash2 } from "lucide-react";
 
 export default function BlogManagementStaff() {
   const [posts, setPosts] = useState([]);
@@ -76,6 +76,16 @@ export default function BlogManagementStaff() {
     }
   };
 
+  const handleDelete = async (postId: number) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xoá bài viết này?")) return;
+    try {
+      await blogAPI.delete(postId);
+      fetchPosts();
+    } catch (error) {
+      alert("Xoá bài viết thất bại!");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-10">
       <div className="max-w-4xl mx-auto">
@@ -112,22 +122,34 @@ export default function BlogManagementStaff() {
         )}
 
         <div className="space-y-4">
-          {posts.map((post) => (
-            <Card key={post.id}>
-              <CardContent className="pt-6">
-                <h3 className="text-lg font-semibold mb-2">{post.title}</h3>
-                <p className="text-gray-600 text-sm mb-2">
-                  Ngày tạo: {post.createdAt?.slice(0, 10)}
-                </p>
-                <p className="text-gray-800 line-clamp-3 mb-4">{post.content}</p>
-                <div className="flex justify-end">
-                  <Button size="sm" onClick={() => handleEdit(post)}>
-                    <Edit className="w-4 h-4 mr-1" /> Chỉnh sửa
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          {posts.map((post, idx) => {
+            const postId = post.id || post.blogPostId || post.postId;
+            return (
+              <Card key={postId || idx}>
+                <CardContent className="pt-6">
+                  <h3 className="text-lg font-semibold mb-2">{post.title}</h3>
+                  <p className="text-gray-600 text-sm mb-2">
+                    Ngày tạo: {post.createdAt?.slice(0, 10)}
+                  </p>
+                  <p className="text-gray-800 line-clamp-3 mb-4">{post.content}</p>
+                  <div className="flex justify-end space-x-2">
+                    {postId ? (
+                      <>
+                        <Button size="sm" onClick={() => handleEdit(post)}>
+                          <Edit className="w-4 h-4 mr-1" /> Chỉnh sửa
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => handleDelete(postId)}>
+                          <Trash2 className="w-4 h-4 mr-1" /> Xoá
+                        </Button>
+                      </>
+                    ) : (
+                      <span className="text-xs text-red-500">Không có ID, không thể sửa/xoá</span>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </div>
     </div>
