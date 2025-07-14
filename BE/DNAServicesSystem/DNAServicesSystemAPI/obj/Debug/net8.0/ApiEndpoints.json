@@ -1206,6 +1206,74 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.ReportsController",
+    "Method": "GetDailyRequests",
+    "RelativePath": "daily-requests",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "year",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "month",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "day",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.ReportsController",
+    "Method": "GetMonthlyRequests",
+    "RelativePath": "monthly-requests",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "year",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "month",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.ReportsController",
+    "Method": "GetMonthlyRevenue",
+    "RelativePath": "monthly-revenue",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "year",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "month",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "DNAServicesSystemAPI.Controllers.UserController",
     "Method": "UpdateUserRole",
     "RelativePath": "role/{userId}",
@@ -1221,6 +1289,48 @@
       {
         "Name": "role",
         "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.ReportsController",
+    "Method": "GetThisMonthPayments",
+    "RelativePath": "this-month-payments",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "year",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "month",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.ReportsController",
+    "Method": "GetThisMonthRequests",
+    "RelativePath": "this-month-requests",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "year",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "month",
+        "Type": "System.Int32",
         "IsRequired": false
       }
     ],

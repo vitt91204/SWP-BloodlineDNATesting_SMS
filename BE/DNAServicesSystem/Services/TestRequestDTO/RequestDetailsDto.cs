@@ -1,11 +1,19 @@
+﻿using Repositories.Models;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Services.TestRequestDTO
 {
-    public class TestRequestDto
+    public class RequestDetailsDto
     {
-        [Required]
+        public string UserFullName { get; set; } = string.Empty;
+        public string ServiceName { get; set; } = string.Empty;
+
+
         public int UserId { get; set; }
 
         [Required]
@@ -20,11 +28,14 @@ namespace Services.TestRequestDTO
         public string Status { get; set; } = string.Empty;
 
         [Required]
-        public DateOnly AppointmentDate { get; set; }
+        public DateOnly? AppointmentDate { get; set; }
 
         [Required]
-        public TimeOnly SlotTime { get; set; }
+        public TimeOnly? SlotTime { get; set; }
 
         public int? StaffId { get; set; }
+
+        public Sample Sample { get; set; } = new Sample();
+        public List<SubSample> SubSamples { get; set; } = new List<SubSample>();
     }
 }

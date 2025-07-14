@@ -13,6 +13,7 @@ namespace Repositories
         public async Task<Sample?> GetByIdAsync(int id) => await context.Samples.FindAsync(id);
         public async Task<List<Sample>> GetAllAsync() => await context.Samples.ToListAsync();
 
+<<<<<<< Updated upstream
         public async Task<List<Sample>> SearchSamplesAsync(string? serviceName, string? userFullName)
         {
             var query = context.Samples
@@ -29,6 +30,16 @@ namespace Repositories
                 query = query.Where(s => s.Request.User.FullName.Contains(userFullName));
 
             return await query.ToListAsync();
+=======
+        public async Task<Sample> GetSampleByRequestidAsync (int requestId) 
+        {
+            var sample = await context.Samples.FirstOrDefaultAsync(s => s.RequestId == requestId);
+            if (sample == null)
+            {
+                throw new KeyNotFoundException($"Sample with TestRequestId {requestId} not found.");
+            }
+            return sample;
+>>>>>>> Stashed changes
         }
     }
 }

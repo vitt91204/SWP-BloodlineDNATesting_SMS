@@ -1,16 +1,26 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\",
+  "WorkspaceRootPath": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\",
   "Documents": [
     {
+<<<<<<< Updated upstream
       "AbsoluteMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|c:\\users\\nguyen ba tuan anh\\documents\\github\\swp-dnaprojects\\be\\dnaservicessystem\\services\\sampleservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|solutionrelative:services\\sampleservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+=======
+      "AbsoluteMoniker": "D:0:0:{33A30782-440B-4B65-8A14-EFFC7459E34D}|Repositories\\Repositories.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\be\\dnaservicessystem\\repositories\\subsamplerepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{33A30782-440B-4B65-8A14-EFFC7459E34D}|Repositories\\Repositories.csproj|solutionrelative:repositories\\subsamplerepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|c:\\users\\nguyen ba tuan anh\\documents\\github\\swp-dnaprojects\\be\\dnaservicessystem\\services\\subsampleservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|solutionrelative:services\\subsampleservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\be\\dnaservicessystem\\services\\testrequestservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|solutionrelative:services\\testrequestservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+>>>>>>> Stashed changes
     },
     {
+      "AbsoluteMoniker": "D:0:0:{EE56B4D8-D35D-4E69-A4BB-6F67C13C9AE8}|DNAServicesSystemAPI\\DNAServicesSystemAPI.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\be\\dnaservicessystem\\dnaservicessystemapi\\controllers\\testrequestcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EE56B4D8-D35D-4E69-A4BB-6F67C13C9AE8}|DNAServicesSystemAPI\\DNAServicesSystemAPI.csproj|solutionrelative:dnaservicessystemapi\\controllers\\testrequestcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+<<<<<<< Updated upstream
       "AbsoluteMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|c:\\users\\nguyen ba tuan anh\\documents\\github\\swp-dnaprojects\\be\\dnaservicessystem\\services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|solutionrelative:services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -145,6 +155,26 @@
     {
       "AbsoluteMoniker": "D:0:0:{EE56B4D8-D35D-4E69-A4BB-6F67C13C9AE8}|DNAServicesSystemAPI\\DNAServicesSystemAPI.csproj|c:\\users\\nguyen ba tuan anh\\documents\\github\\swp-dnaprojects\\be\\dnaservicessystem\\dnaservicessystemapi\\controllers\\feedbackcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{EE56B4D8-D35D-4E69-A4BB-6F67C13C9AE8}|DNAServicesSystemAPI\\DNAServicesSystemAPI.csproj|solutionrelative:dnaservicessystemapi\\controllers\\feedbackcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+=======
+      "AbsoluteMoniker": "D:0:0:{33A30782-440B-4B65-8A14-EFFC7459E34D}|Repositories\\Repositories.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\be\\dnaservicessystem\\repositories\\samplerepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{33A30782-440B-4B65-8A14-EFFC7459E34D}|Repositories\\Repositories.csproj|solutionrelative:repositories\\samplerepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\be\\dnaservicessystem\\services\\testrequestdto\\requestdetailsdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|solutionrelative:services\\testrequestdto\\requestdetailsdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\be\\dnaservicessystem\\services\\reportservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|solutionrelative:services\\reportservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EE56B4D8-D35D-4E69-A4BB-6F67C13C9AE8}|DNAServicesSystemAPI\\DNAServicesSystemAPI.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\be\\dnaservicessystem\\dnaservicessystemapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EE56B4D8-D35D-4E69-A4BB-6F67C13C9AE8}|DNAServicesSystemAPI\\DNAServicesSystemAPI.csproj|solutionrelative:dnaservicessystemapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|d:\\projects\\swp-projects\\swp-dnaprojects\\be\\dnaservicessystem\\services\\testresultdto\\testresultdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{56FB8135-A532-4225-A8BE-DD6D36D5A2BA}|Services\\Services.csproj|solutionrelative:services\\testresultdto\\testresultdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+>>>>>>> Stashed changes
     }
   ],
   "DocumentGroupContainers": [
@@ -154,15 +184,21 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
+<<<<<<< Updated upstream
           "SelectedChildIndex": 6,
           "Children": [
             {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
-            },
+=======
+          "SelectedChildIndex": 3,
+          "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+>>>>>>> Stashed changes
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
             },
             {
               "$type": "Bookmark",
@@ -170,6 +206,7 @@
             },
             {
               "$type": "Document",
+<<<<<<< Updated upstream
               "DocumentIndex": 2,
               "Title": "UserService.cs",
               "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\UserService.cs",
@@ -179,11 +216,23 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-07-14T06:55:00.994Z",
+=======
+              "DocumentIndex": 0,
+              "Title": "SubSampleRepository.cs",
+              "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Repositories\\SubSampleRepository.cs",
+              "RelativeDocumentMoniker": "Repositories\\SubSampleRepository.cs",
+              "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Repositories\\SubSampleRepository.cs",
+              "RelativeToolTip": "Repositories\\SubSampleRepository.cs",
+              "ViewState": "AgIAAAoAAAAAAAAAAAA5wBMAAAAfAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-14T06:20:28.33Z",
+>>>>>>> Stashed changes
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
+<<<<<<< Updated upstream
               "Title": "TestServiceService.cs",
               "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\TestServiceService.cs",
               "RelativeDocumentMoniker": "Services\\TestServiceService.cs",
@@ -231,10 +280,21 @@
               "ViewState": "AgIAADEAAAAAAAAAAAAuwEsAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-07-12T14:28:17.829Z",
+=======
+              "Title": "SampleRepository.cs",
+              "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Repositories\\SampleRepository.cs",
+              "RelativeDocumentMoniker": "Repositories\\SampleRepository.cs",
+              "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Repositories\\SampleRepository.cs",
+              "RelativeToolTip": "Repositories\\SampleRepository.cs",
+              "ViewState": "AgIAAAgAAAAAAAAAAAAzwA8AAAA7AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-14T05:39:32.471Z",
+>>>>>>> Stashed changes
               "EditorCaption": ""
             },
             {
               "$type": "Document",
+<<<<<<< Updated upstream
               "DocumentIndex": 7,
               "Title": "TestRequestService.cs",
               "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\TestRequestService.cs",
@@ -255,12 +315,22 @@
               "ToolTip": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\SubSampleService.cs",
               "RelativeToolTip": "Services\\SubSampleService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+=======
+              "DocumentIndex": 2,
+              "Title": "TestRequestController.cs",
+              "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\DNAServicesSystemAPI\\Controllers\\TestRequestController.cs",
+              "RelativeDocumentMoniker": "DNAServicesSystemAPI\\Controllers\\TestRequestController.cs",
+              "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\DNAServicesSystemAPI\\Controllers\\TestRequestController.cs",
+              "RelativeToolTip": "DNAServicesSystemAPI\\Controllers\\TestRequestController.cs",
+              "ViewState": "AgIAABMAAAAAAAAAAAAkwAAAAAAAAAAAAAAAAA==",
+>>>>>>> Stashed changes
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-12T14:27:18.933Z",
+              "WhenOpened": "2025-07-14T05:31:17.565Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
+<<<<<<< Updated upstream
               "DocumentIndex": 8,
               "Title": "TestResultDto.cs",
               "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\TestResultDTO\\TestResultDto.cs",
@@ -283,10 +353,22 @@
               "ViewState": "AgIAACkAAAAAAAAAAAAgwGUAAABKAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-07-12T14:27:20.187Z",
+=======
+              "DocumentIndex": 4,
+              "Title": "RequestDetailsDto.cs",
+              "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\TestRequestDTO\\RequestDetailsDto.cs",
+              "RelativeDocumentMoniker": "Services\\TestRequestDTO\\RequestDetailsDto.cs",
+              "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\TestRequestDTO\\RequestDetailsDto.cs",
+              "RelativeToolTip": "Services\\TestRequestDTO\\RequestDetailsDto.cs",
+              "ViewState": "AgIAABgAAAAAAAAAAAAcwCEAAAAYAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-14T03:38:23.069Z",
+>>>>>>> Stashed changes
               "EditorCaption": ""
             },
             {
               "$type": "Document",
+<<<<<<< Updated upstream
               "DocumentIndex": 10,
               "Title": "SampleRepository.cs",
               "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Repositories\\SampleRepository.cs",
@@ -320,10 +402,22 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-07-12T15:17:24.925Z",
+=======
+              "DocumentIndex": 1,
+              "Title": "TestRequestService.cs",
+              "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\TestRequestService.cs",
+              "RelativeDocumentMoniker": "Services\\TestRequestService.cs",
+              "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\TestRequestService.cs",
+              "RelativeToolTip": "Services\\TestRequestService.cs",
+              "ViewState": "AgIAAEwAAAAAAAAAAAAYwGgAAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-14T01:29:17.252Z",
+>>>>>>> Stashed changes
               "EditorCaption": ""
             },
             {
               "$type": "Document",
+<<<<<<< Updated upstream
               "DocumentIndex": 9,
               "Title": "TestResultRepository.cs",
               "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Repositories\\TestResultRepository.cs",
@@ -333,10 +427,34 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-07-12T14:28:50.797Z",
+=======
+              "DocumentIndex": 6,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\DNAServicesSystemAPI\\Program.cs",
+              "RelativeDocumentMoniker": "DNAServicesSystemAPI\\Program.cs",
+              "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\DNAServicesSystemAPI\\Program.cs",
+              "RelativeToolTip": "DNAServicesSystemAPI\\Program.cs",
+              "ViewState": "AgIAACUAAAAAAAAAAAAkwC4AAAA4AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-13T11:26:49.804Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "ReportService.cs",
+              "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\ReportService.cs",
+              "RelativeDocumentMoniker": "Services\\ReportService.cs",
+              "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\ReportService.cs",
+              "RelativeToolTip": "Services\\ReportService.cs",
+              "ViewState": "AgIAAA4AAAAAAAAAAAAUwJIAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-13T06:36:23.181Z",
+>>>>>>> Stashed changes
               "EditorCaption": ""
             },
             {
               "$type": "Document",
+<<<<<<< Updated upstream
               "DocumentIndex": 11,
               "Title": "TestRequestDto.cs",
               "DocumentMoniker": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\TestRequestDTO\\TestRequestDto.cs",
@@ -613,6 +731,17 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-07-12T14:28:18.923Z"
+=======
+              "DocumentIndex": 7,
+              "Title": "TestResultDto.cs",
+              "DocumentMoniker": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\TestResultDTO\\TestResultDto.cs",
+              "RelativeDocumentMoniker": "Services\\TestResultDTO\\TestResultDto.cs",
+              "ToolTip": "D:\\Projects\\SWP-Projects\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\TestResultDTO\\TestResultDto.cs",
+              "RelativeToolTip": "Services\\TestResultDTO\\TestResultDto.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-12T14:52:48.489Z"
+>>>>>>> Stashed changes
             }
           ]
         }

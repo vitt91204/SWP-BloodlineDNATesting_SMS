@@ -13,11 +13,17 @@ namespace Services
     {
         private readonly TestRequestReposity testRequestReposity;
         private readonly UserRepository userRepository;
+        private readonly SampleRepository sampleRepository;
+        private readonly SubSampleRepository subSampleRepository;
+        private readonly TestServiceRepository serviceRepository;
 
         public TestRequestService()
         {
             testRequestReposity = new TestRequestReposity();
             userRepository = new UserRepository();
+            sampleRepository = new SampleRepository();
+            subSampleRepository = new SubSampleRepository();
+            serviceRepository = new TestServiceRepository();
         }
 
         public async Task<TestRequest> CreateTestRequestAsync(TestRequestDto testRequestDto)
@@ -41,6 +47,7 @@ namespace Services
             return testRequest;
         }
 
+        #region GetRequests
         public async Task<TestRequest> GetRequestAsync(int requestId)
         {
             var testRequest = await testRequestReposity.GetByIdAsync(requestId);
@@ -63,10 +70,42 @@ namespace Services
             return await testRequestReposity.GetRequestsByUserIdAsync(userId);
         }
 
-        public async Task<IEnumerable<TestRequest>> GetTestRequestsByStaffIdAsync(int staffId)
+        public async Task<IEnumerable<RequestDetailsDto>> GetTestRequestsByStaffIdAsync(int staffId)
         {
-            return await testRequestReposity.GetRequestsByStaffIdAsync(staffId);
+            var requests = await testRequestReposity.GetRequestsByStaffIdAsync(staffId);
+
+            if (requests == null || !requests.Any())
+            {
+                throw new KeyNotFoundException($"No test requests found for staff ID {staffId}.");
+            }
+
+            var requestDetails = new List<RequestDetailsDto>();
+
+            foreach (var request in requests)
+            {
+                var user = await userRepository.GetByIdAsync(request.UserId);
+                var service = await serviceRepository.GetByIdAsync(request.ServiceId);
+                var sample = await sampleRepository.GetSampleByRequestidAsync(request.RequestId);
+                var subSamples = await subSampleRepository.GetSubSamplesBySampleIdAsync(sample.SampleId);
+                requestDetails.Add(new RequestDetailsDto
+                {
+                    UserFullName = user.FullName,
+                    ServiceName = service.Name,
+                    UserId = request.UserId,
+                    ServiceId = request.ServiceId,
+                    CollectionType = request.CollectionType,
+                    Status = request.Status,
+                    AppointmentDate = request.AppointmentDate,
+                    SlotTime = request.SlotTime,
+                    StaffId = request.StaffId,
+                    Sample = sample,
+                    SubSamples = subSamples
+                });
+            }
+            return requestDetails;
         }
+
+        #endregion
 
         public async Task<TestRequest> UpdateTestRequestAsync(int requestId, TestRequestDto testRequestDto)
         {
