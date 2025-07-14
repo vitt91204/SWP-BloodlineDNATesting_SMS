@@ -2,6 +2,7 @@ using Repositories;
 using Services.SampleDTO;
 using Repositories.Models;
 
+
 namespace Services
 {
     public class SampleService
@@ -59,6 +60,12 @@ namespace Services
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null) return false;
             return await _repository.RemoveAsync(entity);
+        }
+
+        public async Task<List<Sample>> SearchSamplesAsync(string? serviceName, string? userFullName)
+        {
+            var samples = await _repository.SearchSamplesAsync(serviceName, userFullName);
+            return samples;
         }
     }
 }

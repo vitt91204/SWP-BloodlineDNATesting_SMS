@@ -506,6 +506,43 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.SampleController",
+    "Method": "GetSampleResultPdf",
+    "RelativePath": "api/Sample/{sampleId}/result-pdf",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "sampleId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.SampleController",
+    "Method": "SearchSamplesAsync",
+    "RelativePath": "api/Sample/GetSampleByName",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "serviceName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "userFullName",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "DNAServicesSystemAPI.Controllers.SubSampleController",
     "Method": "GetAll",
     "RelativePath": "api/SubSample",
@@ -804,6 +841,22 @@
     "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
     "Method": "GetTestRequestByUserId",
     "RelativePath": "api/TestRequest/user/{userId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
+    "Method": "GetUserTestServiceNames",
+    "RelativePath": "api/TestRequest/user/{userId}/service-names",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,

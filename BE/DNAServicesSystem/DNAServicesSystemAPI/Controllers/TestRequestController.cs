@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Services;
 using Services.TestRequestDTO;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DNAServicesSystemAPI.Controllers
 {
@@ -120,6 +123,30 @@ namespace DNAServicesSystemAPI.Controllers
             }
             var testRequest = await testRequestService.UpdateStaffRequestAsync(requestId, staffId);
             return Ok(testRequest);
+        }
+
+        [HttpGet]
+        [Route("user/{userId:int}/service-names")]
+        public async Task<IActionResult> GetUserTestServiceNames(int userId)
+        {
+            var testRequests = await testRequestService.GetTestRequestsByUserIdAsync(userId);
+
+            var testServiceService = new TestServiceService();
+            var serviceNames = new List<string>();
+
+            foreach (var req in testRequests)
+            {
+                var name = req.Service?.Name;
+                if (string.IsNullOrEmpty(name))
+                {
+                    var service = await testServiceService.GetTestingServiceByIdAsync(req.ServiceId);
+                    name = service?.Name;
+                }
+                if (!string.IsNullOrEmpty(name))
+                    serviceNames.Add(name);
+            }
+
+            return Ok(serviceNames);
         }
     }
 }
