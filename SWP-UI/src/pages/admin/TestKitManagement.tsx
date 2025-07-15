@@ -13,6 +13,7 @@ interface TestKit {
   description: string;
   stockQuantity: number;
   isActive: boolean;
+  serviceType: string;
   testServices?: any[];
 }
 
@@ -27,6 +28,7 @@ export default function TestKitManagement() {
     description: "",
     stockQuantity: 0,
     isActive: true,
+    serviceType: "",
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -69,6 +71,10 @@ export default function TestKitManagement() {
       alert("Vui lòng nhập tên bộ kit");
       return;
     }
+    if (!form.serviceType.trim()) {
+      alert("Vui lòng nhập loại dịch vụ");
+      return;
+    }
     if (form.stockQuantity < 0) {
       alert("Số lượng tồn kho không được âm");
       return;
@@ -84,20 +90,24 @@ export default function TestKitManagement() {
         description: form.description.trim(),
         stockQuantity: form.stockQuantity,
         isActive: form.isActive,
+        serviceType: form.serviceType.trim(),
       };
       
       console.log("Submitting kit data:", submitData);
       await testKitAPI.create(submitData);
-      setForm({ name: "", description: "", stockQuantity: 0, isActive: true });
+      setForm({ name: "", description: "", stockQuantity: 0, isActive: true, serviceType: "" });
       setShowForm(false);
       fetchKits();
       alert("Tạo bộ kit xét nghiệm thành công!");
     } catch (err: any) {
       console.error("Error creating kit:", err);
       
-      // Handle 405 Method Not Allowed specifically
+      // Handle specific error statuses
       if (err.response?.status === 405) {
         setApiLimitations("🚫 Chức năng tạo bộ kit mới chưa được triển khai trên backend API. Vui lòng liên hệ nhà phát triển để thêm phương thức POST cho endpoint /api/TestKit.");
+      } else if (err.response?.status === 400) {
+        const errorMessage = err.response?.data?.message || err.response?.data || "Dữ liệu không hợp lệ";
+        setError(`Lỗi 400 - Dữ liệu không hợp lệ: ${errorMessage}. Vui lòng kiểm tra lại các trường bắt buộc (name, serviceType) và định dạng dữ liệu.`);
       } else {
         const errorMessage = err.response?.data?.message || err.message || "Tạo thất bại!";
         setError(`Lỗi tạo bộ kit: ${errorMessage}`);
@@ -195,8 +205,17 @@ export default function TestKitManagement() {
                   placeholder="Số lượng tồn kho" 
                   value={form.stockQuantity} 
                   onChange={handleChange} 
-                  type="number" 
-                  min="0"
+                  disabled={submitting}
+                />
+              </div>
+              
+              <div>
+                <Input 
+                  name="serviceType" 
+                  placeholder="Loại dịch vụ *" 
+                  value={form.serviceType} 
+                  onChange={handleChange} 
+                  required
                   disabled={submitting}
                 />
               </div>
@@ -269,6 +288,9 @@ export default function TestKitManagement() {
                         <div className="flex flex-wrap gap-4 text-sm">
                           <span className="inline-flex items-center px-2 py-1 rounded bg-green-100 text-green-800">
                             📦 Tồn kho: <b className="ml-1">{kit.stockQuantity}</b>
+                          </span>
+                          <span className="inline-flex items-center px-2 py-1 rounded bg-blue-100 text-blue-800">
+                            🔧 Loại dịch vụ: <b className="ml-1">{kit.serviceType || 'Chưa có'}</b>
                           </span>
                           <span className="inline-flex items-center px-2 py-1 rounded bg-purple-100 text-purple-800">
                             ID: {kit.kitId}

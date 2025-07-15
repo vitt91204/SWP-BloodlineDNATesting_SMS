@@ -431,7 +431,9 @@ export const testKitAPI = {
 
   // Tạo bộ kit mới (cho admin)
   create: async (kitData: any) => {
+    console.log('Creating test kit with data:', kitData);
     const response = await api.post('/api/TestKit', kitData);
+    console.log('Test kit creation response:', response.data);
     return response.data;
   },
 
