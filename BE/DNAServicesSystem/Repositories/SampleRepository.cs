@@ -33,10 +33,6 @@ namespace Repositories
         public async Task<Sample> GetSampleByRequestidAsync (int requestId) 
         {
             var sample = await context.Samples.FirstOrDefaultAsync(s => s.RequestId == requestId);
-            if (sample == null)
-            {
-                throw new KeyNotFoundException($"Sample with TestRequestId {requestId} not found.");
-            }
             return sample;
 
         }

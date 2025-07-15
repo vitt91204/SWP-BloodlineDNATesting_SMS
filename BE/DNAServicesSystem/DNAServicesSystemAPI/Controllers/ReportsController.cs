@@ -14,7 +14,7 @@ namespace DNAServicesSystemAPI.Controllers
             this.reportService = reportService;
         }
         [HttpGet]
-        [Route("/monthly-revenue")]
+        [Route("monthly-revenue")]
         public IActionResult GetMonthlyRevenue(int year, int month)
         {
             try
@@ -26,14 +26,10 @@ namespace DNAServicesSystemAPI.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Internal server error: {ex.Message}");
-            }
         }
 
         [HttpGet]
-        [Route("/this-month-payments")]
+        [Route("this-month-payments")]
         public IActionResult GetThisMonthPayments(int year, int month)
         {
             try
@@ -52,7 +48,7 @@ namespace DNAServicesSystemAPI.Controllers
         }
 
         [HttpGet]
-        [Route("/this-month-requests")]
+        [Route("this-month-requests")]
         public IActionResult GetThisMonthRequests(int year, int month)
         {
             try
@@ -72,7 +68,7 @@ namespace DNAServicesSystemAPI.Controllers
         }
 
         [HttpGet]
-        [Route("/monthly-requests")]
+        [Route("monthly-requests")]
         public IActionResult GetMonthlyRequests(int year, int month)
         {
             try
@@ -91,7 +87,7 @@ namespace DNAServicesSystemAPI.Controllers
         }
 
         [HttpGet]
-        [Route("/daily-requests")]
+        [Route("daily-requests")]
         public IActionResult GetDailyRequests(int year, int month, int day)
         {
             try

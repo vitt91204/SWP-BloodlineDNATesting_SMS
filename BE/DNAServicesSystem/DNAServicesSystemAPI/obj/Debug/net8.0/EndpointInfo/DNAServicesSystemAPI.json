@@ -2,7 +2,7 @@
   "openapi": "3.0.1",
   "info": {
     "title": "DNAServicesSystemAPI",
-    "version": "1.0"
+    "version": "v1"
   },
   "paths": {
     "/api/Address/{userId}": {
@@ -669,7 +669,7 @@
         }
       }
     },
-    "/monthly-revenue": {
+    "/api/Reports/monthly-revenue": {
       "get": {
         "tags": [
           "Reports"
@@ -699,7 +699,7 @@
         }
       }
     },
-    "/this-month-payments": {
+    "/api/Reports/this-month-payments": {
       "get": {
         "tags": [
           "Reports"
@@ -729,7 +729,7 @@
         }
       }
     },
-    "/this-month-requests": {
+    "/api/Reports/this-month-requests": {
       "get": {
         "tags": [
           "Reports"
@@ -759,7 +759,7 @@
         }
       }
     },
-    "/monthly-requests": {
+    "/api/Reports/monthly-requests": {
       "get": {
         "tags": [
           "Reports"
@@ -789,7 +789,7 @@
         }
       }
     },
-    "/daily-requests": {
+    "/api/Reports/daily-requests": {
       "get": {
         "tags": [
           "Reports"

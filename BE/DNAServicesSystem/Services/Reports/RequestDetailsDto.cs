@@ -35,7 +35,7 @@ namespace Services.TestRequestDTO
 
         public int? StaffId { get; set; }
 
-        public Sample Sample { get; set; } = new Sample();
-        public List<SubSample> SubSamples { get; set; } = new List<SubSample>();
+        public Sample? Sample { get; set; }
+        public List<SubSample>? SubSamples { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Repositories;
 using Repositories.Models;
+using Services.Reports;
 using Services.TestRequestDTO;
 using System;
 using System.Collections.Generic;
@@ -79,14 +80,18 @@ namespace Services
                 throw new KeyNotFoundException($"No test requests found for staff ID {staffId}.");
             }
 
-            var requestDetails = new List<RequestDetailsDto>();
+            List<RequestDetailsDto> requestDetails = new List<RequestDetailsDto>();
 
             foreach (var request in requests)
             {
                 var user = await userRepository.GetByIdAsync(request.UserId);
                 var service = await serviceRepository.GetByIdAsync(request.ServiceId);
-                var sample = await sampleRepository.GetSampleByRequestidAsync(request.RequestId);
-                var subSamples = await subSampleRepository.GetSubSamplesBySampleIdAsync(sample.SampleId);
+                Sample sample = await sampleRepository.GetSampleByRequestidAsync(request.RequestId);
+                List<SubSample>? subSamples = null;
+                if (sample != null)
+                {
+                    subSamples = await subSampleRepository.GetSubSamplesBySampleIdAsync(sample.SampleId);
+                }
                 requestDetails.Add(new RequestDetailsDto
                 {
                     UserFullName = user.FullName,
@@ -98,8 +103,8 @@ namespace Services
                     AppointmentDate = request.AppointmentDate,
                     SlotTime = request.SlotTime,
                     StaffId = request.StaffId,
-                    Sample = sample,
-                    SubSamples = subSamples
+                    Sample = sample ?? null,
+                    SubSamples = subSamples ?? null
                 });
             }
             return requestDetails;

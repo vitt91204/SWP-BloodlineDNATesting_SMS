@@ -34,6 +34,22 @@ namespace Repositories.Base
             return await context.Set<T>().ToListAsync();
         }
 
+        public List<T> GetPaged(int pageNumber, int pageSize)
+        {
+            return context.Set<T>()
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+        }
+
+        public async Task<List<T>> GetPagedAsync(int pageNumber, int pageSize)
+        {
+            return await context.Set<T>()
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
         public void Create(T entity)
         {
             context.Add(entity);

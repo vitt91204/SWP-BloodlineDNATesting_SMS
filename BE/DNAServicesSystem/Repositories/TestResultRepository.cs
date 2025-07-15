@@ -11,6 +11,5 @@ namespace Repositories
         public TestResultRepository() : base() { }
 
         public async Task<TestResult?> GetByIdAsync(int id) => await context.TestResults.FindAsync(id);
-        public async Task<List<TestResult>> GetAllAsync() => await context.TestResults.ToListAsync();
     }
 }

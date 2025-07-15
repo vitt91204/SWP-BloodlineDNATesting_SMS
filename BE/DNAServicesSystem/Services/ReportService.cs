@@ -1,4 +1,6 @@
-﻿using Repositories.Models;
+﻿using Azure.Core;
+using Repositories.Models;
+using Services.PaymentDTO;
 using Services.Reports;
 using System;
 using System.Collections.Generic;
@@ -12,9 +14,13 @@ namespace Services
     {
         private readonly PaymentService paymentService;
         private readonly TestRequestService testRequestService;
+        private readonly UserService userService;
+        private readonly TestServiceService testService;
         public ReportService() { 
             paymentService = new PaymentService(); 
             testRequestService = new TestRequestService();
+            userService = new UserService();
+            testService = new TestServiceService();
         }
 
 
@@ -47,7 +53,7 @@ namespace Services
             return report;
         }
 
-        public List<Payment> GetThisMonthPayments(int year, int month)
+        public List<DetailedPaymentInfo> GetThisMonthPayments(int year, int month)
         {
             if (year < 2000 || year > DateTime.Now.Year)
             {
@@ -59,7 +65,7 @@ namespace Services
                 throw new ArgumentOutOfRangeException(nameof(month), "Month must be between 1 and 12.");
             }
 
-            List<Payment> thisMonthPayments = new List<Payment>();
+            List<DetailedPaymentInfo> thisMonthPayments = new List<DetailedPaymentInfo>();
 
             var payments = paymentService.GetAllPaymentsAsync();
 
@@ -67,7 +73,21 @@ namespace Services
             {
                 if (payment.PaidAt.HasValue && payment.PaidAt.Value.Year == year && payment.PaidAt.Value.Month == month)
                 {
-                    thisMonthPayments.Add(payment);
+                    int userId = testRequestService.GetRequestAsync(payment.RequestId).Result.UserId;
+                    var userFullname = userService.GetUserByIdAsync(userId).Result.FullName;
+                    DetailedPaymentInfo paymentInfo = new DetailedPaymentInfo
+                    {
+                        PaymentId = payment.PaymentId,
+                        Amount = payment.Amount,
+                        Method = payment.Method,
+                        PaidAt = payment.PaidAt,
+                        RequestId = payment.RequestId,
+                        Status = payment.Status,
+                        Token = payment.Token,
+                        UserFullname = userFullname
+                    };
+
+                    thisMonthPayments.Add(paymentInfo);
                 }
             }
 
@@ -79,7 +99,7 @@ namespace Services
             return thisMonthPayments;
         }
 
-        public List<TestRequest> GetThisMonthRequests(int year, int month)
+        public List<TestRequestsDtoForReport> GetThisMonthRequests(int year, int month)
         {
             if (year < 2000 || year > DateTime.Now.Year)
             {
@@ -89,13 +109,22 @@ namespace Services
             {
                 throw new ArgumentOutOfRangeException(nameof(month), "Month must be between 1 and 12.");
             }
-            List<TestRequest> thisMonthRequests = new List<TestRequest>();
-            var requests = paymentService.GetAllPaymentsAsync();
+            List<TestRequestsDtoForReport> thisMonthRequests = new List<TestRequestsDtoForReport>();
+            var requests = testRequestService.GetAllRequestsAsync();
             foreach (var request in requests.Result)
             {
-                if (request.PaidAt.HasValue && request.PaidAt.Value.Year == year && request.PaidAt.Value.Month == month)
+                if (request.CreatedAt.HasValue && request.CreatedAt.Value.Year == year && request.CreatedAt.Value.Month == month)
                 {
-                    thisMonthRequests.Add(request.Request);
+                    
+                    var userFullName = userService.GetUserByIdAsync(request.UserId).Result.FullName;
+                    var serviceName = testService.GetTestingServiceByIdAsync(request.ServiceId).Result.Name;
+                    TestRequestsDtoForReport detailedRequest = new TestRequestsDtoForReport
+                    {
+                        ServiceName = serviceName,
+                        CollectionType = request.CollectionType,
+                        UserFullName = userFullName
+                    };
+                    thisMonthRequests.Add(detailedRequest);
                 }
             }
             if (thisMonthRequests.Count == 0)
