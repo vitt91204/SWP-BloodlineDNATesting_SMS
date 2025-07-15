@@ -205,6 +205,8 @@ export default function TestKitManagement() {
                   placeholder="Số lượng tồn kho" 
                   value={form.stockQuantity} 
                   onChange={handleChange} 
+                  type="number" 
+                  min="0"
                   disabled={submitting}
                 />
               </div>

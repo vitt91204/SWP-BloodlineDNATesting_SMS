@@ -372,8 +372,7 @@ export const AppointmentsPage = () => {
             <TableHead>Khách hàng</TableHead>
             <TableHead>Dịch vụ</TableHead>
             <TableHead>Ngày & Giờ</TableHead>
-            <TableHead>Giá trị</TableHead>
-            <TableHead>Nhân viên</TableHead>
+            <TableHead>Giá tiền</TableHead>
             <TableHead>Trạng thái</TableHead>
             <TableHead className="text-right">Thao tác</TableHead>
           </TableRow>
@@ -409,7 +408,6 @@ export const AppointmentsPage = () => {
               <TableCell>
                 {appointment.service?.price ? `${appointment.service.price.toLocaleString('vi-VN')} VNĐ` : 'Chưa có'}
               </TableCell>
-              <TableCell>{appointment.staff?.fullName || (appointment.staffId ? `Staff ID: ${appointment.staffId}` : 'Chưa chỉ định')}</TableCell>
               <TableCell>{getStatusBadge(appointment.status)}</TableCell>
               <TableCell className="text-right">
                 <Button
@@ -747,34 +745,7 @@ export const AppointmentsPage = () => {
                 </select>
               </div>
 
-              <div>
-                <h4 className="font-medium text-gray-900 mb-2">Chỉ định nhân viên</h4>
-                <div className="flex gap-2 items-center">
-                  <select
-                    value={selectedAppointment.staffId || ''}
-                    onChange={async (e) => {
-                      const newStaffId = Number(e.target.value);
-                      if (!selectedAppointment.requestId || !newStaffId) return;
-                      try {
-                        await testRequestAPI.assignStaff(selectedAppointment.requestId, newStaffId);
-                        toast({ title: 'Chỉ định thành công', description: `Đã chỉ định nhân viên #${newStaffId} cho lịch hẹn #${selectedAppointment.requestId}` });
-                        setSelectedAppointment({ ...selectedAppointment, staffId: newStaffId, staff: users.find(u => u.userId === newStaffId || u.id === newStaffId) });
-                        fetchAppointments();
-                      } catch (err: any) {
-                        toast({ title: 'Chỉ định thất bại', description: err.message || 'Không thể chỉ định nhân viên', variant: 'destructive' });
-                      }
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Chưa chỉ định</option>
-                    {users.filter(u => u.role?.toLowerCase() === 'staff').map(staff => (
-                      <option key={staff.userId || staff.id} value={staff.userId || staff.id}>
-                        {staff.fullName || staff.username} (ID: {staff.userId || staff.id})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+
             </div>
           )}
 
