@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Repositories;
 using Services;
 using Services.TestRequestDTO;
 using System.Collections.Generic;
@@ -147,6 +148,23 @@ namespace DNAServicesSystemAPI.Controllers
             }
 
             return Ok(serviceNames);
+        }
+
+        [HttpGet("{requestId}/pdf-result")]
+        public async Task<IActionResult> GetRequestPdfResult(
+            int requestId,
+            [FromServices] SampleService sampleService,
+            [FromServices] SampleRepository sampleRepository)
+        {
+            var sample = await sampleRepository.GetSampleByRequestidAsync(requestId);
+            if (sample == null)
+                return NotFound("No sample found for this request.");
+
+            var pdfBytes = await sampleService.GetSampleResultPdfAsync(sample.SampleId);
+            if (pdfBytes == null)
+                return NotFound("PDF result not found for this request.");
+
+            return File(pdfBytes, "application/pdf", $"Request_{requestId}_Result.pdf");
         }
     }
 }

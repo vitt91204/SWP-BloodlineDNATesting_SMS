@@ -1511,6 +1511,29 @@
         }
       }
     },
+    "/api/TestRequest/testrequest/request/{requestId}/pdf-result": {
+      "get": {
+        "tags": [
+          "TestRequest"
+        ],
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/TestResult": {
       "get": {
         "tags": [
