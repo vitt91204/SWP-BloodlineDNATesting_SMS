@@ -38,11 +38,7 @@ const navigation = [
     href: "/admin/customers",
     icon: Users
   },
-  {
-    name: "Đơn xét nghiệm",
-    href: "/admin/tests",
-    icon: FileText
-  },
+
   {
     name: "Lịch hẹn",
     href: "/admin/appointments",

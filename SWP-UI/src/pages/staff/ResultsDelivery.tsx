@@ -50,6 +50,7 @@ export default function ResultsDelivery() {
   const [loadingDetails, setLoadingDetails] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentStaffInfo, setCurrentStaffInfo] = useState<any>(null);
 
   // Helper function to get current staff ID from localStorage
   const getCurrentStaffId = (): number | null => {
@@ -111,7 +112,30 @@ export default function ResultsDelivery() {
       setLoading(true);
       setError(null);
       try {
-        const data = await testRequestAPI.getAll();
+        // Get current staff ID
+        const currentStaffId = getCurrentStaffId();
+        
+        // Load current staff info if available
+        if (currentStaffId) {
+          try {
+            const staffInfo = await staffAPI.getById(currentStaffId);
+            setCurrentStaffInfo(staffInfo);
+          } catch (error) {
+            console.error('Failed to load staff info:', error);
+          }
+        }
+        
+        let data;
+        if (currentStaffId) {
+          // Lấy test requests theo staff ID để đảm bảo bảo mật
+          console.log('Fetching test requests for staff ID:', currentStaffId);
+          data = await testRequestAPI.getByStaffId(currentStaffId);
+        } else {
+          // Fallback: lấy tất cả nếu không có staff ID (có thể là admin)
+          console.log('No staff ID found, fetching all test requests');
+          data = await testRequestAPI.getAll();
+        }
+        
         console.log('Raw test request data:', data);
         
         // Log the first item structure if available
@@ -132,7 +156,8 @@ export default function ResultsDelivery() {
         }) as TestResult) : [];
         setTestResults(mapped);
       } catch (err: any) {
-        setError('Không thể tải dữ liệu lịch hẹn');
+        console.error('Error fetching test requests:', err);
+        setError('Không thể tải dữ liệu lịch hẹn. Vui lòng kiểm tra kết nối và thử lại.');
       } finally {
         setLoading(false);
       }
@@ -380,10 +405,17 @@ export default function ResultsDelivery() {
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5" />
-            Trả kết quả xét nghiệm
-          </CardTitle>
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              Trả kết quả xét nghiệm
+            </CardTitle>
+            {currentStaffInfo && (
+              <p className="text-sm text-gray-600 mt-1">
+                Đang xem yêu cầu xét nghiệm của: {currentStaffInfo.fullName || currentStaffInfo.name || currentStaffInfo.username || `Staff ID: ${getCurrentStaffId()}`}
+              </p>
+            )}
+          </div>
           <div className="flex gap-2">
             <Button onClick={() => setIsUploadMode(!isUploadMode)}>
               <PlusCircle className="w-4 h-4 mr-2" />
@@ -606,7 +638,17 @@ export default function ResultsDelivery() {
               {testResults.length === 0 && (
                 <div className="text-center py-8">
                   <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">Không có kết quả xét nghiệm nào</p>
+                  <p className="text-gray-600">
+                    {getCurrentStaffId() 
+                      ? 'Không có yêu cầu xét nghiệm nào được gán cho bạn'
+                      : 'Không có kết quả xét nghiệm nào'
+                    }
+                  </p>
+                  {getCurrentStaffId() && (
+                    <p className="text-sm text-gray-500 mt-2">
+                      Liên hệ quản lý để được gán yêu cầu xét nghiệm
+                    </p>
+                  )}
                 </div>
               )}
             </div>

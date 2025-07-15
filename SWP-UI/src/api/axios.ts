@@ -867,8 +867,15 @@ export const subSampleAPI = {
 export const paymentAPI = {
   // Lấy tất cả thanh toán
   getAll: async () => {
-    const response = await api.get('/api/Payment');
-    return response.data;
+    try {
+      const response = await api.get('/api/Payment/all-payments');
+      return response.data;
+    } catch (error) {
+      // Fallback to original endpoint if all-payments doesn't work
+      console.log('all-payments endpoint failed, trying /api/Payment');
+      const response = await api.get('/api/Payment');
+      return response.data;
+    }
   },
 
   // Lấy thanh toán theo ID

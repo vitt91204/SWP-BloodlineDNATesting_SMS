@@ -24,7 +24,7 @@ import { Settings } from "@/pages/Settings";
 import { AdminLayout } from "@/layouts/AdminLayout";
 import { AdminDashboard } from "@/pages/admin/Dashboard";
 import Customers from "@/pages/admin/account/Customer";
-import Tests from "@/pages/admin/Tests";
+
 import Appointments from "@/pages/admin/Appointments";
 import TestServiceManagement from "@/pages/admin/TestServiceManagement";
 import TestKitManagement from "@/pages/admin/TestKitManagement";
@@ -87,7 +87,7 @@ function App() {
               <Route index element={<AdminDashboard />} />
               <Route path="customers" element={<Customers />} />
               <Route path="customers/:id" element={<CustomerProfile />} />
-              <Route path="tests" element={<Tests />} />
+
               <Route path="appointments" element={<Appointments />} />
               <Route path="test-services" element={<TestServiceManagement />} />
               <Route path="test-kits" element={<TestKitManagement />} />

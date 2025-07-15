@@ -37,7 +37,7 @@ import {
   RefreshCw,
   Filter
 } from "lucide-react";
-import { testRequestAPI, TestRequestResponse, userAPI } from "@/api/axios";
+import { testRequestAPI, TestRequestResponse, userAPI, paymentAPI } from "@/api/axios";
 import { useToast } from "@/components/ui/use-toast";
 
 const statusOptions = [
@@ -59,6 +59,7 @@ export const AppointmentsPage = () => {
   const { toast } = useToast();
   const [appointments, setAppointments] = useState<TestRequestResponse[]>([]);
   const [users, setUsers] = useState<any[]>([]);
+  const [payments, setPayments] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -82,6 +83,64 @@ export const AppointmentsPage = () => {
       console.error('Failed to fetch users:', err);
       // Don't show error toast for users fetch, just log it
     }
+  }, []);
+
+  // Function to fetch all payments
+  const fetchPayments = useCallback(async () => {
+    try {
+      console.log('Fetching all payments...');
+      const paymentData = await paymentAPI.getAll();
+      setPayments(Array.isArray(paymentData) ? paymentData : []);
+      console.log(`Successfully fetched ${Array.isArray(paymentData) ? paymentData.length : 0} payments`);
+      console.log('Sample payment data:', paymentData?.[0]);
+    } catch (err: any) {
+      console.error('Failed to fetch payments:', err);
+      // Don't show error toast for payments fetch, just log it
+    }
+  }, []);
+
+  // Function to find payment by request ID
+  const findPaymentByRequestId = useCallback((requestId: number) => {
+    console.log('Looking for payment with requestId:', requestId);
+    console.log('Available payments:', payments);
+    
+    const payment = payments.find(payment => {
+      console.log('Checking payment:', payment);
+      console.log('Payment requestId:', payment.requestId, 'Type:', typeof payment.requestId);
+      console.log('Looking for requestId:', requestId, 'Type:', typeof requestId);
+      
+      // Try different field names for request ID
+      const paymentRequestId = payment.requestId || payment.request_id || payment.id;
+      return paymentRequestId === requestId;
+    });
+    
+    console.log('Found payment:', payment);
+    return payment;
+  }, [payments]);
+
+  // Function to get payment amount for an appointment
+  const getPaymentAmount = useCallback((appointment: TestRequestResponse) => {
+    console.log('Getting payment amount for appointment:', appointment);
+    
+    // Try different field names for appointment ID
+    const appointmentId = appointment.requestId || appointment.id || appointment.testRequestId;
+    console.log('Appointment ID to match:', appointmentId);
+    
+    const payment = findPaymentByRequestId(appointmentId);
+    if (payment && payment.amount) {
+      console.log('Found payment amount:', payment.amount);
+      return payment.amount;
+    }
+    
+    console.log('No payment found, using service price:', appointment.service?.price);
+    // Fallback to service price if no payment found
+    return appointment.service?.price || 0;
+  }, [findPaymentByRequestId]);
+
+  // Function to format payment amount
+  const formatPaymentAmount = useCallback((amount: number) => {
+    if (!amount) return 'Chưa có';
+    return `${amount.toLocaleString('vi-VN')} VNĐ`;
   }, []);
 
   // Function to find user by ID
@@ -157,6 +216,10 @@ export const AppointmentsPage = () => {
       setAppointments(sortedData);
       console.log(`Successfully fetched ${sortedData.length} appointments`);
       console.log('Sample appointment data:', sortedData[0]);
+      console.log('Appointment field names:', sortedData[0] ? Object.keys(sortedData[0]) : []);
+      console.log('First appointment requestId:', sortedData[0]?.requestId);
+      console.log('First appointment id:', sortedData[0]?.id);
+      console.log('First appointment testRequestId:', sortedData[0]?.testRequestId);
       
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || err.message || "Không thể tải danh sách lịch hẹn. Vui lòng thử lại.";
@@ -178,13 +241,14 @@ export const AppointmentsPage = () => {
     setIsRefreshing(true);
     await Promise.all([
       fetchAppointments(),
-      fetchUsers()
+      fetchUsers(),
+      fetchPayments()
     ]);
     setIsRefreshing(false);
     
     toast({
       title: "Làm mới thành công",
-      description: "Dữ liệu lịch hẹn và người dùng đã được cập nhật.",
+      description: "Dữ liệu lịch hẹn, người dùng và thanh toán đã được cập nhật.",
     });
   };
 
@@ -192,9 +256,10 @@ export const AppointmentsPage = () => {
   useEffect(() => {
     Promise.all([
       fetchAppointments(),
-      fetchUsers()
+      fetchUsers(),
+      fetchPayments()
     ]);
-  }, [fetchAppointments, fetchUsers]);
+  }, [fetchAppointments, fetchUsers, fetchPayments]);
 
   // Hàm fetch appointment by ID
   const fetchAppointmentById = async (id: number) => {
@@ -406,7 +471,7 @@ export const AppointmentsPage = () => {
                 </div>
               </TableCell>
               <TableCell>
-                {appointment.service?.price ? `${appointment.service.price.toLocaleString('vi-VN')} VNĐ` : 'Chưa có'}
+                {formatPaymentAmount(getPaymentAmount(appointment))}
               </TableCell>
               <TableCell>{getStatusBadge(appointment.status)}</TableCell>
               <TableCell className="text-right">
@@ -448,6 +513,9 @@ export const AppointmentsPage = () => {
             </Badge>
             <Badge variant="outline">
               Users: {users.length}
+            </Badge>
+            <Badge variant="outline">
+              Payments: {payments.length}
             </Badge>
           </div>
         </div>
@@ -695,7 +763,8 @@ export const AppointmentsPage = () => {
                   <div className="space-y-2 text-sm">
                     <p><strong>Service ID:</strong> {selectedAppointment.serviceId}</p>
                     <p><strong>Dịch vụ:</strong> {selectedAppointment.service?.name || 'Chưa có thông tin'}</p>
-                    <p><strong>Giá:</strong> {selectedAppointment.service?.price ? `${selectedAppointment.service.price.toLocaleString('vi-VN')} VNĐ` : 'Chưa có thông tin'}</p>
+                    <p><strong>Giá dịch vụ:</strong> {selectedAppointment.service?.price ? `${selectedAppointment.service.price.toLocaleString('vi-VN')} VNĐ` : 'Chưa có thông tin'}</p>
+                    <p><strong>Số tiền thanh toán:</strong> {formatPaymentAmount(getPaymentAmount(selectedAppointment))}</p>
                     <p><strong>Loại hình:</strong> {getAppointmentTypeIcon(selectedAppointment.collectionType)}</p>
                   </div>
                 </div>

@@ -98,7 +98,7 @@ export default function TestResultDetail() {
       try {
         setLoading(true);
         setError(null);
-        const data = await testResultAPI.getCustomerResult(resultId || '');
+        const data = await testResultAPI.getCustomerResult(Number(resultId));
         setResult(data);
       } catch (err: any) {
         console.error("Error fetching result:", err);
