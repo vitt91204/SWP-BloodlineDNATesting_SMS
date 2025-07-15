@@ -3,6 +3,7 @@ using Services.TestResultDTO;
 using Repositories.Models;
 using Microsoft.AspNetCore.Http;
 using System.IO;
+using Org.BouncyCastle.Utilities;
 
 namespace Services
 {
@@ -69,7 +70,6 @@ namespace Services
                 await dto.PdfFile.CopyToAsync(ms);
                 base64String = Convert.ToBase64String(ms.ToArray());
             }
-
             var entity = new TestResult
             {
                 SampleId = dto.SampleId,

@@ -66,9 +66,44 @@ namespace Services
         }
        
 
-        public async Task<IEnumerable<TestRequest>> GetTestRequestsByUserIdAsync(int userId)
+        public async Task<IEnumerable<RequestDetailsDto>> GetTestRequestsByUserIdAsync(int userId)
         {
-            return await testRequestReposity.GetRequestsByUserIdAsync(userId);
+            var requests = await testRequestReposity.GetRequestsByUserIdAsync(userId);
+
+            if (requests == null || !requests.Any())
+            {
+                throw new KeyNotFoundException($"No test requests found for staff ID {userId}.");
+            }
+
+            List<RequestDetailsDto> requestDetails = new List<RequestDetailsDto>();
+
+            foreach (var request in requests)
+            {
+                var user = await userRepository.GetByIdAsync(request.UserId);
+                var service = await serviceRepository.GetByIdAsync(request.ServiceId);
+                Sample sample = await sampleRepository.GetSampleByRequestidAsync(request.RequestId);
+                List<SubSample>? subSamples = null;
+                if (sample != null)
+                {
+                    subSamples = await subSampleRepository.GetSubSamplesBySampleIdAsync(sample.SampleId);
+                }
+                requestDetails.Add(new RequestDetailsDto
+                {
+                    RequestId = request.RequestId,
+                    UserFullName = user.FullName,
+                    ServiceName = service.Name,
+                    UserId = request.UserId,
+                    ServiceId = request.ServiceId,
+                    CollectionType = request.CollectionType,
+                    Status = request.Status,
+                    AppointmentDate = request.AppointmentDate,
+                    SlotTime = request.SlotTime,
+                    StaffId = request.StaffId,
+                    Sample = sample ?? null,
+                    SubSamples = subSamples ?? null
+                });
+            }
+            return requestDetails;
         }
 
         public async Task<IEnumerable<RequestDetailsDto>> GetTestRequestsByStaffIdAsync(int staffId)
@@ -94,6 +129,7 @@ namespace Services
                 }
                 requestDetails.Add(new RequestDetailsDto
                 {
+                    RequestId = request.RequestId,
                     UserFullName = user.FullName,
                     ServiceName = service.Name,
                     UserId = request.UserId,

@@ -896,6 +896,22 @@
   },
   {
     "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
+    "Method": "GetRequestPdfResult",
+    "RelativePath": "api/TestRequest/{requestId}/pdf-result",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
     "Method": "CreateTestRequest",
     "RelativePath": "api/TestRequest/api/testrequest",
     "HttpMethod": "POST",
@@ -949,40 +965,8 @@
   },
   {
     "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
-    "Method": "GetRequestPdfResult",
-    "RelativePath": "api/TestRequest/testrequest/request/{requestId}/pdf-result",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "requestId",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
     "Method": "GetTestRequestByUserId",
     "RelativePath": "api/TestRequest/user/{userId}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "userId",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
-    "Method": "GetUserTestServiceNames",
-    "RelativePath": "api/TestRequest/user/{userId}/service-names",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,

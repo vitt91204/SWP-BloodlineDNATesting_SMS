@@ -13,7 +13,7 @@ namespace Services.TestRequestDTO
         public string UserFullName { get; set; } = string.Empty;
         public string ServiceName { get; set; } = string.Empty;
 
-
+        public int RequestId { get; set; }
         public int UserId { get; set; }
 
         [Required]

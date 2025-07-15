@@ -126,29 +126,29 @@ namespace DNAServicesSystemAPI.Controllers
             return Ok(testRequest);
         }
 
-        [HttpGet]
-        [Route("user/{userId:int}/service-names")]
-        public async Task<IActionResult> GetUserTestServiceNames(int userId)
-        {
-            var testRequests = await testRequestService.GetTestRequestsByUserIdAsync(userId);
+        //[HttpGet]
+        //[Route("user/{userId:int}/service-names")]
+        //public async Task<IActionResult> GetUserTestServiceNames(int userId)
+        //{
+        //    var testRequests = await testRequestService.GetTestRequestsByUserIdAsync(userId);
 
-            var testServiceService = new TestServiceService();
-            var serviceNames = new List<string>();
+        //    var testServiceService = new TestServiceService();
+        //    var serviceNames = new List<string>();
 
-            foreach (var req in testRequests)
-            {
-                var name = req.Service?.Name;
-                if (string.IsNullOrEmpty(name))
-                {
-                    var service = await testServiceService.GetTestingServiceByIdAsync(req.ServiceId);
-                    name = service?.Name;
-                }
-                if (!string.IsNullOrEmpty(name))
-                    serviceNames.Add(name);
-            }
+        //    foreach (var req in testRequests)
+        //    {
+        //        var name = req.Service?.Name;
+        //        if (string.IsNullOrEmpty(name))
+        //        {
+        //            var service = await testServiceService.GetTestingServiceByIdAsync(req.ServiceId);
+        //            name = service?.Name;
+        //        }
+        //        if (!string.IsNullOrEmpty(name))
+        //            serviceNames.Add(name);
+        //    }
 
-            return Ok(serviceNames);
-        }
+        //    return Ok(serviceNames);
+        //}
 
         [HttpGet("{requestId}/pdf-result")]
         public async Task<IActionResult> GetRequestPdfResult(

@@ -1488,30 +1488,7 @@
         }
       }
     },
-    "/api/TestRequest/user/{userId}/service-names": {
-      "get": {
-        "tags": [
-          "TestRequest"
-        ],
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/TestRequest/testrequest/request/{requestId}/pdf-result": {
+    "/api/TestRequest/{requestId}/pdf-result": {
       "get": {
         "tags": [
           "TestRequest"
