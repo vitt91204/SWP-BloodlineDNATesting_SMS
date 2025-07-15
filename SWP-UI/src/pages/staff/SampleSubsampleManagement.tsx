@@ -23,50 +23,35 @@ import { testRequestAPI, sampleAPI, subSampleAPI, userAPI } from '@/api/axios';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface TestRequest {
-  requestId: number;
+  requestId?: number;
   userId: number;
   serviceId: number;
   collectionType: string;
   status: string;
   appointmentDate: string;
   slotTime: string;
-  createdAt: string;
+  createdAt?: string;
   staffId: number | null;
-  addressId: number | null;
-  feedbacks: any[];
-  payments: any[];
-  samples: any[];
-  service: {
-    serviceId: number;
-    name: string;
-    description: string;
-    price: number;
-    isActive: boolean;
-    testKit: any;
-  } | null;
-  address: {
-    addressId: number;
-    street: string;
-    city: string;
-    state: string;
-    country: string;
-    postalCode: string;
-  } | null;
-  user: {
-    userId: number;
-    username: string;
-    fullName: string;
-    email: string;
-    phone: string;
-    dateOfBirth: string;
-    gender: string;
-    role: string;
-  } | null;
+  addressId?: number | null;
+  feedbacks?: any[];
+  payments?: any[];
+  samples?: any[];
+  // Direct fields from API response
+  userFullName: string;
+  serviceName: string;
+  sample?: any | null;
+  subSamples?: any[] | null;
+  // Legacy fields for backward compatibility
+  id?: number;
+  testRequestId?: number;
+  user?: any | null;
+  service?: any | null;
+  address?: any | null;
 }
 
 interface Sample {
-  sampleId: number;
-  requestId: number;
+  sampleId: number; // Primary field - backend expects this
+  testRequestId: number; // Changed from requestId to testRequestId to avoid conflict
   collectedBy: number;
   collectionTime: string;
   receivedTime: string | null;
@@ -77,27 +62,29 @@ interface Sample {
   request: any | null;
   subSamples: any[];
   testResults: any[];
-  // Legacy properties for backward compatibility
+  // Legacy properties for backward compatibility (these should not be used for API calls)
   id?: number;
-  sample_id?: number;
+  sample_id?: number; // Legacy field - DO NOT USE for API calls
+  requestId?: number; // Keep for backward compatibility
   request_id?: number;
   collected_by?: number;
   collection_time?: string;
   received_time?: string;
   customer_name?: string;
   service_name?: string;
+  _customerNameLookupAttempted?: boolean; // Added for debugging
 }
 
 interface SubSample {
-  sampleId: number;
+  sampleId: number; // Primary field - backend expects this
   description: string;
   createdAt: string;
   fullName: string;
   dateOfBirth: string;
   sampleType: string;
-  // Legacy fields for backward compatibility
+  // Legacy fields for backward compatibility (these should not be used for API calls)
   id?: number;
-  sample_id?: number;
+  sample_id?: number; // Legacy field - DO NOT USE for API calls
   created_at?: string;
 }
 
@@ -134,7 +121,7 @@ export default function SampleSubsampleManagement() {
     sampleType: ''
   });
 
-  const [users, setUsers] = useState<any[]>([]);
+
 
   // Get staff ID from localStorage (ưu tiên userId, sau đó id)
   let staffId: number | null = null;
@@ -148,6 +135,69 @@ export default function SampleSubsampleManagement() {
     staffId = null;
   }
 
+  // Helper function to refresh test requests specifically
+  const refreshTestRequests = async () => {
+    if (!staffId) {
+      console.warn('No staff ID available for refreshing test requests');
+      return;
+    }
+    
+    try {
+      const staffRequests = await testRequestAPI.getByStaffId(staffId);
+      
+      if (Array.isArray(staffRequests)) {
+        const validRequests = staffRequests.map(request => {
+          const processedRequest = {
+            ...request,
+            // API returns requestId directly, no need for fallbacks
+            requestId: request.requestId,
+            userId: request.userId,
+            serviceId: request.serviceId,
+            status: request.status || 'Pending',
+            appointmentDate: request.appointmentDate || request.createdAt?.split('T')[0] || '',
+            slotTime: request.slotTime || '',
+            collectionType: request.collectionType || 'At Clinic',
+            // Direct fields from API response
+            userFullName: request.userFullName || 'Không có tên',
+            serviceName: request.serviceName || 'Chưa xác định',
+            staffId: request.staffId || staffId,
+            sample: request.sample || null,
+            subSamples: request.subSamples || null
+          };
+          
+          return processedRequest;
+        });
+        
+        setTestRequests(validRequests);
+      } else {
+        console.warn('Refreshed test requests data is not an array:', staffRequests);
+        setTestRequests([]);
+      }
+    } catch (error) {
+      console.error('Error refreshing test requests:', error);
+      setError('Không thể làm mới danh sách yêu cầu xét nghiệm');
+    }
+  };
+
+  // Helper function to get customer display name directly from test request
+  const getCustomerDisplayNameFromRequest = (request: TestRequest) => {
+    return request.userFullName || `User ${request.userId}`;
+  };
+
+  // Helper function to get service display name directly from test request
+  const getServiceDisplayNameFromRequest = (request: TestRequest) => {
+    return request.serviceName || 'Chưa xác định';
+  };
+
+  // Helper function to get detailed customer info for display
+  const getCustomerDetailedInfo = (request: TestRequest) => {
+    return {
+      name: request.userFullName || `User ${request.userId}`,
+      email: 'Thông tin từ API TestRequest', // API này không trả về email
+      phone: 'Thông tin từ API TestRequest'  // API này không trả về phone
+    };
+  };
+
   // Fetch data
   useEffect(() => {
     fetchData();
@@ -157,17 +207,6 @@ export default function SampleSubsampleManagement() {
     try {
       setLoading(true);
       setError(null);
-      console.log('Fetching data for staff ID:', staffId);
-      
-      // Fetch users
-      try {
-        const userList = await userAPI.getAllUsers();
-        setUsers(Array.isArray(userList) ? userList : []);
-        console.log('Users fetched successfully:', userList?.length || 0);
-      } catch (err) {
-        console.error('Error fetching users:', err);
-        setUsers([]);
-      }
       
       if (!staffId) {
         console.warn('No staff ID found, clearing data');
@@ -178,25 +217,54 @@ export default function SampleSubsampleManagement() {
         return;
       }
       
-      // Fetch test requests assigned to this staff
+      // Fetch test requests assigned to this staff - ONLY API call needed
       try {
         const staffRequests = await testRequestAPI.getByStaffId(staffId);
-        console.log('Test requests for staff:', staffRequests);
-        setTestRequests(Array.isArray(staffRequests) ? staffRequests : []);
+        
+        if (Array.isArray(staffRequests)) {
+          // Process test requests with direct fields from API
+          const validRequests = staffRequests.map(request => {
+            const processedRequest = {
+              ...request,
+              // API returns requestId directly, no need for fallbacks
+              requestId: request.requestId,
+              userId: request.userId,
+              serviceId: request.serviceId,
+              status: request.status || 'Pending',
+              appointmentDate: request.appointmentDate || request.createdAt?.split('T')[0] || '',
+              slotTime: request.slotTime || '',
+              collectionType: request.collectionType || 'At Clinic',
+              // Direct fields from API response
+              userFullName: request.userFullName || 'Không có tên',
+              serviceName: request.serviceName || 'Chưa xác định',
+              staffId: request.staffId || staffId,
+              sample: request.sample || null,
+              subSamples: request.subSamples || null
+            };
+            
+            return processedRequest;
+          });
+          
+          setTestRequests(validRequests);
+        } else {
+          console.warn('Test requests data is not an array:', staffRequests);
+          setTestRequests([]);
+        }
       } catch (err) {
         console.error('Error fetching test requests:', err);
+        setError('Không thể tải danh sách yêu cầu xét nghiệm');
         setTestRequests([]);
       }
       
       // Fetch all samples
       try {
         const samplesData = await sampleAPI.getAll();
-        console.log('Raw samples data from API:', samplesData);
         
         // Validate samples data structure
         if (Array.isArray(samplesData)) {
           const validSamples = samplesData.filter(sample => {
-            const hasValidId = sample.sampleId || sample.sample_id || sample.id;
+            // Prioritize sampleId (backend field) over legacy fields
+            const hasValidId = sample.sampleId || sample.id || sample.sample_id;
             if (!hasValidId) {
               console.warn('Sample missing valid ID:', sample);
             }
@@ -204,10 +272,6 @@ export default function SampleSubsampleManagement() {
           });
           
           setSamples(validSamples);
-          console.log('Valid samples set:', validSamples.length);
-          if (validSamples.length > 0) {
-            console.log('Sample structure example:', validSamples[0]);
-          }
         } else {
           console.warn('Samples data is not an array:', samplesData);
           setSamples([]);
@@ -220,7 +284,6 @@ export default function SampleSubsampleManagement() {
       // Fetch all subsamples
       try {
         const subSamplesData = await subSampleAPI.getAll();
-        console.log('SubSamples data:', subSamplesData);
         setSubSamples(Array.isArray(subSamplesData) ? subSamplesData : []);
       } catch (err) {
         console.error('Error fetching subsamples:', err);
@@ -267,22 +330,36 @@ export default function SampleSubsampleManagement() {
       return;
     }
     
+    // Get requestId from the selected request - API returns requestId directly
+    const requestId = selectedRequest.requestId;
+    
+    // Validate requestId exists and is valid
+    if (!requestId || requestId <= 0) {
+      alert('Lỗi: Không tìm thấy ID yêu cầu xét nghiệm hợp lệ. Vui lòng chọn lại yêu cầu.');
+      console.error('Invalid requestId:', requestId);
+      console.error('Selected request object:', selectedRequest);
+      console.error('Available properties:', Object.keys(selectedRequest));
+      return;
+    }
+    
     try {
+      // Prepare sample data according to API specification
       const sampleData = {
-        requestId: selectedRequest.requestId,
+        requestId: requestId,
         collectedBy: staffId,
-        collectionTime: sampleForm.collection_time ? new Date(sampleForm.collection_time).toISOString() : new Date().toISOString(),
-        receivedTime: sampleForm.received_time ? new Date(sampleForm.received_time).toISOString() : null,
+        collectionTime: sampleForm.collection_time 
+          ? new Date(sampleForm.collection_time).toISOString() 
+          : new Date().toISOString(),
+        receivedTime: sampleForm.received_time 
+          ? new Date(sampleForm.received_time).toISOString() 
+          : null,
         status: sampleForm.status,
         relationship: sampleForm.relationship || '',
         sampleType: sampleForm.sampleType || ''
       };
       
-      console.log('Creating sample with data:', sampleData);
-      console.log('API endpoint: POST /api/Sample');
-      
+      // Call the API using sampleAPI.create
       const response = await sampleAPI.create(sampleData);
-      console.log('Sample created successfully:', response);
       
       // Refresh data
       await fetchData();
@@ -299,13 +376,14 @@ export default function SampleSubsampleManagement() {
       setSelectedRequest(null);
       
       alert('Tạo mẫu thành công!');
+      
+      // Auto-refresh test requests after creating sample
+      setTimeout(() => {
+        refreshTestRequests();
+      }, 500);
+      
     } catch (err: any) {
       console.error('Error creating sample:', err);
-      console.error('Request data that failed:', {
-        requestId: selectedRequest.requestId,
-        collectedBy: staffId,
-        status: sampleForm.status
-      });
       
       let errorMessage = 'Lỗi tạo mẫu';
       if (err.response?.data?.message) {
@@ -340,39 +418,47 @@ export default function SampleSubsampleManagement() {
       // Verify that the sample exists and get the correct ID
       let sampleId: number;
       
-      // Handle different possible property names for sample ID (prioritize API response format)
+      // Handle different possible property names for sample ID (prioritize sampleId for backend)
       if (selectedSample.sampleId) {
         sampleId = selectedSample.sampleId;
-      } else if (selectedSample.sample_id) {
-        sampleId = selectedSample.sample_id;
       } else if (selectedSample.id) {
         sampleId = selectedSample.id;
+      } else if (selectedSample.sample_id) {
+        sampleId = selectedSample.sample_id;
       } else {
         throw new Error('Không tìm thấy ID của mẫu gốc');
       }
 
-      console.log('Creating subsample for sample ID:', sampleId);
-      console.log('Selected sample info:', selectedSample);
-
       // Verify the sample exists by fetching it first
       try {
         await sampleAPI.getById(sampleId);
-        console.log('Sample exists in database');
       } catch (error) {
         console.error('Sample verification failed:', error);
         throw new Error('Mẫu gốc không tồn tại trong hệ thống. Vui lòng làm mới trang và thử lại.');
       }
       
-      const subSampleData = {
+      // Debug: Log the data being sent to ensure sampleId is correct
+      console.log('=== SUBSAMPLE CREATION DEBUG ===');
+      console.log('Selected sample:', selectedSample);
+      console.log('Extracted sampleId:', sampleId);
+      console.log('SubSample data to be sent:', {
         sampleId: sampleId,
         description: subSampleForm.description.trim(),
         createdAt: subSampleForm.createdAt ? new Date(subSampleForm.createdAt).toISOString() : new Date().toISOString(),
         fullName: subSampleForm.fullName.trim() || undefined,
         dateOfBirth: subSampleForm.dateOfBirth || undefined,
         sampleType: subSampleForm.sampleType.trim() || undefined
-      };
+      });
+      console.log('=== END DEBUG ===');
       
-      console.log('Creating subsample with data:', subSampleData);
+      const subSampleData = {
+        sampleId: sampleId, // Ensure this is sampleId, not sample_id
+        description: subSampleForm.description.trim(),
+        createdAt: subSampleForm.createdAt ? new Date(subSampleForm.createdAt).toISOString() : new Date().toISOString(),
+        fullName: subSampleForm.fullName.trim() || undefined,
+        dateOfBirth: subSampleForm.dateOfBirth || undefined,
+        sampleType: subSampleForm.sampleType.trim() || undefined
+      };
       
       await subSampleAPI.create(subSampleData);
       
@@ -393,12 +479,6 @@ export default function SampleSubsampleManagement() {
       alert('Tạo mẫu con thành công!');
     } catch (err: any) {
       console.error('Error creating subsample:', err);
-      console.error('Error details:', {
-        message: err.message,
-        response: err.response?.data,
-        status: err.response?.status,
-        statusText: err.response?.statusText
-      });
       
       // Hiển thị thông báo lỗi chi tiết hơn
       let errorMessage = 'Lỗi tạo mẫu con';
@@ -421,9 +501,9 @@ export default function SampleSubsampleManagement() {
 
   const filteredRequests = testRequests.filter(request => {
     const matchesSearch = 
-      request.user?.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      request.userFullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (request.requestId ? request.requestId.toString() : "").includes(searchTerm) ||
-      request.service?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+      request.serviceName?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || request.status === statusFilter;
     
@@ -431,11 +511,11 @@ export default function SampleSubsampleManagement() {
   });
 
   const filteredSamples = samples.filter(sample => {
-    // Allow searching by multiple possible identifiers using correct API property names
-    const sampleId = sample.sampleId || sample.sample_id || sample.id || '';
+    // Allow searching by multiple possible identifiers (prioritize sampleId for backend)
+    const sampleId = sample.sampleId || sample.id || sample.sample_id || '';
     const customerName = sample.customer_name || '';
     const serviceName = sample.service_name || '';
-    const requestId = sample.requestId || sample.request_id || '';
+    const requestId = sample.testRequestId || sample.requestId || sample.request_id || '';
     
     const matchesSearch = searchTerm === '' || 
       customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -452,28 +532,59 @@ export default function SampleSubsampleManagement() {
 
   // Helper function to get display name for customer
   const getCustomerDisplayName = (sample: Sample) => {
-    if (sample.customer_name) return sample.customer_name;
+    // 1. Check if sample has direct customer_name
+    if (sample.customer_name) {
+      return sample.customer_name;
+    }
     
-    // Try to get name from collectedBy (using correct property name)
+    // 2. Try to get name from collectedBy (using correct property name)
     const collectedById = sample.collectedBy || sample.collected_by;
     if (collectedById) {
-      const collector = users.find(u => u.userId === collectedById || u.id === collectedById);
-      if (collector) return collector.fullName || collector.username;
+      // Since we don't have users array anymore, we'll use a fallback
+      return `Collector ${collectedById}`;
     }
     
-    // Try to get name from request if available in testRequests
-    const requestId = sample.requestId || sample.request_id;
+    // 3. Try to get name from request if available in testRequests
+    const requestId = sample.testRequestId || sample.requestId || sample.request_id;
     if (requestId) {
-      const request = testRequests.find(r => r.requestId === requestId);
-      if (request?.user?.fullName) return request.user.fullName;
+      const request = testRequests.find(r => {
+        const rId = r.requestId || r.id || r.testRequestId;
+        return String(rId) === String(requestId);
+      });
+      
+      if (request) {
+        if (request.user?.fullName) {
+          return request.user.fullName;
+        }
+        if (request.user?.username) {
+          return request.user.username;
+        }
+      }
     }
     
-    // Try to get from embedded request object if available
+    // 4. Try to get from embedded request object if available
     if (sample.request?.user?.fullName) {
       return sample.request.user.fullName;
     }
     
-    const sampleId = sample.sampleId || sample.sample_id || sample.id;
+    // 5. Try to get user info by userId if available in the sample
+    if (sample.request?.userId) {
+      // Since we don't have users array anymore, we'll use a fallback
+      return `User ${sample.request.userId}`;
+    }
+    
+    // 6. Fallback: try to get user info from the requestId by making an API call
+    // This is a more expensive operation, so we'll add a flag to prevent infinite loops
+    if (requestId && !sample._customerNameLookupAttempted) {
+      // Mark this sample as attempted to prevent infinite loops
+      sample._customerNameLookupAttempted = true;
+      
+      // We'll return a temporary value and let the component handle the async lookup
+      return `Đang tải... (YC${requestId})`;
+    }
+    
+    // 7. Final fallback (prioritize sampleId for backend)
+    const sampleId = sample.sampleId || sample.id || sample.sample_id;
     return `Mẫu ${sampleId}`;
   };
 
@@ -482,7 +593,7 @@ export default function SampleSubsampleManagement() {
     if (sample.service_name) return sample.service_name;
     
     // Try to get service from request if available in testRequests
-    const requestId = sample.requestId || sample.request_id;
+    const requestId = sample.testRequestId || sample.requestId || sample.request_id;
     if (requestId) {
       const request = testRequests.find(r => r.requestId === requestId);
       if (request?.service?.name) return request.service.name;
@@ -510,11 +621,7 @@ export default function SampleSubsampleManagement() {
     }
   };
 
-  // Helper để lấy tên khách hàng từ userId
-  const getUserName = (userId: number) => {
-    const user = users.find(u => u.userId === userId || u.id === userId);
-    return user?.fullName || user?.username || `User ${userId}`;
-  };
+
 
   if (loading) {
     return (
@@ -546,6 +653,29 @@ export default function SampleSubsampleManagement() {
           </CardTitle>
           <div className="text-sm text-gray-600">
             Staff ID: {staffId} | Số yêu cầu: {testRequests.length} | Số mẫu: {samples.length} | Số mẫu con: {subSamples.length}
+          </div>
+          <div className="flex gap-2 mt-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={refreshTestRequests}
+              className="text-green-600 border-green-300 hover:bg-green-50"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Refresh Test Requests
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                setLoading(true);
+                fetchData();
+              }}
+              disabled={loading}
+            >
+              <Package className="w-4 h-4 mr-2" />
+              Refresh All Data
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -617,8 +747,15 @@ export default function SampleSubsampleManagement() {
                     {filteredRequests.map((request, index) => (
                       <TableRow key={request.requestId || `request-${index}`}>
                         <TableCell className="font-medium">YC{request.requestId}</TableCell>
-                        <TableCell>{getUserName(request.userId)}</TableCell>
-                        <TableCell>{request.service?.name || 'Chưa xác định'}</TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{request.userFullName}</div>
+                            <div className="text-xs text-gray-500">
+                              User ID: {request.userId}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{request.serviceName}</TableCell>
                         <TableCell>{getCollectionTypeVN(request.collectionType)}</TableCell>
                         <TableCell>
                           <div className="text-sm">
@@ -670,8 +807,8 @@ export default function SampleSubsampleManagement() {
                   </TableHeader>
                   <TableBody>
                     {filteredSamples.map((sample, index) => {
-                      const sampleId = sample.sampleId || sample.sample_id || sample.id;
-                      const requestId = sample.requestId || sample.request_id;
+                      const sampleId = sample.sampleId || sample.id || sample.sample_id;
+                      const requestId = sample.testRequestId || sample.requestId || sample.request_id;
                       const collectionTime = sample.collectionTime || sample.collection_time;
                       const receivedTime = sample.receivedTime || sample.received_time;
                       
@@ -679,7 +816,16 @@ export default function SampleSubsampleManagement() {
                         <TableRow key={sampleId || `sample-${index}`}>
                           <TableCell className="font-medium">SP{sampleId}</TableCell>
                           <TableCell>YC{requestId}</TableCell>
-                          <TableCell>{getCustomerDisplayName(sample)}</TableCell>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{getCustomerDisplayName(sample)}</div>
+                              {!sample.customer_name && (
+                                <div className="text-xs text-gray-500">
+                                  RequestId: {requestId} | SampleId: {sampleId}
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
                           <TableCell>{getServiceDisplayName(sample)}</TableCell>
                           <TableCell>{collectionTime ? new Date(collectionTime).toLocaleDateString('vi-VN') : 'Chưa thu'}</TableCell>
                           <TableCell>{receivedTime ? new Date(receivedTime).toLocaleDateString('vi-VN') : 'Chưa nhận'}</TableCell>
@@ -726,8 +872,8 @@ export default function SampleSubsampleManagement() {
                   </TableHeader>
                   <TableBody>
                     {subSamples.map((subSample, index) => (
-                      <TableRow key={subSample.sampleId || subSample.sample_id || subSample.id || `subsample-${index}`}>
-                        <TableCell>SP{subSample.sampleId || subSample.sample_id}</TableCell>
+                      <TableRow key={subSample.sampleId || subSample.id || subSample.sample_id || `subsample-${index}`}>
+                        <TableCell>SP{subSample.sampleId || subSample.id || subSample.sample_id}</TableCell>
                         <TableCell>{subSample.description}</TableCell>
                         <TableCell>{new Date(subSample.createdAt || subSample.created_at).toLocaleDateString('vi-VN')}</TableCell>
                         <TableCell>{subSample.fullName}</TableCell>
@@ -859,7 +1005,7 @@ export default function SampleSubsampleManagement() {
           <DialogHeader>
             <DialogTitle>Tạo mẫu con</DialogTitle>
             <DialogDescription>
-              Tạo mẫu con cho mẫu SP{selectedSample?.sampleId || selectedSample?.sample_id || selectedSample?.id}
+              Tạo mẫu con cho mẫu SP{selectedSample?.sampleId || selectedSample?.id || selectedSample?.sample_id}
             </DialogDescription>
           </DialogHeader>
           

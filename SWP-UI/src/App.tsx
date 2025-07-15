@@ -22,7 +22,7 @@ import { Settings } from "@/pages/Settings";
 
 // Admin pages
 import { AdminLayout } from "@/layouts/AdminLayout";
-import { AdminDashboard } from "@/pages/admin/Dashboard";
+import DashboardWithCharts from "@/pages/admin/DashboardWithCharts";
 import Customers from "@/pages/admin/account/Customer";
 
 import Appointments from "@/pages/admin/Appointments";
@@ -84,7 +84,8 @@ function App() {
 
             {/* Admin routes */}
             <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<AdminDashboard />} />
+              <Route index element={<DashboardWithCharts />} />
+              <Route path="analytics" element={<DashboardWithCharts />} />
               <Route path="customers" element={<Customers />} />
               <Route path="customers/:id" element={<CustomerProfile />} />
 

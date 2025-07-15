@@ -17,6 +17,13 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Don't override Content-Type for FormData (file uploads)
+    // Let browser set multipart/form-data automatically
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+    
     return config;
   },
   (error) => {
@@ -587,11 +594,41 @@ export const sampleAPI = {
   },
 
   // Tạo mẫu mới
-  create: async (sampleData: any) => {
-    // Chấp nhận object linh hoạt từ FE, truyền thẳng lên backend
-    // Nếu cần map lại, FE sẽ tự xử lý
-    console.log('Sending sample creation request:', sampleData);
-    const response = await api.post('/api/Sample', sampleData);
+  create: async (sampleData: {
+    requestId: number;
+    collectedBy: number;
+    collectionTime: string;
+    receivedTime: string | null;
+    status: string;
+    relationship: string;
+    sampleType: string;
+  }) => {
+    console.log('Creating sample with data:', sampleData);
+    console.log('API endpoint: POST /api/Sample');
+    
+    // Ensure all required fields are present
+    if (!sampleData.requestId || !sampleData.collectedBy) {
+      throw new Error('requestId and collectedBy are required fields');
+    }
+    
+    // Map fields to match database schema exactly
+    const mappedData = {
+      requestId: sampleData.requestId,        // Maps to request_id in Sample table
+      collectedBy: sampleData.collectedBy,    // Maps to collected_by in Sample table
+      collectionTime: sampleData.collectionTime,
+      receivedTime: sampleData.receivedTime,
+      status: sampleData.status,
+      relationship: sampleData.relationship,
+      sampleType: sampleData.sampleType
+    };
+    
+    console.log('Mapped data for API:', mappedData);
+    
+    const response = await api.post('/api/Sample', mappedData);
+    console.log('Sample creation response:', response.data);
+    console.log('Sample creation response status:', response.status);
+    console.log('Sample creation response headers:', response.headers);
+    console.log('Sample creation full response:', response);
     return response.data;
   },
 
@@ -615,6 +652,8 @@ export const sampleAPI = {
   },
 
   // Lấy mẫu theo request ID
+  // ⚠️ Note: This endpoint may not be implemented on the backend yet
+  // Use getAll() and filter by requestId as a fallback
   getByRequestId: async (requestId: number) => {
     const response = await api.get(`/api/Sample/request/${requestId}`);
     return response.data;
@@ -667,7 +706,8 @@ export const testResultAPI = {
     
     const response = await api.post('/api/TestResult/create-with-pdf', formData, {
       headers: {
-        // Không set Content-Type, để browser tự động set với boundary
+        // Explicitly remove Content-Type to let browser set multipart/form-data
+        'Content-Type': undefined,
       },
     });
     console.log('API response:', response);
@@ -960,24 +1000,59 @@ export const staffAPI = {
 // API cho Report (Dashboard)
 export const reportAPI = {
   getMonthlyRevenue: async (month: number, year: number) => {
-    const response = await api.get(`/monthly-revenue?month=${month}&year=${year}`);
-    return response.data;
+    try {
+      console.log(`Fetching monthly revenue for ${month}/${year}`);
+      const response = await api.get(`/api/Reports/monthly-revenue?month=${month}&year=${year}`);
+      console.log('Monthly revenue response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching monthly revenue:', error);
+      throw error;
+    }
   },
   getThisMonthPayments: async (month: number, year: number) => {
-    const response = await api.get(`/this-month-payments?month=${month}&year=${year}`);
-    return response.data;
+    try {
+      console.log(`Fetching this month payments for ${month}/${year}`);
+      const response = await api.get(`/api/Reports/this-month-payments?month=${month}&year=${year}`);
+      console.log('This month payments response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching this month payments:', error);
+      throw error;
+    }
   },
   getThisMonthRequests: async (month: number, year: number) => {
-    const response = await api.get(`/this-month-requests?month=${month}&year=${year}`);
-    return response.data;
+    try {
+      console.log(`Fetching this month requests for ${month}/${year}`);
+      const response = await api.get(`/api/Reports/this-month-requests?month=${month}&year=${year}`);
+      console.log('This month requests response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching this month requests:', error);
+      throw error;
+    }
   },
   getMonthlyRequests: async (month: number, year: number) => {
-    const response = await api.get(`/monthly-requests?month=${month}&year=${year}`);
-    return response.data;
+    try {
+      console.log(`Fetching monthly requests for ${month}/${year}`);
+      const response = await api.get(`/api/Reports/monthly-requests?month=${month}&year=${year}`);
+      console.log('Monthly requests response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching monthly requests:', error);
+      throw error;
+    }
   },
-  getDailyRequests: async (month: number, year: number) => {
-    const response = await api.get(`/daily-requests?month=${month}&year=${year}`);
-    return response.data;
+  getDailyRequests: async (month: number, year: number, day: number) => {
+    try {
+      console.log(`Fetching daily requests for ${day}/${month}/${year}`);
+      const response = await api.get(`/api/Reports/daily-requests?month=${month}&year=${year}&day=${day}`);
+      console.log('Daily requests response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching daily requests:', error);
+      throw error;
+    }
   },
 };
 

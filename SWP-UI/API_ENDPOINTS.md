@@ -64,7 +64,7 @@ Các API endpoints đã được cập nhật để phù hợp với cấu trúc
 // PUT /api/Sample/{id} - Cập nhật mẫu
 // DELETE /api/Sample/{id} - Xóa mẫu
 // PATCH /api/Sample/{id}/status - Cập nhật trạng thái mẫu
-// GET /api/Sample/request/{requestId} - Lấy mẫu theo request ID
+// GET /api/Sample/request/{requestId} - Lấy mẫu theo request ID (⚠️ Có thể chưa được implement)
 // GET /api/Sample/stats - Thống kê mẫu
 ```
 

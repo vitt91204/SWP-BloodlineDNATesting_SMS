@@ -23,6 +23,7 @@ import {
   TestTube,
   BarChart3,
   Microscope,
+  TrendingUp,
 } from "lucide-react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -34,11 +35,15 @@ const navigation = [
     icon: LayoutDashboard
   },
   {
+    name: "Analytics",
+    href: "/admin/analytics",
+    icon: TrendingUp
+  },
+  {
     name: "Khách hàng",
     href: "/admin/customers",
     icon: Users
   },
-
   {
     name: "Lịch hẹn",
     href: "/admin/appointments",
@@ -54,7 +59,6 @@ const navigation = [
     href: "/admin/test-results",
     icon: BarChart3
   },
- 
   {
     name: "Quản lý loại dịch vụ",
     href: "/admin/test-services",
