@@ -6,6 +6,9 @@ import { Users, UserCheck } from 'lucide-react';
 import CustomerList from './CustomerList';
 import StaffList from './StaffList';
 import UserEditDialog from './UserEditDialog';
+import AdminList from './AdminList';
+import ManagerList from './ManagerList';
+import { Briefcase, Shield } from 'lucide-react';
 
 interface Customer {
   userId: number;
@@ -34,6 +37,25 @@ interface EditUserData {
   role: string;
 }
 
+interface Manager {
+  userId: number;
+  username: string;
+  email: string;
+  phone: string;
+  role: string;
+  createdAt: string;
+  updatedAt: string;
+}
+interface Admin {
+  userId: number;
+  username: string;
+  email: string;
+  phone: string;
+  role: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function Customers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
@@ -50,6 +72,12 @@ export default function Customers() {
     role: 'Customer'
   });
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [managers, setManagers] = useState<Manager[]>([]);
+  const [filteredManagers, setFilteredManagers] = useState<Manager[]>([]);
+  const [managerSearchTerm, setManagerSearchTerm] = useState('');
+  const [admins, setAdmins] = useState<Admin[]>([]);
+  const [filteredAdmins, setFilteredAdmins] = useState<Admin[]>([]);
+  const [adminSearchTerm, setAdminSearchTerm] = useState('');
 
   const fetchCustomers = async () => {
     try {
@@ -85,6 +113,31 @@ export default function Customers() {
           updatedAt: user.updatedAt
         }));
 
+      // Filter managers
+      const managerData: Manager[] = allUsers
+        .filter((user: any) => user.role && user.role.toLowerCase() === 'manager')
+        .map((user: any) => ({
+          userId: user.userId,
+          username: user.username || 'N/A',
+          email: user.email || 'N/A',
+          phone: user.phone || 'N/A',
+          role: user.role,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt
+        }));
+      // Filter admins
+      const adminData: Admin[] = allUsers
+        .filter((user: any) => user.role && user.role.toLowerCase() === 'admin')
+        .map((user: any) => ({
+          userId: user.userId,
+          username: user.username || 'N/A',
+          email: user.email || 'N/A',
+          phone: user.phone || 'N/A',
+          role: user.role,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt
+        }));
+
       console.log('Processed customer data:', customerData);
       console.log('Processed staff data:', staffData);
       
@@ -92,6 +145,10 @@ export default function Customers() {
       setFilteredCustomers(customerData);
       setStaff(staffData);
       setFilteredStaff(staffData);
+      setManagers(managerData);
+      setFilteredManagers(managerData);
+      setAdmins(adminData);
+      setFilteredAdmins(adminData);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({
@@ -129,6 +186,33 @@ export default function Customers() {
         staffMember.phone.includes(term)
       );
       setFilteredStaff(filtered);
+    }
+  };
+
+  const handleManagerSearch = (term: string) => {
+    setManagerSearchTerm(term);
+    if (!term.trim()) {
+      setFilteredManagers(managers);
+    } else {
+      const filtered = managers.filter(manager =>
+        manager.username.toLowerCase().includes(term.toLowerCase()) ||
+        manager.email.toLowerCase().includes(term.toLowerCase()) ||
+        manager.phone.includes(term)
+      );
+      setFilteredManagers(filtered);
+    }
+  };
+  const handleAdminSearch = (term: string) => {
+    setAdminSearchTerm(term);
+    if (!term.trim()) {
+      setFilteredAdmins(admins);
+    } else {
+      const filtered = admins.filter(admin =>
+        admin.username.toLowerCase().includes(term.toLowerCase()) ||
+        admin.email.toLowerCase().includes(term.toLowerCase()) ||
+        admin.phone.includes(term)
+      );
+      setFilteredAdmins(filtered);
     }
   };
 
@@ -218,7 +302,7 @@ export default function Customers() {
       </div>
 
       <Tabs defaultValue="customers" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="customers" className="flex items-center gap-2">
             <Users className="w-4 h-4" />
             Khách hàng
@@ -226,6 +310,14 @@ export default function Customers() {
           <TabsTrigger value="staff" className="flex items-center gap-2">
             <UserCheck className="w-4 h-4" />
             Nhân viên
+          </TabsTrigger>
+          <TabsTrigger value="manager" className="flex items-center gap-2">
+            <Briefcase className="w-4 h-4" />
+            Manager
+          </TabsTrigger>
+          <TabsTrigger value="admin" className="flex items-center gap-2">
+            <Shield className="w-4 h-4" />
+            Admin
           </TabsTrigger>
         </TabsList>
 
@@ -246,6 +338,26 @@ export default function Customers() {
             filteredStaff={filteredStaff}
             searchTerm={staffSearchTerm}
             onSearch={handleStaffSearch}
+            onEdit={handleEditClick}
+            onDelete={handleDeleteUser}
+          />
+        </TabsContent>
+        <TabsContent value="manager">
+          <ManagerList
+            managers={managers}
+            filteredManagers={filteredManagers}
+            searchTerm={managerSearchTerm}
+            onSearch={handleManagerSearch}
+            onEdit={handleEditClick}
+            onDelete={handleDeleteUser}
+          />
+        </TabsContent>
+        <TabsContent value="admin">
+          <AdminList
+            admins={admins}
+            filteredAdmins={filteredAdmins}
+            searchTerm={adminSearchTerm}
+            onSearch={handleAdminSearch}
             onEdit={handleEditClick}
             onDelete={handleDeleteUser}
           />
