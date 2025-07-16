@@ -60,6 +60,46 @@ export default function Register() {
     e.preventDefault();
     setIsLoading(true);
 
+    // Password validation - minimum 8 characters
+    if (formData.password.length < 8) {
+      toast({
+        variant: "destructive",
+        title: "Lỗi",
+        description: "Mật khẩu phải có ít nhất 8 ký tự.",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    // Age validation - must be 18 or older
+    if (formData.dateOfBirth) {
+      const birthDate = new Date(formData.dateOfBirth);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        // If birthday hasn't occurred this year, subtract 1 from age
+        if (age - 1 < 18) {
+          toast({
+            variant: "destructive",
+            title: "Lỗi",
+            description: "Bạn phải từ 18 tuổi trở lên để đăng ký.",
+          });
+          setIsLoading(false);
+          return;
+        }
+      } else if (age < 18) {
+        toast({
+          variant: "destructive",
+          title: "Lỗi",
+          description: "Bạn phải từ 18 tuổi trở lên để đăng ký.",
+        });
+        setIsLoading(false);
+        return;
+      }
+    }
+
     if (formData.password !== formData.repeatPassword) {
       toast({
         variant: "destructive",
@@ -355,6 +395,9 @@ export default function Register() {
                           )}
                         </button>
                       </div>
+                      <p className="mt-1 text-xs text-gray-500">
+                        Mật khẩu phải có ít nhất 8 ký tự
+                      </p>
                     </div>
 
                     {/* Repeat Password Field */}
