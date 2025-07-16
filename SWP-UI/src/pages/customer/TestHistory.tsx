@@ -9,11 +9,27 @@ import { testResultAPI, testRequestAPI, sampleAPI } from '@/api/axios';
 
 interface TestHistory {
   id: string;
+  requestId: number;
   testName: string;
   date: string;
   status: string;
   result: string;
   price: string;
+  userFullName: string;
+  serviceName: string;
+  collectionType: string;
+  slotTime: string;
+  staffId: number;
+  sample?: {
+    sampleId: number;
+    collectedTime: string;
+    status: string;
+    sampleType: string;
+    relationship: string;
+  };
+  subSamples?: Array<{
+    subSampleId: number;
+  }>;
 }
 
 type StatusType = "Hoàn thành" | "Đang xử lý" | "Đã lấy mẫu" | "Hủy";
@@ -42,30 +58,28 @@ export default function TestHistory() {
           setLoading(false);
           return;
         }
-        // Gọi API lấy lịch sử xét nghiệm
+        // Gọi API lấy lịch sử xét nghiệm chi tiết
         const response = await testRequestAPI.getByUserId(Number(userId));
         let mapped: any[] = [];
         if (Array.isArray(response)) {
-          mapped = await Promise.all(response.map(async (item: any) => {
-            let sampleId = null;
-            try {
-              const sampleRes = await sampleAPI.getByRequestId(item.id || item.requestId || item.testRequestId);
-              if (Array.isArray(sampleRes) && sampleRes.length > 0) {
-                sampleId = sampleRes[0].id || sampleRes[0].sampleId;
-              }
-            } catch (e) {
-              // Không có sample cũng không sao
-            }
+          mapped = response.map((item: any) => {
             return {
-              id: String(item.id || item.requestId || item.testRequestId),
-              testName: item.service?.name || 'Chưa rõ',
+              id: String(item.requestId || item.id),
+              requestId: item.requestId || item.id,
+              testName: item.serviceName || item.service?.name || 'Chưa rõ',
               date: item.appointmentDate || '',
               status: item.status || '',
               result: item.resultStatus || (item.status === 'Completed' ? 'Có kết quả' : 'Chờ kết quả'),
               price: item.service?.price ? item.service.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) : '',
-              sampleId, // Thêm sampleId vào object
+              userFullName: item.userFullName || '',
+              serviceName: item.serviceName || item.service?.name || '',
+              collectionType: item.collectionType || '',
+              slotTime: item.slotTime || '',
+              staffId: item.staffId || null,
+              sample: item.sample || null,
+              subSamples: item.subSamples || [],
             };
-          }));
+          });
         }
         setTestHistory(mapped);
       } catch (err: any) {
@@ -99,12 +113,32 @@ export default function TestHistory() {
   };
 
   // Thêm hàm xem PDF
-  const handleViewPdf = async (id: string) => {
+  const handleViewPdf = async (requestId: number, event?: React.MouseEvent) => {
+    // Ngăn chặn event bubbling
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
     try {
-      const blob = await testResultAPI.viewPdf(Number(id));
-      const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+      console.log('Calling viewPdf for requestId:', requestId);
+      const blob = await testResultAPI.viewPdf(requestId);
+      console.log('PDF blob received:', blob);
+      console.log('Blob type:', blob.type);
+      console.log('Blob size:', blob.size);
+      
+      // Tạo URL từ blob và mở PDF
+      const url = window.URL.createObjectURL(blob);
+      console.log('Created blob URL:', url);
       window.open(url, '_blank');
+      
+      // Cleanup: revoke URL sau khi mở
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+      }, 1000);
+      
     } catch (err) {
+      console.error('Error viewing PDF:', err);
       alert('Không thể xem file PDF!');
     }
   };
@@ -134,11 +168,20 @@ export default function TestHistory() {
                   <div>
                     <h3 className="font-semibold text-lg">{test.testName}</h3>
                     <p className="text-sm text-gray-600 mt-1">Mã: {test.id}</p>
+                    <p className="text-sm text-gray-500 mt-1">Loại lấy mẫu: {test.collectionType}</p>
+                    {test.sample && (
+                      <p className="text-sm text-gray-500 mt-1">
+                        Loại mẫu: {test.sample.sampleType} - {test.sample.relationship}
+                      </p>
+                    )}
                   </div>
                   <div className="text-right">
                     <p className="font-semibold text-blue-600">{test.price}</p>
                     <p className="text-sm text-gray-500">
                       {new Date(test.date).toLocaleDateString('vi-VN')}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Giờ: {test.slotTime}
                     </p>
                   </div>
                 </div>
@@ -153,7 +196,7 @@ export default function TestHistory() {
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => navigate(`/test-result/${test.id}`)}
+                      onClick={() => handleViewPdf(test.requestId)}
                     >
                       <Eye className="w-4 h-4 mr-2" />
                       Xem chi tiết
@@ -162,7 +205,7 @@ export default function TestHistory() {
                       <>
                         <Button 
                           size="sm"
-                          onClick={() => navigate(`/test-result/${test.id}`)}
+                          onClick={() => handleViewPdf(test.requestId)}
                         >
                           <Download className="w-4 h-4 mr-2" />
                           Tải kết quả
@@ -170,7 +213,7 @@ export default function TestHistory() {
                         <Button 
                           size="sm"
                           variant="outline"
-                          onClick={() => handleViewPdf(test.id)}
+                          onClick={() => handleViewPdf(test.requestId)}
                         >
                           <Eye className="w-4 h-4 mr-2" />
                           Xem file PDF

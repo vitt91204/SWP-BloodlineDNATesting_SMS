@@ -752,6 +752,14 @@ export const testResultAPI = {
     return response.data;
   },
 
+  // Xem PDF kết quả theo requestId
+  viewPdf: async (requestId: number) => {
+    const response = await api.get(`/api/TestRequest/${requestId}/pdf-result`, {
+      responseType: 'blob'
+    });
+    return response.data;
+  },
+
   // Gửi kết quả qua email
   sendByEmail: async (resultId: number, emailData: any) => {
     const response = await api.post(`/api/TestResult/${resultId}/send-email`, emailData);

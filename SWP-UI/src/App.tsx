@@ -17,7 +17,7 @@ import PaymentSuccess from "@/pages/PaymentSuccess";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import CustomerProfile from "@/pages/customer/Profile";
-import TestResultDetail from "@/pages/customer/TestResultDetail";
+
 import { Settings } from "@/pages/Settings";
 
 // Admin pages
@@ -68,7 +68,6 @@ function App() {
             
             {/* User profile route */}
             <Route path="/profile" element={<CustomerProfile />} />
-            <Route path="/test-result/:resultId" element={<TestResultDetail />} />
             <Route path="/settings" element={<Settings />} />
 
             {/* Staff routes */}
