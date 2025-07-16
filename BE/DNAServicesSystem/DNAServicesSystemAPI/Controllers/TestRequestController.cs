@@ -154,13 +154,14 @@ namespace DNAServicesSystemAPI.Controllers
         public async Task<IActionResult> GetRequestPdfResult(
             int requestId,
             [FromServices] SampleService sampleService,
-            [FromServices] SampleRepository sampleRepository)
+            [FromServices] SampleRepository sampleRepository,
+            [FromServices] TestResultService testResultService) 
         {
             var sample = await sampleRepository.GetSampleByRequestidAsync(requestId);
             if (sample == null)
                 return NotFound("No sample found for this request.");
 
-            var pdfBytes = await sampleService.GetSampleResultPdfAsync(sample.SampleId);
+            var pdfBytes = await testResultService.GetSampleResultPdfAsync(sample.SampleId); 
             if (pdfBytes == null)
                 return NotFound("PDF result not found for this request.");
 

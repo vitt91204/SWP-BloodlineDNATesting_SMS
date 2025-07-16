@@ -121,5 +121,25 @@ namespace Services
             await _repository.UpdateAsync(entity);
             return true;
         }
+
+        public async Task<byte[]?> GetSampleResultPdfAsync(int sampleId)
+        {
+            var testResults = await _repository.GetBySampleIdAsync(sampleId);
+            if (testResults == null || !testResults.Any())
+                return null;
+
+            var testResult = testResults.FirstOrDefault(tr => !string.IsNullOrEmpty(tr.ResultData));
+            if (testResult == null)
+                return null;
+
+            try
+            {
+                return Convert.FromBase64String(testResult.ResultData!);
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 }

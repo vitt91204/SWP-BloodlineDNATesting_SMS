@@ -67,25 +67,5 @@ namespace Services
             var samples = await _repository.SearchSamplesAsync(serviceName, userFullName);
             return samples;
         }
-
-        public async Task<byte[]?> GetSampleResultPdfAsync(int sampleId)
-        {
-            var sample = await _repository.GetByIdAsync(sampleId);
-            if (sample == null || sample.TestResults == null || !sample.TestResults.Any())
-                return null;
-
-            var testResult = sample.TestResults.FirstOrDefault(tr => !string.IsNullOrEmpty(tr.ResultData));
-            if (testResult == null)
-                return null;
-
-            try
-            {
-                return Convert.FromBase64String(testResult.ResultData!);
-            }
-            catch
-            {
-                return null;
-            }
-        }
     }
 }
