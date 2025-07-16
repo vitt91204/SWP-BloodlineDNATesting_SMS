@@ -55,7 +55,7 @@ export const BlogSection = () => {
         ) : (
           <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8">
             {blogs.map((post) => {
-              const blogId = post.id || post.blogPostId;
+              const blogId = post.postId;
               return (
                 <Card
                   key={blogId || Math.random()}
