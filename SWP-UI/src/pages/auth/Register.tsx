@@ -17,7 +17,8 @@ import {
   Shield,
   UserPlus,
   Calendar,
-  Users
+  Users,
+  AlertCircle
 } from "lucide-react";
 import { authAPI } from "@/api/axios";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -38,6 +39,7 @@ export default function Register() {
   const [showRepeatPassword, setShowRepeatPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -47,6 +49,54 @@ export default function Register() {
       ...prev,
       [name]: value
     }));
+    
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+    
+    // Validate age in real-time for dateOfBirth
+    if (name === 'dateOfBirth' && value) {
+      const birthDate = new Date(value);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      
+      let actualAge = age;
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        actualAge = age - 1;
+      }
+      
+      if (actualAge < 18) {
+        setErrors(prev => ({
+          ...prev,
+          dateOfBirth: 'Bạn phải từ 18 tuổi trở lên để đăng ký.'
+        }));
+      } else {
+        setErrors(prev => ({
+          ...prev,
+          dateOfBirth: ''
+        }));
+      }
+    }
+    
+    // Validate password in real-time
+    if (name === 'password') {
+      if (value.length > 0 && value.length < 8) {
+        setErrors(prev => ({
+          ...prev,
+          password: 'Mật khẩu phải có ít nhất 8 ký tự'
+        }));
+      } else {
+        setErrors(prev => ({
+          ...prev,
+          password: ''
+        }));
+      }
+    }
   };
 
   const handleGenderChange = (value: string) => {
@@ -71,6 +121,17 @@ export default function Register() {
       return;
     }
 
+    // Check for field errors
+    if (Object.values(errors).some(error => error)) {
+      toast({
+        variant: "destructive",
+        title: "Lỗi",
+        description: "Vui lòng sửa các lỗi trong form trước khi đăng ký.",
+      });
+      setIsLoading(false);
+      return;
+    }
+
     // Age validation - must be 18 or older
     if (formData.dateOfBirth) {
       const birthDate = new Date(formData.dateOfBirth);
@@ -78,18 +139,16 @@ export default function Register() {
       const age = today.getFullYear() - birthDate.getFullYear();
       const monthDiff = today.getMonth() - birthDate.getMonth();
       
+      let actualAge = age;
       if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-        // If birthday hasn't occurred this year, subtract 1 from age
-        if (age - 1 < 18) {
-          toast({
-            variant: "destructive",
-            title: "Lỗi",
-            description: "Bạn phải từ 18 tuổi trở lên để đăng ký.",
-          });
-          setIsLoading(false);
-          return;
-        }
-      } else if (age < 18) {
+        actualAge = age - 1;
+      }
+      
+      if (actualAge < 18) {
+        setErrors(prev => ({
+          ...prev,
+          dateOfBirth: 'Bạn phải từ 18 tuổi trở lên để đăng ký.'
+        }));
         toast({
           variant: "destructive",
           title: "Lỗi",
@@ -281,9 +340,17 @@ export default function Register() {
                           onFocus={() => setFocusedField('dateOfBirth')}
                           onBlur={() => setFocusedField(null)}
                           required
-                          className="pl-10 bg-white/50 backdrop-blur-sm border-gray-200 focus:border-emerald-300 focus:ring-emerald-300/20 transition-all duration-200 hover:bg-white/70"
+                          className={`pl-10 bg-white/50 backdrop-blur-sm border-gray-200 focus:border-emerald-300 focus:ring-emerald-300/20 transition-all duration-200 hover:bg-white/70 ${
+                            errors.dateOfBirth ? 'border-red-300 focus:border-red-300 focus:ring-red-300/20' : ''
+                          }`}
                         />
                       </div>
+                      {errors.dateOfBirth && (
+                        <p className="mt-1 text-xs text-red-500 flex items-center">
+                          <AlertCircle className="w-3 h-3 mr-1" />
+                          {errors.dateOfBirth}
+                        </p>
+                      )}
                     </div>
 
                     {/* Gender Field */}
@@ -381,7 +448,9 @@ export default function Register() {
                           onBlur={() => setFocusedField(null)}
                           placeholder="••••••••"
                           required
-                          className="pl-10 pr-10 bg-white/50 backdrop-blur-sm border-gray-200 focus:border-emerald-300 focus:ring-emerald-300/20 transition-all duration-200 hover:bg-white/70"
+                          className={`pl-10 pr-10 bg-white/50 backdrop-blur-sm border-gray-200 focus:border-emerald-300 focus:ring-emerald-300/20 transition-all duration-200 hover:bg-white/70 ${
+                            errors.password ? 'border-red-300 focus:border-red-300 focus:ring-red-300/20' : ''
+                          }`}
                         />
                         <button
                           type="button"
@@ -395,9 +464,16 @@ export default function Register() {
                           )}
                         </button>
                       </div>
-                      <p className="mt-1 text-xs text-gray-500">
-                        Mật khẩu phải có ít nhất 8 ký tự
-                      </p>
+                      {errors.password ? (
+                        <p className="mt-1 text-xs text-red-500 flex items-center">
+                          <AlertCircle className="w-3 h-3 mr-1" />
+                          {errors.password}
+                        </p>
+                      ) : (
+                        <p className="mt-1 text-xs text-gray-500">
+                          Mật khẩu phải có ít nhất 8 ký tự
+                        </p>
+                      )}
                     </div>
 
                     {/* Repeat Password Field */}
