@@ -10,7 +10,14 @@ namespace Services
     public class TestResultService
     {
         private readonly TestResultRepository _repository;
-        public TestResultService(TestResultRepository repository) { _repository = repository; }
+        private readonly TestRequestRepository _testRequestRepository;
+        private readonly SampleRepository _sampleRepository;
+        public TestResultService(TestResultRepository repository) 
+        { 
+            _repository = repository; 
+            _testRequestRepository = new TestRequestRepository();
+            _sampleRepository = new SampleRepository();
+        }
 
         public async Task<List<TestResultDto>> GetAllAsync()
         {
@@ -46,6 +53,24 @@ namespace Services
 
         public async Task<int> CreateAsync(TestResultDto dto)
         {
+            var existingResult = await _repository.GetBySampleIdAsync(dto.SampleId);
+            if (existingResult != null && existingResult.Any())
+            {
+                throw new InvalidOperationException($"A test result for SampleId {dto.SampleId} already exists.");
+            }
+
+            var sample = await _sampleRepository.GetByIdAsync(dto.SampleId);
+            if (sample == null)
+            {
+                throw new KeyNotFoundException($"Sample with ID {dto.SampleId} not found.");
+            }
+
+            var request = await _testRequestRepository.GetByIdAsync(sample.RequestId);
+            if (request == null)
+            {
+                throw new KeyNotFoundException($"Test request with ID {sample.RequestId} not found.");
+            }
+
             var entity = new TestResult
             {
                 SampleId = dto.SampleId,
@@ -55,6 +80,13 @@ namespace Services
                 ApprovedTime = dto.ApprovedTime,
                 StaffId = dto.StaffId
             };
+
+            // Update the request status to "Completed" and Sample status to "Tested"
+            request.Status = "Completed";
+            sample.Status = "Tested";
+            await _testRequestRepository.UpdateAsync(request);
+            await _sampleRepository.UpdateAsync(sample);
+
             return await _repository.CreateAsync(entity);
         }
 
@@ -70,6 +102,26 @@ namespace Services
                 await dto.PdfFile.CopyToAsync(ms);
                 base64String = Convert.ToBase64String(ms.ToArray());
             }
+
+            var existingResult = await _repository.GetBySampleIdAsync(dto.SampleId);
+            if (existingResult != null && existingResult.Any())
+            {
+                throw new InvalidOperationException($"A test result for SampleId {dto.SampleId} already exists.");
+            }
+
+            var sample = await _sampleRepository.GetByIdAsync(dto.SampleId);
+            if (sample == null)
+            {
+                throw new KeyNotFoundException($"Sample with ID {dto.SampleId} not found.");
+            }
+
+            var request = await _testRequestRepository.GetByIdAsync(sample.RequestId);
+            if (request == null)
+            {
+                throw new KeyNotFoundException($"Test request with ID {sample.RequestId} not found.");
+            }
+
+
             var entity = new TestResult
             {
                 SampleId = dto.SampleId,
@@ -80,6 +132,12 @@ namespace Services
                 StaffId = dto.StaffId,
                 ResultData = base64String
             };
+
+            request.Status = "Completed";
+            sample.Status = "Tested";
+            await _testRequestRepository.UpdateAsync(request);
+            await _sampleRepository.UpdateAsync(sample);
+
             return await _repository.CreateAsync(entity);
         }
 

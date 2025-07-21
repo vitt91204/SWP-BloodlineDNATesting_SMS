@@ -8,7 +8,12 @@ namespace Services
     public class SampleService
     {
         private readonly SampleRepository _repository;
-        public SampleService(SampleRepository repository) { _repository = repository; }
+        private readonly TestRequestRepository _testRequestRepository;
+        public SampleService(SampleRepository repository) 
+        { 
+            _repository = repository; 
+            _testRequestRepository = new TestRequestRepository();
+        }
 
         public async Task<List<Sample>> GetAllAsync()
         {
@@ -25,6 +30,18 @@ namespace Services
 
         public async Task<int> CreateAsync(SampleDto dto)
         {
+            var existingSample = await _repository.GetSampleByRequestidAsync(dto.RequestId);
+            if (existingSample != null)
+            {
+                throw new InvalidOperationException($"A sample with RequestId {dto.RequestId} already exists.");
+            }
+
+            TestRequest? request = await _testRequestRepository.GetByIdAsync(dto.RequestId);
+            if (request == null)
+            {
+                throw new KeyNotFoundException($"Test request with ID {dto.RequestId} not found.");
+            }
+
             var entity = new Sample
             {
                 RequestId = dto.RequestId,
@@ -35,6 +52,10 @@ namespace Services
                 SampleType = dto.SampleType,
                 Relationship = dto.Relationship
             };
+
+            request.Status = "Collected";
+            await _testRequestRepository.UpdateAsync(request);
+
             return await _repository.CreateAsync(entity);
         }
 

@@ -12,19 +12,21 @@ namespace Services
 {
     public class TestRequestService
     {
-        private readonly TestRequestReposity testRequestReposity;
+        private readonly TestRequestRepository testRequestReposity;
         private readonly UserRepository userRepository;
         private readonly SampleRepository sampleRepository;
         private readonly SubSampleRepository subSampleRepository;
         private readonly TestServiceRepository serviceRepository;
+        private readonly PaymentRepository paymentRepository;
 
         public TestRequestService()
         {
-            testRequestReposity = new TestRequestReposity();
+            testRequestReposity = new TestRequestRepository();
             userRepository = new UserRepository();
             sampleRepository = new SampleRepository();
             subSampleRepository = new SubSampleRepository();
             serviceRepository = new TestServiceRepository();
+            paymentRepository = new PaymentRepository();
         }
 
         public async Task<TestRequest> CreateTestRequestAsync(TestRequestDto testRequestDto)
@@ -66,7 +68,7 @@ namespace Services
         }
        
 
-        public async Task<IEnumerable<RequestDetailsDto>> GetTestRequestsByUserIdAsync(int userId)
+        public async Task<IEnumerable<TestHistoryDto>> GetTestRequestsByUserIdAsync(int userId)
         {
             var requests = await testRequestReposity.GetRequestsByUserIdAsync(userId);
 
@@ -75,7 +77,7 @@ namespace Services
                 throw new KeyNotFoundException($"No test requests found for staff ID {userId}.");
             }
 
-            List<RequestDetailsDto> requestDetails = new List<RequestDetailsDto>();
+            List<TestHistoryDto> requestDetails = new List<TestHistoryDto>();
 
             foreach (var request in requests)
             {
@@ -87,7 +89,8 @@ namespace Services
                 {
                     subSamples = await subSampleRepository.GetSubSamplesBySampleIdAsync(sample.SampleId);
                 }
-                requestDetails.Add(new RequestDetailsDto
+                Payment? payment = await paymentRepository.GetPaymentByRequestIdAsync(request.RequestId);
+                requestDetails.Add(new TestHistoryDto
                 {
                     RequestId = request.RequestId,
                     UserFullName = user.FullName,
@@ -100,7 +103,8 @@ namespace Services
                     SlotTime = request.SlotTime,
                     StaffId = request.StaffId,
                     Sample = sample ?? null,
-                    SubSamples = subSamples ?? null
+                    SubSamples = subSamples ?? null,
+                    Payment = payment ?? null
                 });
             }
             return requestDetails;
@@ -197,6 +201,18 @@ namespace Services
             testRequest.StaffId = user.UserId;
             await testRequestReposity.UpdateAsync(testRequest);
             return testRequest;
+        }
+
+        public async Task<bool> UpdateStatus (int requestId, string status)
+        {
+            TestRequest testRequest = await testRequestReposity.GetByIdAsync(requestId);
+            if (testRequest == null)
+            {
+                throw new KeyNotFoundException($"Test request with ID {requestId} not found.");
+            }
+            testRequest.Status = status;
+            await testRequestReposity.UpdateAsync(testRequest);
+            return true;
         }
 
     }

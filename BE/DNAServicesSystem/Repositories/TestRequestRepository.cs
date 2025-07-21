@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace Repositories
 {
-    public class TestRequestReposity : GenericRepository<TestRequest>
+    public class TestRequestRepository : GenericRepository<TestRequest>
     {
-        public TestRequestReposity()
+        public TestRequestRepository()
         {
         }
 
