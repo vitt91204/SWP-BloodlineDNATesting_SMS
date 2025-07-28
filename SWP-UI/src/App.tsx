@@ -17,6 +17,7 @@ import PaymentSuccess from "@/pages/PaymentSuccess";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import CustomerProfile from "@/pages/customer/Profile";
+import TestHistory from "@/pages/customer/TestHistory";
 
 import { Settings } from "@/pages/Settings";
 
@@ -68,6 +69,7 @@ function App() {
             
             {/* User profile route */}
             <Route path="/profile" element={<CustomerProfile />} />
+            <Route path="/test-history" element={<TestHistory />} />
             <Route path="/settings" element={<Settings />} />
 
             {/* Staff routes */}

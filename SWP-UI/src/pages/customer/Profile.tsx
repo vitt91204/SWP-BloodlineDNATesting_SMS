@@ -27,7 +27,6 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
-import TestHistory from "./TestHistory";
 import Feedback from "./Feedback";
 import AddressTab from "./Address"; // ✅ Thêm Address tab
 import { userAPI } from "@/api/axios";
@@ -256,7 +255,7 @@ export default function CustomerProfile() {
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Hồ sơ cá nhân</h1>
-          <p className="text-gray-600">Quản lý thông tin cá nhân và lịch sử xét nghiệm</p>
+          <p className="text-gray-600">Quản lý thông tin cá nhân và các thiết đặt tài khoản</p>
           {/* Debug info - remove in production */}
           {process.env.NODE_ENV === 'development' && (
             <p className="text-xs text-gray-400">Debug: User ID = {currentUserId || 'Not found'}</p>
@@ -264,9 +263,8 @@ export default function CustomerProfile() {
         </div>
 
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4"> {/* ✅ 4 cột */}
+          <TabsList className="grid w-full grid-cols-3"> {/* ✅ 3 cột */}
             <TabsTrigger value="profile">Thông tin cá nhân</TabsTrigger>
-            <TabsTrigger value="history">Lịch sử xét nghiệm</TabsTrigger>
             <TabsTrigger value="feedback">Đánh giá dịch vụ</TabsTrigger>
             <TabsTrigger value="address">Địa chỉ</TabsTrigger> {/* ✅ tab mới */}
           </TabsList>
@@ -427,10 +425,6 @@ export default function CustomerProfile() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
-
-          <TabsContent value="history">
-            <TestHistory />
           </TabsContent>
 
           <TabsContent value="feedback">

@@ -854,7 +854,7 @@ export const testRequestAPI = {
 
   // Cập nhật trạng thái yêu cầu
   updateStatus: async (id: number, status: 'Pending' | 'On-going' | 'Arrived' | 'Collected' | 'Testing' | 'Completed') => {
-    const response = await api.patch(`/api/TestRequest/${id}/status`, { status });
+    const response = await api.put(`/api/TestRequest/update-status/${id}`, status);
     return response.data;
   },
 
@@ -873,6 +873,20 @@ export const testRequestAPI = {
   // Chỉ định staff cho yêu cầu xét nghiệm
   assignStaff: async (requestId: number, staffId: number) => {
     const response = await api.put(`/api/TestRequest/assign/${requestId}?staffId=${staffId}`);
+    return response.data;
+  },
+
+  // Tạo yêu cầu tự thu mẫu (self-request)
+  createSelfRequest: async (requestData: {
+    userId: number;
+    serviceId: number;
+    collectionType: string;
+    status: string;
+    staffId: number | null;
+    appointmentDate?: string;
+    slotTime?: string;
+  }) => {
+    const response = await api.post('/api/TestRequest/self-request', requestData);
     return response.data;
   }
 };

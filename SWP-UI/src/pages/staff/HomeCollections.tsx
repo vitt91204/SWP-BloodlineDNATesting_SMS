@@ -11,9 +11,11 @@ import {
   Phone,
   CheckCircle,
   Package,
-  Users
+  Users,
+  Loader2
 } from 'lucide-react';
 import { testRequestAPI } from '@/api/axios';
+import { useToast } from '@/components/ui/use-toast';
 
 interface HomeCollection {
   id: string;
@@ -28,37 +30,84 @@ interface HomeCollection {
 }
 
 export default function HomeCollections() {
+  const { toast } = useToast();
   const [allCollections, setAllCollections] = useState<HomeCollection[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('at-home');
+  const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
+
+  // Get staff ID from localStorage
+  const getStaffId = (): number | null => {
+    try {
+      const userData = localStorage.getItem('userData');
+      if (userData) {
+        const parsed = JSON.parse(userData);
+        return parsed.userId || parsed.id || null;
+      }
+    } catch (e) {
+      console.error('Error parsing user data:', e);
+    }
+    return null;
+  };
 
   useEffect(() => {
     const fetchHomeCollections = async () => {
       try {
         setLoading(true);
         setError(null);
-        const allRequests = await testRequestAPI.getAll();
+        
+        const staffId = getStaffId();
+        if (!staffId) {
+          setError('Không tìm thấy thông tin nhân viên. Vui lòng đăng nhập lại.');
+          setLoading(false);
+          return;
+        }
+
+        console.log('Fetching test requests for staff ID:', staffId);
+        const staffRequests = await testRequestAPI.getByStaffId(staffId);
+        console.log('Staff requests:', staffRequests);
         
         // Lọc các yêu cầu lấy mẫu tại nhà (cả At Home và Self)
-        const homeRequests = (allRequests || []).filter(
+        const homeRequests = (staffRequests || []).filter(
           (req) => req.collectionType?.toLowerCase() === 'at home' || req.collectionType?.toLowerCase() === 'self'
         );
+        console.log('Home requests for staff:', homeRequests);
+        
+        // Lấy thông tin user chi tiết
+        const { userAPI } = await import('@/api/axios');
+        let allUsers = [];
+        try {
+          allUsers = await userAPI.getAllUsers();
+          console.log('All users:', allUsers);
+        } catch (userError) {
+          console.error('Error fetching users:', userError);
+        }
         
         setAllCollections(
-          homeRequests.map((req) => ({
-            id: req.requestId || req.id,
-            customerName: req.user?.fullName || req.user?.username || 'Khách hàng',
-            phone: req.user?.phone || '',
-            address: req.address?.street || req.address?.addressLine || '',
-            date: req.appointmentDate,
-            timeSlot: req.slotTime,
-            status: req.status,
-            testType: req.service?.name || '',
-            collectionType: req.collectionType as 'At Home' | 'Self',
-          }))
+          homeRequests.map((req) => {
+            // Tìm thông tin user chi tiết
+            const userInfo = allUsers.find(user => 
+              user.userId?.toString() === req.userId?.toString() || 
+              user.id?.toString() === req.userId?.toString()
+            );
+            console.log(`User info for request ${req.requestId}:`, userInfo);
+            
+            return {
+              id: req.requestId || req.id,
+              customerName: req.userFullName || userInfo?.fullName || userInfo?.username || 'Khách hàng',
+              phone: req.user?.phone || userInfo?.phone || 'Chưa có số điện thoại',
+              address: req.address?.street || req.address?.addressLine || req.address?.address || 'Chưa có địa chỉ',
+              date: req.appointmentDate,
+              timeSlot: req.slotTime,
+              status: req.status,
+              testType: req.serviceName || req.service?.name || 'Chưa rõ loại xét nghiệm',
+              collectionType: req.collectionType as 'At Home' | 'Self',
+            };
+          })
         );
       } catch (err) {
+        console.error('Error fetching home collections:', err);
         setError('Không thể tải dữ liệu lịch lấy mẫu tại nhà');
       } finally {
         setLoading(false);
@@ -89,12 +138,45 @@ export default function HomeCollections() {
     }
   };
 
-  const handleStatusUpdate = (id: string, newStatus: 'Pending' | 'Confirmed' | 'Completed') => {
-    setAllCollections(prev => 
-      prev.map(collection => 
-        collection.id === id ? { ...collection, status: newStatus } : collection
-      )
-    );
+  const handleStatusUpdate = async (id: string, newStatus: 'Pending' | 'Confirmed' | 'Completed') => {
+    try {
+      console.log(`Updating status for request ${id} to: ${newStatus}`);
+      
+      // Set loading state
+      setUpdatingIds(prev => new Set(prev).add(id));
+      
+      // Gọi API để cập nhật status
+      const response = await testRequestAPI.updateStatus(Number(id), 'Arrived');
+      console.log('API response:', response);
+      
+      // Cập nhật UI nếu API call thành công
+      if (response) {
+        setAllCollections(prev => 
+          prev.map(collection => 
+            collection.id === id ? { ...collection, status: 'Confirmed' } : collection
+          )
+        );
+        
+        toast({
+          title: "Cập nhật thành công",
+          description: "Trạng thái lịch hẹn đã được cập nhật thành 'Đã xác nhận'",
+        });
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+      toast({
+        variant: "destructive",
+        title: "Lỗi cập nhật",
+        description: "Không thể cập nhật trạng thái lịch hẹn. Vui lòng thử lại.",
+      });
+    } finally {
+      // Clear loading state
+      setUpdatingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
+    }
   };
 
   const getCollectionTypeIcon = (type: 'At Home' | 'Self') => {
@@ -187,18 +269,28 @@ export default function HomeCollections() {
                                 size="sm" 
                                 variant="outline"
                                 onClick={() => handleStatusUpdate(collection.id, 'Confirmed')}
+                                disabled={updatingIds.has(collection.id)}
                               >
-                                <CheckCircle className="w-4 h-4 mr-1" />
-                                Xác nhận
+                                {updatingIds.has(collection.id) ? (
+                                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                ) : (
+                                  <CheckCircle className="w-4 h-4 mr-1" />
+                                )}
+                                {updatingIds.has(collection.id) ? 'Đang cập nhật...' : 'Xác nhận'}
                               </Button>
                             )}
                             {collection.status === 'Confirmed' && (
                               <Button 
                                 size="sm"
                                 onClick={() => handleStatusUpdate(collection.id, 'Completed')}
+                                disabled={updatingIds.has(collection.id)}
                               >
-                                <CheckCircle className="w-4 h-4 mr-1" />
-                                Hoàn thành
+                                {updatingIds.has(collection.id) ? (
+                                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                ) : (
+                                  <CheckCircle className="w-4 h-4 mr-1" />
+                                )}
+                                {updatingIds.has(collection.id) ? 'Đang cập nhật...' : 'Hoàn thành'}
                               </Button>
                             )}
                           </div>
@@ -265,18 +357,28 @@ export default function HomeCollections() {
                                 size="sm" 
                                 variant="outline"
                                 onClick={() => handleStatusUpdate(collection.id, 'Confirmed')}
+                                disabled={updatingIds.has(collection.id)}
                               >
-                                <CheckCircle className="w-4 h-4 mr-1" />
-                                Xác nhận gửi kit
+                                {updatingIds.has(collection.id) ? (
+                                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                ) : (
+                                  <CheckCircle className="w-4 h-4 mr-1" />
+                                )}
+                                {updatingIds.has(collection.id) ? 'Đang cập nhật...' : 'Xác nhận gửi kit'}
                               </Button>
                             )}
                             {collection.status === 'Confirmed' && (
                               <Button 
                                 size="sm"
                                 onClick={() => handleStatusUpdate(collection.id, 'Completed')}
+                                disabled={updatingIds.has(collection.id)}
                               >
-                                <CheckCircle className="w-4 h-4 mr-1" />
-                                Đã gửi kit
+                                {updatingIds.has(collection.id) ? (
+                                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                ) : (
+                                  <CheckCircle className="w-4 h-4 mr-1" />
+                                )}
+                                {updatingIds.has(collection.id) ? 'Đang cập nhật...' : 'Đã gửi kit'}
                               </Button>
                             )}
                           </div>

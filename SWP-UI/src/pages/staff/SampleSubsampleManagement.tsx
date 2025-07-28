@@ -135,49 +135,7 @@ export default function SampleSubsampleManagement() {
     staffId = null;
   }
 
-  // Helper function to refresh test requests specifically
-  const refreshTestRequests = async () => {
-    if (!staffId) {
-      console.warn('No staff ID available for refreshing test requests');
-      return;
-    }
-    
-    try {
-      const staffRequests = await testRequestAPI.getByStaffId(staffId);
-      
-      if (Array.isArray(staffRequests)) {
-        const validRequests = staffRequests.map(request => {
-          const processedRequest = {
-            ...request,
-            // API returns requestId directly, no need for fallbacks
-            requestId: request.requestId,
-            userId: request.userId,
-            serviceId: request.serviceId,
-            status: request.status || 'Pending',
-            appointmentDate: request.appointmentDate || request.createdAt?.split('T')[0] || '',
-            slotTime: request.slotTime || '',
-            collectionType: request.collectionType || 'At Clinic',
-            // Direct fields from API response
-            userFullName: request.userFullName || 'Không có tên',
-            serviceName: request.serviceName || 'Chưa xác định',
-            staffId: request.staffId || staffId,
-            sample: request.sample || null,
-            subSamples: request.subSamples || null
-          };
-          
-          return processedRequest;
-        });
-        
-        setTestRequests(validRequests);
-      } else {
-        console.warn('Refreshed test requests data is not an array:', staffRequests);
-        setTestRequests([]);
-      }
-    } catch (error) {
-      console.error('Error refreshing test requests:', error);
-      setError('Không thể làm mới danh sách yêu cầu xét nghiệm');
-    }
-  };
+
 
   // Helper function to get customer display name directly from test request
   const getCustomerDisplayNameFromRequest = (request: TestRequest) => {
@@ -376,11 +334,6 @@ export default function SampleSubsampleManagement() {
       setSelectedRequest(null);
       
       alert('Tạo mẫu thành công!');
-      
-      // Auto-refresh test requests after creating sample
-      setTimeout(() => {
-        refreshTestRequests();
-      }, 500);
       
     } catch (err: any) {
       console.error('Error creating sample:', err);
@@ -653,29 +606,6 @@ export default function SampleSubsampleManagement() {
           </CardTitle>
           <div className="text-sm text-gray-600">
             Staff ID: {staffId} | Số yêu cầu: {testRequests.length} | Số mẫu: {samples.length} | Số mẫu con: {subSamples.length}
-          </div>
-          <div className="flex gap-2 mt-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={refreshTestRequests}
-              className="text-green-600 border-green-300 hover:bg-green-50"
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              Refresh Test Requests
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => {
-                setLoading(true);
-                fetchData();
-              }}
-              disabled={loading}
-            >
-              <Package className="w-4 h-4 mr-2" />
-              Refresh All Data
-            </Button>
           </div>
         </CardHeader>
         <CardContent>

@@ -508,26 +508,47 @@ export default function Booking() {
         // Vẫn tiếp tục với booking ngay cả khi tạo địa chỉ thất bại
       }
 
-      // Đảm bảo collectionType đúng định dạng theo API
-      let collectionType = 'At Clinic';
-      if (selectedLocation === 'home') {
-        collectionType = selectedHomeOption === 'diy_kit' ? 'Self' : 'At Home';
+      // Kiểm tra xem có phải là self-request (DIY kit) không
+      const isSelfRequest = selectedLocation === 'home' && selectedHomeOption === 'diy_kit';
+      
+      let response;
+      
+      if (isSelfRequest) {
+        // Sử dụng API self-request cho DIY kit
+        const selfRequestData = {
+          userId: parseInt(userId),
+          serviceId: serviceId,
+          collectionType: 'Self',
+          status: 'Pending',
+          staffId: null, // Không cần staff cho self-request
+          appointmentDate: new Date().toISOString().split('T')[0], // Ngày hiện tại
+          slotTime: '' // Không cần slot time cho self-request
+        };
+        
+        console.log('📦 Gửi self-request theo API schema:', selfRequestData);
+        response = await testRequestAPI.createSelfRequest(selfRequestData);
+        console.log('✅ Self-request thành công:', response);
+      } else {
+        // Sử dụng API thông thường cho các trường hợp khác
+        let collectionType = 'At Clinic';
+        if (selectedLocation === 'home') {
+          collectionType = 'At Home';
+        }
+
+        const bookingData = {
+          userId: parseInt(userId),
+          serviceId: serviceId,
+          collectionType: collectionType, // 'At Clinic' | 'At Home'
+          status: 'Pending',
+          appointmentDate: selectedDate || new Date().toISOString().split('T')[0],
+          slotTime: selectedTimeSlot || '',
+          staffId: null
+        };
+
+        console.log('📦 Gửi booking theo API schema:', bookingData);
+        response = await testRequestAPI.create(bookingData);
+        console.log('✅ Booking thành công:', response);
       }
-
-      // Tạo booking data theo đúng API schema (camelCase, đủ trường)
-      const bookingData = {
-        userId: parseInt(userId),
-        serviceId: serviceId,
-        collectionType: collectionType, // 'Self' | 'At Clinic' | 'At Home'
-        status: 'Pending',
-        appointmentDate: selectedDate || new Date().toISOString().split('T')[0],
-        slotTime: selectedTimeSlot || '',
-        staffId: null
-      };
-
-      console.log('📦 Gửi booking theo API schema:', bookingData);
-      const response = await testRequestAPI.create(bookingData);
-      console.log('✅ Booking thành công:', response);
 
       // Lưu thông tin booking và user info để sử dụng sau
       const bookingInfo = {
@@ -555,9 +576,14 @@ export default function Booking() {
       const bookingId = response?.id || response?.requestId || response?.testRequestId;
       
       // Hiển thị thông báo thành công
+      const successTitle = isSelfRequest ? "Yêu cầu gửi kit thành công! 🎉" : "Đặt lịch thành công! 🎉";
+      const successDescription = isSelfRequest 
+        ? `Mã yêu cầu: ${bookingId || 'N/A'}. Chúng tôi sẽ gửi bộ kit đến địa chỉ của bạn trong 3-5 ngày làm việc. Đang chuyển đến trang thanh toán...`
+        : `Mã đặt lịch: ${bookingId || 'N/A'}. Đang chuyển đến trang thanh toán...`;
+      
       toast({
-        title: "Đặt lịch thành công! 🎉",
-        description: `Mã đặt lịch: ${bookingId || 'N/A'}. Đang chuyển đến trang thanh toán...`,
+        title: successTitle,
+        description: successDescription,
       });
 
       // Chuyển đến trang thanh toán sau 1 giây
@@ -1437,7 +1463,7 @@ export default function Booking() {
                           Giao nhận bộ kit tự thu mẫu
                         </h4>
                         <p className="text-sm text-amber-700">
-                          Chúng tôi sẽ gửi bộ kit cùng hướng dẫn chi tiết đến địa chỉ của bạn trong vòng 1-2 ngày làm việc. 
+                          Chúng tôi sẽ gửi bộ kit cùng hướng dẫn chi tiết đến địa chỉ của bạn trong vòng 3-5 ngày làm việc. 
                           Sau khi thu mẫu, vui lòng gửi lại theo địa chỉ được cung cấp.
                         </p>
                       </div>
@@ -1491,7 +1517,12 @@ export default function Booking() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="p-6 bg-gray-50 rounded-lg">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Tóm tắt đặt lịch</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    {selectedLocation === 'home' && selectedHomeOption === 'diy_kit' 
+                      ? 'Tóm tắt yêu cầu gửi kit' 
+                      : 'Tóm tắt đặt lịch'
+                    }
+                  </h3>
                   
                   <div className="space-y-4">
                     <div className="flex justify-between">
@@ -1565,18 +1596,27 @@ export default function Booking() {
                 <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <h4 className="font-semibold text-blue-900 mb-2">Quy trình tiếp theo:</h4>
                   <ul className="text-blue-800 text-sm space-y-1">
-                    <li>• Chúng tôi sẽ liên hệ trong vòng 30 phút để xác nhận</li>
-                    <li>• Gửi hợp đồng và hướng dẫn chi tiết qua email</li>
-                    {selectedLocation === 'home' && selectedHomeOption === 'staff_visit' && (
-                      <li>• Nhân viên đến thu mẫu theo lịch hẹn</li>
+                    {selectedLocation === 'home' && selectedHomeOption === 'diy_kit' ? (
+                      <>
+                        <li>• Chúng tôi sẽ liên hệ trong vòng 30 phút để xác nhận</li>
+                        <li>• Gửi hợp đồng và hướng dẫn chi tiết qua email</li>
+                        <li>• Gửi bộ kit tự thu mẫu đến địa chỉ của bạn trong 3-5 ngày làm việc</li>
+                        <li>• Bạn tự thu mẫu theo hướng dẫn và gửi lại</li>
+                        <li>• Thông báo kết quả qua SMS/Email khi hoàn thành</li>
+                      </>
+                    ) : (
+                      <>
+                        <li>• Chúng tôi sẽ liên hệ trong vòng 30 phút để xác nhận</li>
+                        <li>• Gửi hợp đồng và hướng dẫn chi tiết qua email</li>
+                        {selectedLocation === 'home' && selectedHomeOption === 'staff_visit' && (
+                          <li>• Nhân viên đến thu mẫu theo lịch hẹn</li>
+                        )}
+                        {selectedLocation === 'facility' && (
+                          <li>• Bạn đến cơ sở theo lịch hẹn</li>
+                        )}
+                        <li>• Thông báo kết quả qua SMS/Email khi hoàn thành</li>
+                      </>
                     )}
-                    {selectedLocation === 'home' && selectedHomeOption === 'diy_kit' && (
-                      <li>• Gửi bộ kit tự thu mẫu đến địa chỉ của bạn</li>
-                    )}
-                    {selectedLocation === 'facility' && (
-                      <li>• Bạn đến cơ sở theo lịch hẹn</li>
-                    )}
-                    <li>• Thông báo kết quả qua SMS/Email khi hoàn thành</li>
                   </ul>
                 </div>
 
@@ -1596,7 +1636,10 @@ export default function Booking() {
                       </>
                     ) : (
                       <>
-                        Xác nhận đặt lịch
+                        {selectedLocation === 'home' && selectedHomeOption === 'diy_kit' 
+                          ? 'Xác nhận yêu cầu gửi kit'
+                          : 'Xác nhận đặt lịch'
+                        }
                         <CheckCircle className="w-4 h-4 ml-2" />
                       </>
                     )}

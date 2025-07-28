@@ -167,6 +167,12 @@ export const Navigation = () => {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
+                    <Link to="/test-history" className="cursor-pointer">
+                      <TestTube className="mr-2 h-4 w-4" />
+                      <span>Lịch sử xét nghiệm</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link to="/settings" className="cursor-pointer">
                       <Settings className="mr-2 h-4 w-4" />
                       <span>Cài đặt</span>
