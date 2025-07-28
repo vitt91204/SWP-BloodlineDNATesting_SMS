@@ -1,4 +1,5 @@
-﻿using Repositories;
+﻿using Org.BouncyCastle.Asn1;
+using Repositories;
 using Repositories.Models;
 using Services.Reports;
 using Services.TestRequestDTO;
@@ -29,7 +30,7 @@ namespace Services
             paymentRepository = new PaymentRepository();
         }
 
-        public async Task<TestRequest> CreateTestRequestAsync(TestRequestDto testRequestDto)
+        public async Task<TestRequest> CreateTestRequestAsync(AppointmentTestRequestDto testRequestDto)
         {
             if (testRequestDto == null)
             {
@@ -45,6 +46,26 @@ namespace Services
                 AppointmentDate = testRequestDto.AppointmentDate,
                 SlotTime = testRequestDto.SlotTime,
                 StaffId = testRequestDto.StaffId
+            };
+            await testRequestReposity.CreateAsync(testRequest);
+            return testRequest;
+        }
+
+        public async Task<TestRequest> CreateTestRequestAsync(RequestTestDto testRequestDTO)
+        {
+            if (testRequestDTO == null)
+            {
+                throw new ArgumentNullException(nameof(testRequestDTO), "Test request data cannot be null.");
+            }
+            var testRequest = new TestRequest
+            {
+                UserId = testRequestDTO.UserId,
+                ServiceId = testRequestDTO.ServiceId,
+                CollectionType = testRequestDTO.CollectionType,
+                Status = testRequestDTO.Status,
+                AppointmentDate = DateOnly.FromDateTime(DateTime.Now),
+                SlotTime = TimeOnly.FromDateTime(DateTime.Now),
+                StaffId = testRequestDTO.StaffId
             };
             await testRequestReposity.CreateAsync(testRequest);
             return testRequest;
@@ -152,7 +173,7 @@ namespace Services
 
         #endregion
 
-        public async Task<TestRequest> UpdateTestRequestAsync(int requestId, TestRequestDto testRequestDto)
+        public async Task<TestRequest> UpdateTestRequestAsync(int requestId, AppointmentTestRequestDto testRequestDto)
         {
             var testRequest = await testRequestReposity.GetByIdAsync(requestId);
             if (testRequest == null)
@@ -214,6 +235,7 @@ namespace Services
             await testRequestReposity.UpdateAsync(testRequest);
             return true;
         }
+
 
     }
 

@@ -888,7 +888,7 @@
       },
       {
         "Name": "updateTestRequestDto",
-        "Type": "Services.TestRequestDTO.TestRequestDto",
+        "Type": "Services.TestRequestDTO.AppointmentTestRequestDto",
         "IsRequired": true
       }
     ],
@@ -920,7 +920,7 @@
     "Parameters": [
       {
         "Name": "testRequestDto",
-        "Type": "Services.TestRequestDTO.TestRequestDto",
+        "Type": "Services.TestRequestDTO.AppointmentTestRequestDto",
         "IsRequired": true
       }
     ],
@@ -949,6 +949,22 @@
   },
   {
     "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
+    "Method": "CreateSelfTestRequest",
+    "RelativePath": "api/TestRequest/self-request",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "testRequestDto",
+        "Type": "Services.TestRequestDTO.RequestTestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
     "Method": "GetTestRequestsByStaffId",
     "RelativePath": "api/TestRequest/staff/{staffId}",
     "HttpMethod": "GET",
@@ -958,6 +974,27 @@
       {
         "Name": "staffId",
         "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
+    "Method": "UpdateRequestStatus",
+    "RelativePath": "api/TestRequest/update-status/{requestId}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "status",
+        "Type": "System.String",
         "IsRequired": true
       }
     ],

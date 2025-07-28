@@ -73,7 +73,7 @@ namespace DNAServicesSystemAPI.Controllers
 
         [HttpPost]
         [Route("api/testrequest")]
-        public async Task<IActionResult> CreateTestRequest([FromBody] TestRequestDto testRequestDto)
+        public async Task<IActionResult> CreateTestRequest([FromBody] AppointmentTestRequestDto testRequestDto)
         {
             if (!ModelState.IsValid)
             {
@@ -82,6 +82,25 @@ namespace DNAServicesSystemAPI.Controllers
             var testRequest = await testRequestService.CreateTestRequestAsync(testRequestDto);
             return CreatedAtAction(nameof(GetTestRequest), new { requestId = testRequest.RequestId }, testRequest);
         }
+        [HttpPost]
+        [Route("self-request")]
+        public async Task<IActionResult> CreateSelfTestRequest([FromBody] RequestTestDto testRequestDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var testRequest = await testRequestService.CreateTestRequestAsync(testRequestDto);
+                return CreatedAtAction(nameof(GetTestRequest), new { requestId = testRequest.RequestId }, testRequest);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpDelete]
         [Route("{requestId:int}")]
         public async Task<IActionResult> DeleteTestRequest(int requestId)
@@ -98,7 +117,7 @@ namespace DNAServicesSystemAPI.Controllers
         }
         [HttpPut]
         [Route("{requestId:int}")]
-        public async Task<IActionResult> UpdateTestRequest(int requestId, [FromBody] TestRequestDto updateTestRequestDto)
+        public async Task<IActionResult> UpdateTestRequest(int requestId, [FromBody] AppointmentTestRequestDto updateTestRequestDto)
         {
             if (!ModelState.IsValid)
             {
@@ -124,6 +143,25 @@ namespace DNAServicesSystemAPI.Controllers
             }
             var testRequest = await testRequestService.UpdateStaffRequestAsync(requestId, staffId);
             return Ok(testRequest);
+        }
+
+        [HttpPut]
+        [Route("update-status/{requestId:int}")]
+        public async Task<IActionResult> UpdateRequestStatus(int requestId, [FromBody] string status)
+        {
+            if (string.IsNullOrEmpty(status))
+            {
+                return BadRequest("Status cannot be null or empty.");
+            }
+            try
+            {
+                var updated = await testRequestService.UpdateStatus(requestId, status);
+                return Ok(updated);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpGet("{requestId}/pdf-result")]

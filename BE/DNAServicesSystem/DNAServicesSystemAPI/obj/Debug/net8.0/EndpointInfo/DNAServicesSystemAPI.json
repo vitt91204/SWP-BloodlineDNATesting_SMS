@@ -1346,17 +1346,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TestRequestDto"
+                "$ref": "#/components/schemas/AppointmentTestRequestDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/TestRequestDto"
+                "$ref": "#/components/schemas/AppointmentTestRequestDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/TestRequestDto"
+                "$ref": "#/components/schemas/AppointmentTestRequestDto"
               }
             }
           }
@@ -1435,17 +1435,48 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TestRequestDto"
+                "$ref": "#/components/schemas/AppointmentTestRequestDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/TestRequestDto"
+                "$ref": "#/components/schemas/AppointmentTestRequestDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/TestRequestDto"
+                "$ref": "#/components/schemas/AppointmentTestRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TestRequest/self-request": {
+      "post": {
+        "tags": [
+          "TestRequest"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestTestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestTestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestTestDto"
               }
             }
           }
@@ -1481,6 +1512,48 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TestRequest/update-status/{requestId}": {
+      "put": {
+        "tags": [
+          "TestRequest"
+        ],
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK"
@@ -2143,6 +2216,51 @@
   },
   "components": {
     "schemas": {
+      "AppointmentTestRequestDto": {
+        "required": [
+          "appointmentDate",
+          "collectionType",
+          "serviceId",
+          "slotTime",
+          "status",
+          "userId"
+        ],
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "serviceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "collectionType": {
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
+          },
+          "status": {
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
+          },
+          "staffId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "appointmentDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "slotTime": {
+            "type": "string",
+            "format": "time"
+          }
+        },
+        "additionalProperties": false
+      },
       "BlogPostDto": {
         "required": [
           "content",
@@ -2398,6 +2516,41 @@
         },
         "additionalProperties": false
       },
+      "RequestTestDto": {
+        "required": [
+          "collectionType",
+          "serviceId",
+          "status",
+          "userId"
+        ],
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "serviceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "collectionType": {
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
+          },
+          "status": {
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
+          },
+          "staffId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "ResponseFeedback": {
         "type": "object",
         "properties": {
@@ -2523,51 +2676,6 @@
           "serviceType": {
             "minLength": 1,
             "type": "string"
-          }
-        },
-        "additionalProperties": false
-      },
-      "TestRequestDto": {
-        "required": [
-          "appointmentDate",
-          "collectionType",
-          "serviceId",
-          "slotTime",
-          "status",
-          "userId"
-        ],
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "serviceId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "collectionType": {
-            "maxLength": 50,
-            "minLength": 0,
-            "type": "string"
-          },
-          "status": {
-            "maxLength": 50,
-            "minLength": 0,
-            "type": "string"
-          },
-          "appointmentDate": {
-            "type": "string",
-            "format": "date"
-          },
-          "slotTime": {
-            "type": "string",
-            "format": "time"
-          },
-          "staffId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
           }
         },
         "additionalProperties": false

@@ -1,9 +1,13 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Services.TestRequestDTO
 {
-    public class TestRequestDto
+    public class RequestTestDto
     {
         [Required]
         public int UserId { get; set; }
@@ -18,13 +22,6 @@ namespace Services.TestRequestDTO
         [Required(AllowEmptyStrings = false)]
         [StringLength(50)]
         public string Status { get; set; } = string.Empty;
-
-        [Required]
-        public DateOnly AppointmentDate { get; set; }
-
-        [Required]
-        public TimeOnly SlotTime { get; set; }
-
         public int? StaffId { get; set; }
     }
 }

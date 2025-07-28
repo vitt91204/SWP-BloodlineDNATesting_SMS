@@ -78,7 +78,8 @@ namespace DNAServicesSystemAPI.Controllers
 
 
 
-                var successDirectUrl = "http://10.87.48.38:8080/payment-success";
+            //var successDirectUrl = "http://10.87.48.38:8080/payment-success";
+            var successDirectUrl = "http://192.168.2.100:8080/payment-success";
             return Redirect(successDirectUrl);
 
         }

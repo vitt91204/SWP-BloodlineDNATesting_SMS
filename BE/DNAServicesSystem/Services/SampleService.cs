@@ -53,7 +53,7 @@ namespace Services
                 Relationship = dto.Relationship
             };
 
-            request.Status = "Collected";
+            request.Status = "Testing";
             await _testRequestRepository.UpdateAsync(request);
 
             return await _repository.CreateAsync(entity);
@@ -72,6 +72,15 @@ namespace Services
             entity.SampleType = dto.SampleType;
             entity.Relationship = dto.Relationship;
 
+            await _repository.UpdateAsync(entity);
+            return true;
+        }
+
+        public async Task<bool> UpdateStatusAsync(int id, string status)
+        {
+            var entity = await _repository.GetByIdAsync(id);
+            if (entity == null) return false;
+            entity.Status = status;
             await _repository.UpdateAsync(entity);
             return true;
         }
