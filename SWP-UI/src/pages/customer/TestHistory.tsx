@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { TestTube, Download, Eye, CreditCard, Calendar, User, FileText } from "lucide-react";
+import { TestTube, Download, Eye, CreditCard, Calendar, User, FileText, MessageSquare } from "lucide-react";
 import axios from '@/api/axios';
 import { testResultAPI, testRequestAPI, sampleAPI } from '@/api/axios';
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
+import Feedback from "./Feedback";
 
 interface TestHistory {
   id: string;
@@ -60,6 +61,8 @@ export default function TestHistory() {
   const [testHistory, setTestHistory] = useState<TestHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [selectedRequestId, setSelectedRequestId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchTestHistory = async () => {
@@ -173,8 +176,27 @@ export default function TestHistory() {
       <Navigation />
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Lịch sử xét nghiệm</h1>
-          <p className="text-gray-600">Danh sách các lần xét nghiệm của bạn</p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Lịch sử xét nghiệm</h1>
+              <p className="text-gray-600">Danh sách các lần xét nghiệm của bạn</p>
+            </div>
+            <Button 
+              onClick={() => {
+                if (showFeedback) {
+                  setShowFeedback(false);
+                  setSelectedRequestId(null);
+                } else {
+                  setShowFeedback(true);
+                }
+              }}
+              variant={showFeedback ? "outline" : "default"}
+              className="flex items-center gap-2"
+            >
+              <MessageSquare className="w-4 h-4" />
+              {showFeedback ? "Ẩn đánh giá" : "Đánh giá dịch vụ"}
+            </Button>
+          </div>
         </div>
         
         <Card>
@@ -320,27 +342,19 @@ export default function TestHistory() {
                           onClick={() => handleViewPdf(test.requestId)}
                         >
                           <Eye className="w-4 h-4 mr-2" />
-                          Xem chi tiết
+                          Xem kết quả
                         </Button>
-                        {test.result === "Có kết quả" && (
-                          <>
-                            <Button 
-                              size="sm"
-                              onClick={() => handleViewPdf(test.requestId)}
-                            >
-                              <Download className="w-4 h-4 mr-2" />
-                              Tải kết quả
-                            </Button>
-                            <Button 
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleViewPdf(test.requestId)}
-                            >
-                              <Eye className="w-4 h-4 mr-2" />
-                              Xem file PDF
-                            </Button>
-                          </>
-                        )}
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setSelectedRequestId(test.requestId);
+                            setShowFeedback(true);
+                          }}
+                        >
+                          <MessageSquare className="w-4 h-4 mr-2" />
+                          Đánh giá
+                        </Button>
                       </div>
                     </div>
                   </CardContent>
@@ -356,6 +370,13 @@ export default function TestHistory() {
             )}
           </CardContent>
         </Card>
+
+        {/* Feedback Section */}
+        {showFeedback && (
+          <div className="mt-6">
+            <Feedback selectedRequestId={selectedRequestId} />
+          </div>
+        )}
       </div>
       <Footer />
     </div>

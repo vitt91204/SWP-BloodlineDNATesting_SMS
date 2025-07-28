@@ -2,18 +2,24 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { Star, MessageSquare, Send, Pencil } from "lucide-react";
 import { feedbackAPI } from "@/api/axios";
 
-export default function FeedbackPage() {
+interface FeedbackProps {
+  selectedRequestId?: number;
+}
+
+export default function FeedbackPage({ selectedRequestId }: FeedbackProps) {
   const { toast } = useToast();
   const [feedbacks, setFeedbacks] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [showForm, setShowForm] = useState(true);
   const [newFeedback, setNewFeedback] = useState({
-    serviceType: "",
+    requestId: selectedRequestId || 0,
     rating: 0,
     comment: ""
   });
@@ -46,23 +52,20 @@ export default function FeedbackPage() {
   );
 
   const handleSubmit = async () => {
-    if (!newFeedback.serviceType || !newFeedback.rating || !newFeedback.comment.trim()) {
+    if (!newFeedback.requestId || !newFeedback.rating || !newFeedback.comment.trim()) {
       return toast({ variant: "destructive", title: "Vui lòng nhập đầy đủ thông tin" });
     }
 
     try {
-      const now = new Date().toISOString();
       await feedbackAPI.create({
-        userId,
-        requestId: 0,
+        userId: userId,
+        requestId: newFeedback.requestId,
         rating: newFeedback.rating,
-        comment: newFeedback.comment,
-        response: "",
-        createdAt: now,
-        respondedAt: now
+        comment: newFeedback.comment
       });
       toast({ title: "Đánh giá đã được gửi" });
-      setNewFeedback({ serviceType: "", rating: 0, comment: "" });
+      setNewFeedback({ requestId: selectedRequestId || 0, rating: 0, comment: "" });
+      setShowForm(false);
       fetchFeedbacks();
     } catch (err) {
       toast({ variant: "destructive", title: "Gửi thất bại" });
@@ -72,8 +75,11 @@ export default function FeedbackPage() {
   const handleUpdate = async (fb: any) => {
     try {
       await feedbackAPI.update(fb.feedbackId, {
-        ...fb,
-        respondedAt: fb.respondedAt || new Date().toISOString()
+        userId: fb.userId,
+        requestId: fb.requestId,
+        rating: fb.rating,
+        comment: fb.comment,
+        response: fb.response || ""
       });
       toast({ title: "Đã cập nhật đánh giá" });
       setEditingId(null);
@@ -86,7 +92,8 @@ export default function FeedbackPage() {
   return (
     <div className="space-y-6">
       {/* Form gửi feedback mới */}
-      <Card>
+      {showForm && (
+        <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5" />
@@ -96,18 +103,19 @@ export default function FeedbackPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <Label>Loại dịch vụ</Label>
-            <select
-              value={newFeedback.serviceType}
-              onChange={(e) => setNewFeedback((prev) => ({ ...prev, serviceType: e.target.value }))}
-              className="w-full border rounded-md px-3 py-2"
-            >
-              <option value="">Chọn loại dịch vụ</option>
-              <option value="Xét nghiệm huyết thống dân sự">Xét nghiệm huyết thống dân sự</option>
-              <option value="Xét nghiệm huyết thống pháp y">Xét nghiệm huyết thống pháp y</option>
-              <option value="Xét nghiệm ADN xác định tổ tiên">Xét nghiệm ADN xác định tổ tiên</option>
-              <option value="Dịch vụ tư vấn">Dịch vụ tư vấn</option>
-            </select>
+            <Label>Mã yêu cầu xét nghiệm</Label>
+            <Input
+              type="number"
+              value={newFeedback.requestId || ""}
+              onChange={(e) => setNewFeedback((prev) => ({ ...prev, requestId: parseInt(e.target.value) || 0 }))}
+              placeholder="Nhập mã yêu cầu xét nghiệm"
+              className="w-full"
+            />
+            {selectedRequestId && (
+              <p className="text-sm text-gray-500 mt-1">
+                Đang đánh giá cho yêu cầu: {selectedRequestId}
+              </p>
+            )}
           </div>
           <div>
             <Label>Đánh giá</Label>
@@ -128,7 +136,22 @@ export default function FeedbackPage() {
             Gửi đánh giá
           </Button>
         </CardContent>
-      </Card>
+        </Card>
+      )}
+
+      {/* Nút hiển thị form nếu đã ẩn */}
+      {!showForm && (
+        <div className="flex justify-center mb-4">
+          <Button 
+            onClick={() => setShowForm(true)}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <MessageSquare className="w-4 h-4" />
+            Gửi đánh giá mới
+          </Button>
+        </div>
+      )}
 
       {/* Danh sách feedback đã gửi */}
       {feedbacks.map((fb) => (
@@ -136,8 +159,8 @@ export default function FeedbackPage() {
           <CardContent className="pt-6 space-y-3">
             <div className="flex justify-between">
               <div>
-                <h3 className="font-semibold">{fb.serviceType || "Không rõ"}</h3>
-                <p className="text-sm text-gray-500">Mã: {fb.feedbackId}</p>
+                <h3 className="font-semibold">Yêu cầu xét nghiệm #{fb.requestId}</h3>
+                <p className="text-sm text-gray-500">Mã feedback: {fb.feedbackId}</p>
               </div>
               <div className="text-right">
                 <Badge className={fb.response ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}>

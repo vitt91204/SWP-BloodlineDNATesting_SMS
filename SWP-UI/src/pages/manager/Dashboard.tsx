@@ -190,18 +190,25 @@ export default function ManagerDashboard() {
     return staff?.fullName || staff?.username || `Staff ${staffId}`;
   };
 
-  const filteredRequests = testRequests.filter(request => {
-    const matchesSearch = 
-      getUserName(request.userId).toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (request.requestId ? request.requestId.toString() : "").includes(searchTerm) ||
-      request.service?.name?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'all' || request.status === statusFilter;
-    const matchesCollectionType = collectionTypeFilter === 'all' || 
-      request.collectionType?.toLowerCase() === collectionTypeFilter.toLowerCase();
-    
-    return matchesSearch && matchesStatus && matchesCollectionType;
-  });
+  const filteredRequests = testRequests
+    .filter(request => {
+      const matchesSearch = 
+        getUserName(request.userId).toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (request.requestId ? request.requestId.toString() : "").includes(searchTerm) ||
+        request.service?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesStatus = statusFilter === 'all' || request.status === statusFilter;
+      const matchesCollectionType = collectionTypeFilter === 'all' || 
+        request.collectionType?.toLowerCase() === collectionTypeFilter.toLowerCase();
+      
+      return matchesSearch && matchesStatus && matchesCollectionType;
+    })
+    .sort((a, b) => {
+      // Sort by appointment date in descending order (newest first)
+      const dateA = new Date(a.appointmentDate);
+      const dateB = new Date(b.appointmentDate);
+      return dateB.getTime() - dateA.getTime();
+    });
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');

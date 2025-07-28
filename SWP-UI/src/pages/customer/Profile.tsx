@@ -27,7 +27,6 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
-import Feedback from "./Feedback";
 import AddressTab from "./Address"; // ✅ Thêm Address tab
 import { userAPI } from "@/api/axios";
 
@@ -263,9 +262,8 @@ export default function CustomerProfile() {
         </div>
 
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3"> {/* ✅ 3 cột */}
+          <TabsList className="grid w-full grid-cols-2"> {/* ✅ 2 cột */}
             <TabsTrigger value="profile">Thông tin cá nhân</TabsTrigger>
-            <TabsTrigger value="feedback">Đánh giá dịch vụ</TabsTrigger>
             <TabsTrigger value="address">Địa chỉ</TabsTrigger> {/* ✅ tab mới */}
           </TabsList>
 
@@ -425,10 +423,6 @@ export default function CustomerProfile() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
-
-          <TabsContent value="feedback">
-            <Feedback />
           </TabsContent>
 
           <TabsContent value="address">
