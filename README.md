@@ -1,77 +1,120 @@
-<<<<<<< HEAD
-# Welcome to your Lovable project
+Dưới đây là nội dung mẫu cho file `README.md` trên GitHub cho dự án **Bloodline DNA Testing Service Management System** (Phần mềm quản lý dịch vụ xét nghiệm ADN huyết thống):
 
-## Project info
+---
 
-**URL**: https://lovable.dev/projects/91538f0f-a3f2-4465-95f8-399368a5d209
+```markdown
+# 🧬 DNA-Health
 
-## How can I edit this code?
+**Phần mềm quản lý dịch vụ xét nghiệm ADN huyết thống của cơ sở y tế**
 
-There are several ways of editing your application.
+## 📌 Mô tả dự án
 
-**Use Lovable**
+Hệ thống quản lý dịch vụ xét nghiệm ADN huyết thống được thiết kế dành cho một cơ sở y tế chuyên cung cấp các dịch vụ xét nghiệm ADN dân sự và hành chính. Ứng dụng hỗ trợ người dùng trong việc đặt lịch xét nghiệm, quản lý tiến trình thu thập và xử lý mẫu, xem kết quả xét nghiệm, phản hồi dịch vụ và nhiều chức năng quản trị khác.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/91538f0f-a3f2-4465-95f8-399368a5d209) and start prompting.
+## 👥 Vai trò người dùng
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Guest**: Truy cập trang chủ, xem thông tin dịch vụ, bài viết, hướng dẫn.
+- **Customer**: Đăng ký tài khoản, đặt dịch vụ, theo dõi tiến trình xét nghiệm, xem kết quả, đánh giá dịch vụ.
+- **Staff**: Thu thập mẫu xét nghiệm, cập nhật tiến độ thực hiện.
+- **Manager**: Quản lý dịch vụ, giá cả, giám sát hoạt động, báo cáo.
+- **Admin**: Quản lý toàn hệ thống, người dùng, phân quyền.
 
-**Use your preferred IDE**
+## 🧾 Tính năng chính
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 🏠 Trang chủ
+- Giới thiệu cơ sở y tế.
+- Giới thiệu các loại dịch vụ xét nghiệm ADN (dân sự, hành chính).
+- Blog chia sẻ kiến thức và hướng dẫn xét nghiệm.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+### 📦 Đặt dịch vụ xét nghiệm
+- Người dùng có thể chọn:
+  - **Tự thu mẫu tại nhà** (dành cho xét nghiệm dân sự).
+  - **Cơ sở thu mẫu tại nhà hoặc tại cơ sở y tế** (áp dụng cho mọi dịch vụ).
+- Quy trình tự thu mẫu:
 ```
 
-**Edit a file directly in GitHub**
+Đặt lịch → Nhận bộ kit → Thu mẫu → Gửi mẫu → Phân tích mẫu → Trả kết quả
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```
+- Quy trình thu mẫu tại cơ sở:
+```
 
-**Use GitHub Codespaces**
+Đặt lịch → Nhân viên thu mẫu → Phân tích mẫu → Trả kết quả
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+````
 
-## What technologies are used for this project?
+### 🔬 Quản lý tiến trình xét nghiệm
+- Theo dõi trạng thái xét nghiệm cho từng loại dịch vụ.
+- Lưu trữ kết quả xét nghiệm trên hệ thống.
 
-This project is built with:
+### 📈 Dashboard & Báo cáo
+- Quản lý thống kê, doanh thu, số lượng đơn đặt xét nghiệm.
+- Xuất báo cáo theo thời gian.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### 💬 Đánh giá và phản hồi
+- Người dùng có thể gửi feedback và đánh giá chất lượng dịch vụ.
 
-## How can I deploy this project?
+### 📄 Quản lý khác
+- Khai báo thông tin dịch vụ và bảng giá.
+- Quản lý hồ sơ người dùng và lịch sử giao dịch.
 
-Simply open [Lovable](https://lovable.dev/projects/91538f0f-a3f2-4465-95f8-399368a5d209) and click on Share -> Publish.
+## 🛠️ Công nghệ sử dụng (Gợi ý)
+> Tuỳ vào cách triển khai thực tế, bạn có thể cập nhật lại phần này.
 
-## Can I connect a custom domain to my Lovable project?
+- **Backend**: .NET 
+- **Frontend**: ReactJS
+- **Database**: SQL Server
+- **Authentication**:Session-based
 
-Yes, you can!
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 🚀 Hướng dẫn triển khai (Gợi ý)
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
-=======
-# SWP-DNAProjects
->>>>>>> 82f4e02df172ca5008eb5465392b2dc4475dd7ae
+```bash
+# Clone project
+git clone https://github.com/yourusername/bloodline-dna-testing-system.git
+cd bloodline-dna-testing-system
+
+# Cài đặt các package cần thiết
+npm install
+
+# Thiết lập biến môi trường trong file .env
+cp .env.example .env
+
+# Chạy ứng dụng
+npm run dev
+````
+
+## 📂 Cấu trúc thư mục (Gợi ý)
+
+```
+bloodline-dna-testing-system/
+│
+├── backend/              # API Server
+├── frontend/             # Giao diện người dùng
+├── database/             # Migration, seed data
+├── docs/                 # Tài liệu hệ thống
+├── .env.example
+└── README.md
+```
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+## 📬 Liên hệ
+
+* 📧 Email: [contact@yourclinic.com](mailto:contact@yourclinic.com)
+* 🌐 Website: [https://yourclinic.com](https://yourclinic.com)
+
+---
+
+> *Dự án phát triển nhằm số hóa quy trình xét nghiệm ADN tại các cơ sở y tế, giúp tiết kiệm thời gian, minh bạch và nâng cao trải nghiệm người dùng.*
+
+```
+
+---
+
+Nếu bạn muốn mình cập nhật `README.md` phù hợp với stack công nghệ cụ thể hoặc tên nhóm phát triển, cứ nói nhé.
+```
