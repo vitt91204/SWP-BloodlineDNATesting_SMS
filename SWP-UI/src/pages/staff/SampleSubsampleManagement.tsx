@@ -534,6 +534,18 @@ export default function SampleSubsampleManagement() {
     }
   };
 
+  // Helper function để kiểm tra xem sample đã có subsample chưa
+  const hasSubSample = (sample: Sample) => {
+    const sampleId = sample.sampleId || sample.id || sample.sample_id;
+    if (!sampleId) return false;
+    
+    // Kiểm tra trong danh sách subsamples hiện tại
+    return subSamples.some(subSample => {
+      const subSampleId = subSample.sampleId || subSample.id || subSample.sample_id;
+      return subSampleId === sampleId;
+    });
+  };
+
 
 
   if (loading) {
@@ -723,10 +735,11 @@ export default function SampleSubsampleManagement() {
                                 setSelectedSample(sample);
                                 setShowCreateSubSampleDialog(true);
                               }}
-                              disabled={!sampleId}
+                              disabled={!sampleId || hasSubSample(sample)}
+                              className={hasSubSample(sample) ? 'opacity-50 cursor-not-allowed' : ''}
                             >
                               <Plus className="w-4 h-4 mr-1" />
-                              Tạo mẫu con
+                              {hasSubSample(sample) ? 'Đã tạo mẫu con' : 'Tạo mẫu con'}
                             </Button>
                           </TableCell>
                         </TableRow>
