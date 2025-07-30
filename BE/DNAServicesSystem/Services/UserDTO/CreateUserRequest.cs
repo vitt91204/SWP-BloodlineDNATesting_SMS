@@ -28,10 +28,10 @@ namespace Services.UserDTO
         public string? Role { get; set; }
 
         public string? Gender { get; set; }
-        
+
+        [ValidDate]
         public DateOnly? DateOfBirth { get; set; }
 
         public string? Fullname { get; set; }
-
     }
 }

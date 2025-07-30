@@ -2800,13 +2800,13 @@
             "type": "string",
             "nullable": true
           },
+          "gender": {
+            "type": "string",
+            "nullable": true
+          },
           "dateOfBirth": {
             "type": "string",
             "format": "date",
-            "nullable": true
-          },
-          "gender": {
-            "type": "string",
             "nullable": true
           }
         },

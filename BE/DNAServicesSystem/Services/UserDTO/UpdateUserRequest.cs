@@ -27,9 +27,10 @@ namespace Services.UserDTO
         [StringLength(100)]
         public string? Fullname { get; set; }
 
-        public DateOnly? DateOfBirth { get; set; }
-
         public string? Gender { get; set; }
 
+        [ValidDate]
+        public DateOnly? DateOfBirth { get; set; }
     }
 }
+       
