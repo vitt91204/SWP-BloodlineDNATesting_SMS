@@ -1,8 +1,4 @@
-Dưới đây là nội dung mẫu cho file `README.md` trên GitHub cho dự án **Bloodline DNA Testing Service Management System** (Phần mềm quản lý dịch vụ xét nghiệm ADN huyết thống):
 
----
-
-```markdown
 # 🧬 DNA-Health
 
 **Phần mềm quản lý dịch vụ xét nghiệm ADN huyết thống của cơ sở y tế**
@@ -71,7 +67,7 @@ Hệ thống quản lý dịch vụ xét nghiệm ADN huyết thống được t
 
 ```bash
 # Clone project
-git clone https://github.com/yourusername/bloodline-dna-testing-system.git
+https://github.com/vitt91204/SWP-DNAProjects.git
 cd bloodline-dna-testing-system
 
 # Cài đặt các package cần thiết
@@ -101,12 +97,7 @@ bloodline-dna-testing-system/
 
 This project is licensed under the MIT License.
 
----
 
-## 📬 Liên hệ
-
-* 📧 Email: [contact@yourclinic.com](mailto:contact@yourclinic.com)
-* 🌐 Website: [https://yourclinic.com](https://yourclinic.com)
 
 ---
 
@@ -114,7 +105,3 @@ This project is licensed under the MIT License.
 
 ```
 
----
-
-Nếu bạn muốn mình cập nhật `README.md` phù hợp với stack công nghệ cụ thể hoặc tên nhóm phát triển, cứ nói nhé.
-```
