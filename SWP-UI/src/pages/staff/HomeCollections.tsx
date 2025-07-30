@@ -17,11 +17,24 @@ import {
 import { testRequestAPI } from '@/api/axios';
 import { useToast } from '@/components/ui/use-toast';
 
+// Thêm interface cho địa chỉ
+interface Address {
+  street: string;
+  district: string;
+  city: string;
+  country: string;
+  postalCode?: string;
+  addressLine?: string;
+  fullAddress?: string;
+}
+
 interface HomeCollection {
   id: string;
+  userId: string | number; // Thêm userId để lấy địa chỉ
   customerName: string;
   phone: string;
   address: string;
+  fullAddress?: Address | null; // Thêm trường này để lưu địa chỉ chi tiết
   date: string;
   timeSlot: string;
   status: 'Pending' | 'Confirmed' | 'Completed';
@@ -75,7 +88,7 @@ export default function HomeCollections() {
         console.log('Home requests for staff:', homeRequests);
         
         // Lấy thông tin user chi tiết
-        const { userAPI } = await import('@/api/axios');
+        const { userAPI, addressAPI } = await import('@/api/axios');
         let allUsers = [];
         try {
           allUsers = await userAPI.getAllUsers();
@@ -84,28 +97,67 @@ export default function HomeCollections() {
           console.error('Error fetching users:', userError);
         }
         
-        setAllCollections(
-          homeRequests.map((req) => {
-            // Tìm thông tin user chi tiết
-            const userInfo = allUsers.find(user => 
-              user.userId?.toString() === req.userId?.toString() || 
-              user.id?.toString() === req.userId?.toString()
-            );
-            console.log(`User info for request ${req.requestId}:`, userInfo);
-            
-            return {
-              id: req.requestId || req.id,
-              customerName: req.userFullName || userInfo?.fullName || userInfo?.username || 'Khách hàng',
-              phone: req.user?.phone || userInfo?.phone || 'Chưa có số điện thoại',
-              address: req.address?.street || req.address?.addressLine || req.address?.address || 'Chưa có địa chỉ',
-              date: req.appointmentDate,
-              timeSlot: req.slotTime,
-              status: req.status,
-              testType: req.serviceName || req.service?.name || 'Chưa rõ loại xét nghiệm',
-              collectionType: req.collectionType as 'At Home' | 'Self',
-            };
+        // Tạo một mảng tạm để lưu trữ collections
+        const collectionsWithBasicInfo = homeRequests.map((req) => {
+          // Tìm thông tin user chi tiết
+          const userInfo = allUsers.find(user => 
+            user.userId?.toString() === req.userId?.toString() || 
+            user.id?.toString() === req.userId?.toString()
+          );
+          console.log(`User info for request ${req.requestId}:`, userInfo);
+          
+          return {
+            id: req.requestId || req.id,
+            userId: req.userId || userInfo?.userId || userInfo?.id,
+            customerName: req.userFullName || userInfo?.fullName || userInfo?.username || 'Khách hàng',
+            phone: req.user?.phone || userInfo?.phone || 'Chưa có số điện thoại',
+            address: req.address?.street || req.address?.addressLine || req.address?.address || 'Chưa có địa chỉ',
+            date: req.appointmentDate,
+            timeSlot: req.slotTime,
+            status: req.status,
+            testType: req.serviceName || req.service?.name || 'Chưa rõ loại xét nghiệm',
+            collectionType: req.collectionType as 'At Home' | 'Self',
+            fullAddress: null
+          };
+        });
+
+        // Lấy địa chỉ chi tiết cho mỗi user
+        const collectionsWithFullAddress = await Promise.all(
+          collectionsWithBasicInfo.map(async (collection) => {
+            if (collection.userId) {
+              try {
+                console.log(`Fetching address for user ID: ${collection.userId}`);
+                const addressData = await addressAPI.getByUserId(collection.userId);
+                console.log(`Address data for user ${collection.userId}:`, addressData);
+                
+                if (addressData && addressData.length > 0) {
+                  // Lấy địa chỉ đầu tiên hoặc địa chỉ mặc định nếu có
+                  const primaryAddress = addressData.find(addr => addr.isDefault) || addressData[0];
+                  
+                  // Tạo địa chỉ đầy đủ
+                  const fullAddressText = [
+                    primaryAddress.addressLine || primaryAddress.street,
+                    primaryAddress.district,
+                    primaryAddress.city,
+                    primaryAddress.country,
+                    primaryAddress.postalCode
+                  ].filter(Boolean).join(', ');
+                  
+                  return {
+                    ...collection,
+                    fullAddress: primaryAddress,
+                    address: fullAddressText || collection.address
+                  };
+                }
+              } catch (addressError) {
+                console.error(`Error fetching address for user ${collection.userId}:`, addressError);
+              }
+            }
+            return collection;
           })
         );
+        
+        setAllCollections(collectionsWithFullAddress);
       } catch (err) {
         console.error('Error fetching home collections:', err);
         setError('Không thể tải dữ liệu lịch lấy mẫu tại nhà');
@@ -136,6 +188,29 @@ export default function HomeCollections() {
       default:
         return <Badge>{status}</Badge>;
     }
+  };
+
+  const formatAddress = (collection: HomeCollection) => {
+    if (collection.fullAddress) {
+      const addr = collection.fullAddress;
+      const parts = [
+        addr.addressLine || addr.street,
+        addr.district,
+        addr.city,
+        addr.country,
+        addr.postalCode
+      ].filter(Boolean);
+      
+      return (
+        <div className="space-y-1">
+          {parts.map((part, index) => (
+            <div key={index} className="text-gray-600">{part}</div>
+          ))}
+        </div>
+      );
+    }
+    
+    return collection.address;
   };
 
   const handleStatusUpdate = async (id: string, newStatus: 'Pending' | 'Confirmed' | 'Completed') => {
@@ -250,8 +325,8 @@ export default function HomeCollections() {
                             <span>{collection.phone}</span>
                           </div>
                           <div className="flex items-start gap-2 text-gray-600">
-                            <MapPin className="w-4 h-4 mt-1" />
-                            <span>{collection.address}</span>
+                            <MapPin className="w-4 h-4 mt-1 flex-shrink-0" />
+                            <div className="flex-1">{formatAddress(collection)}</div>
                           </div>
                           <div className="flex items-center gap-2 text-gray-600">
                             <Clock className="w-4 h-4" />
@@ -403,4 +478,4 @@ export default function HomeCollections() {
       </CardContent>
     </Card>
   );
-} 
+}
