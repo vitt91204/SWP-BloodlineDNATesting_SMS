@@ -337,8 +337,10 @@ export const AppointmentsPage = () => {
     const userInfo = getUserDisplayInfo(appointment.userId);
     
     const matchesSearch = searchTerm
-      ? (user?.fullName?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      ? (appointment.userFullName?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (user?.fullName?.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (userInfo.fullName?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (appointment.userPhoneNumber?.includes(searchTerm)) ||
         (user?.phone?.includes(searchTerm)) ||
         (userInfo.phone?.includes(searchTerm)) ||
         (appointment.requestId?.toString().includes(searchTerm)) ||
@@ -448,16 +450,16 @@ export const AppointmentsPage = () => {
               <TableCell className="font-medium">#{appointment.requestId}</TableCell>
               <TableCell>
                 <div>
-                  <div className="font-medium">{appointment.user?.fullName || getUserDisplayInfo(appointment.userId).fullName}</div>
+                  <div className="font-medium">{appointment.userFullName || appointment.user?.fullName || getUserDisplayInfo(appointment.userId).fullName}</div>
                   <div className="text-sm text-gray-500 flex items-center">
                     <Phone className="w-3 h-3 mr-1" />
-                    {appointment.user?.phone || getUserDisplayInfo(appointment.userId).phone}
+                    {appointment.userPhoneNumber || appointment.user?.phone || getUserDisplayInfo(appointment.userId).phone}
                   </div>
                 </div>
               </TableCell>
               <TableCell>
                 <div>
-                  <div className="font-medium">{appointment.service?.name || `Service ID: ${appointment.serviceId}`}</div>
+                  <div className="font-medium">{appointment.serviceName || appointment.service?.name || `Service ID: ${appointment.serviceId}`}</div>
                   {getAppointmentTypeIcon(appointment.collectionType)}
                 </div>
               </TableCell>
@@ -691,7 +693,7 @@ export const AppointmentsPage = () => {
                           <Clock className="w-6 h-6 text-blue-600" />
                         </div>
                         <div>
-                          <div className="font-medium">{appointment.user?.fullName || getUserDisplayInfo(appointment.userId).fullName}</div>
+                          <div className="font-medium">{appointment.userFullName || appointment.user?.fullName || getUserDisplayInfo(appointment.userId).fullName}</div>
                           <div className="text-sm text-gray-500">
                             {appointment.slotTime} - {getAppointmentTypeIcon(appointment.collectionType)}
                           </div>
@@ -739,9 +741,9 @@ export const AppointmentsPage = () => {
                   <h4 className="font-medium text-gray-900 mb-2">Thông tin khách hàng</h4>
                   <div className="space-y-2 text-sm">
                     <p><strong>User ID:</strong> {selectedAppointment.userId}</p>
-                    <p><strong>Họ tên:</strong> {selectedAppointment.user?.fullName || getUserDisplayInfo(selectedAppointment.userId).fullName}</p>
+                    <p><strong>Họ tên:</strong> {selectedAppointment.userFullName || selectedAppointment.user?.fullName || getUserDisplayInfo(selectedAppointment.userId).fullName}</p>
                     <p><strong>Email:</strong> {selectedAppointment.user?.email || getUserDisplayInfo(selectedAppointment.userId).email}</p>
-                    <p><strong>Số điện thoại:</strong> {selectedAppointment.user?.phone || getUserDisplayInfo(selectedAppointment.userId).phone}</p>
+                    <p><strong>Số điện thoại:</strong> {selectedAppointment.userPhoneNumber || selectedAppointment.user?.phone || getUserDisplayInfo(selectedAppointment.userId).phone}</p>
                   </div>
                 </div>
                 
@@ -749,7 +751,7 @@ export const AppointmentsPage = () => {
                   <h4 className="font-medium text-gray-900 mb-2">Thông tin dịch vụ</h4>
                   <div className="space-y-2 text-sm">
                     <p><strong>Service ID:</strong> {selectedAppointment.serviceId}</p>
-                    <p><strong>Dịch vụ:</strong> {selectedAppointment.service?.name || 'Chưa có thông tin'}</p>
+                    <p><strong>Dịch vụ:</strong> {selectedAppointment.serviceName || selectedAppointment.service?.name || 'Chưa có thông tin'}</p>
                     <p><strong>Giá dịch vụ:</strong> {selectedAppointment.service?.price ? `${selectedAppointment.service.price.toLocaleString('vi-VN')} VNĐ` : 'Chưa có thông tin'}</p>
                     <p><strong>Số tiền thanh toán:</strong> {formatPaymentAmount(getPaymentAmount(selectedAppointment))}</p>
                     <p><strong>Loại hình:</strong> {getAppointmentTypeIcon(selectedAppointment.collectionType)}</p>

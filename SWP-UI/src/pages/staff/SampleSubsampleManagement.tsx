@@ -62,6 +62,9 @@ interface Sample {
   request: any | null;
   subSamples: any[];
   testResults: any[];
+  // Direct fields from API response
+  serviceName?: string; // Tên dịch vụ từ API
+  userFullName?: string; // Tên đầy đủ của user từ API
   // Legacy properties for backward compatibility (these should not be used for API calls)
   id?: number;
   sample_id?: number; // Legacy field - DO NOT USE for API calls
@@ -127,11 +130,15 @@ export default function SampleSubsampleManagement() {
   let staffId: number | null = null;
   try {
     const userData = localStorage.getItem('userData');
+    console.log('Raw userData from localStorage:', userData);
     if (userData) {
       const parsed = JSON.parse(userData);
+      console.log('Parsed userData:', parsed);
       staffId = parsed.userId || parsed.id || null;
+      console.log('Extracted staffId:', staffId);
     }
   } catch (e) {
+    console.error('Error parsing userData:', e);
     staffId = null;
   }
 
@@ -194,9 +201,11 @@ export default function SampleSubsampleManagement() {
         setTestRequests([]);
       }
       
-      // Fetch all samples
+      // Fetch samples by staff ID using client-side filtering
       try {
-        const samplesData = await sampleAPI.getAll();
+        console.log('Fetching samples for staff ID:', staffId);
+        const samplesData = await sampleAPI.getByRequestIdOrCollectedBy(undefined, staffId);
+        console.log('Raw samples data from API:', samplesData);
         
         // Validate samples data structure
         if (Array.isArray(samplesData)) {
@@ -206,11 +215,17 @@ export default function SampleSubsampleManagement() {
             return hasValidId;
           });
           
+          console.log('Valid samples after filtering:', validSamples);
+          console.log('Current staff ID:', staffId);
+          console.log('Samples belonging to current staff:', validSamples);
+          
           setSamples(validSamples);
         } else {
+          console.log('Samples data is not an array:', samplesData);
           setSamples([]);
         }
       } catch (err) {
+        console.error('Error fetching samples:', err);
         setSamples([]);
       }
       
@@ -286,8 +301,12 @@ export default function SampleSubsampleManagement() {
         sampleType: sampleForm.sampleType || ''
       };
       
+      console.log('Creating sample with data:', sampleData);
+      console.log('Staff ID being used:', staffId);
+      
       // Call the API using sampleAPI.create
       const response = await sampleAPI.create(sampleData);
+      console.log('Sample creation response:', response);
       
       // Refresh data
       await fetchData();
@@ -417,10 +436,11 @@ export default function SampleSubsampleManagement() {
   });
 
   const filteredSamples = samples.filter(sample => {
+    // Since we're already fetching samples by staff ID, no need to filter by staff again
     // Allow searching by multiple possible identifiers (prioritize sampleId for backend)
     const sampleId = sample.sampleId || sample.id || sample.sample_id || '';
-    const customerName = sample.customer_name || '';
-    const serviceName = sample.service_name || '';
+    const customerName = sample.userFullName || sample.customer_name || '';
+    const serviceName = sample.serviceName || sample.service_name || '';
     const requestId = sample.testRequestId || sample.requestId || sample.request_id || '';
     
     const matchesSearch = searchTerm === '' || 
@@ -438,16 +458,14 @@ export default function SampleSubsampleManagement() {
 
   // Helper function to get display name for customer
   const getCustomerDisplayName = (sample: Sample) => {
-    // 1. Check if sample has direct customer_name
-    if (sample.customer_name) {
-      return sample.customer_name;
+    // 1. Check if sample has direct userFullName from API
+    if (sample.userFullName) {
+      return sample.userFullName;
     }
     
-    // 2. Try to get name from collectedBy (using correct property name)
-    const collectedById = sample.collectedBy || sample.collected_by;
-    if (collectedById) {
-      // Since we don't have users array anymore, we'll use a fallback
-      return `Collector ${collectedById}`;
+    // 2. Check if sample has direct customer_name (legacy)
+    if (sample.customer_name) {
+      return sample.customer_name;
     }
     
     // 3. Try to get name from request if available in testRequests
@@ -458,56 +476,45 @@ export default function SampleSubsampleManagement() {
         return String(rId) === String(requestId);
       });
       
-      if (request) {
-        if (request.user?.fullName) {
-          return request.user.fullName;
-        }
-        if (request.user?.username) {
-          return request.user.username;
-        }
+      if (request?.userFullName) {
+        return request.userFullName;
       }
     }
     
     // 4. Try to get from embedded request object if available
-    if (sample.request?.user?.fullName) {
-      return sample.request.user.fullName;
+    if (sample.request?.userFullName) {
+      return sample.request.userFullName;
     }
     
-    // 5. Try to get user info by userId if available in the sample
-    if (sample.request?.userId) {
-      // Since we don't have users array anymore, we'll use a fallback
-      return `User ${sample.request.userId}`;
-    }
-    
-    // 6. Fallback: try to get user info from the requestId by making an API call
-    // This is a more expensive operation, so we'll add a flag to prevent infinite loops
-    if (requestId && !sample._customerNameLookupAttempted) {
-      // Mark this sample as attempted to prevent infinite loops
-      sample._customerNameLookupAttempted = true;
-      
-      // We'll return a temporary value and let the component handle the async lookup
-      return `Đang tải... (YC${requestId})`;
-    }
-    
-    // 7. Final fallback (prioritize sampleId for backend)
+    // 5. Fallback: show sample ID
     const sampleId = sample.sampleId || sample.id || sample.sample_id;
     return `Mẫu ${sampleId}`;
   };
 
   // Helper function to get service name
   const getServiceDisplayName = (sample: Sample) => {
-    if (sample.service_name) return sample.service_name;
+    // 1. Check if sample has direct serviceName from API
+    if (sample.serviceName) {
+      return sample.serviceName;
+    }
     
-    // Try to get service from request if available in testRequests
+    // 2. Check if sample has direct service_name (legacy)
+    if (sample.service_name) {
+      return sample.service_name;
+    }
+    
+    // 3. Try to get service from request if available in testRequests
     const requestId = sample.testRequestId || sample.requestId || sample.request_id;
     if (requestId) {
       const request = testRequests.find(r => r.requestId === requestId);
-      if (request?.service?.name) return request.service.name;
+      if (request?.serviceName) {
+        return request.serviceName;
+      }
     }
     
-    // Try to get from embedded request object if available
-    if (sample.request?.service?.name) {
-      return sample.request.service.name;
+    // 4. Try to get from embedded request object if available
+    if (sample.request?.serviceName) {
+      return sample.request.serviceName;
     }
     
     return 'Chưa xác định';
@@ -702,11 +709,6 @@ export default function SampleSubsampleManagement() {
                           <TableCell>
                             <div>
                               <div className="font-medium">{getCustomerDisplayName(sample)}</div>
-                              {!sample.customer_name && (
-                                <div className="text-xs text-gray-500">
-                                  RequestId: {requestId} | SampleId: {sampleId}
-                                </div>
-                              )}
                             </div>
                           </TableCell>
                           <TableCell>{getServiceDisplayName(sample)}</TableCell>

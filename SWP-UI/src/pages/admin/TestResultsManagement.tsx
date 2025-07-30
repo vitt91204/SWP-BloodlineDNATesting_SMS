@@ -24,126 +24,39 @@ import {
 } from "lucide-react";
 import { testResultAPI } from "@/api/axios";
 
+// Updated interface to match actual API structure
 interface TestResult {
-  id: string;
-  testId: string;
-  customerName: string;
-  customerPhone: string;
-  testType: string;
-  sampleId: string;
-  analysisDate: string;
-  completionDate: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'reviewed' | 'delivered';
-  technician: string;
-  reviewer: string;
-  confidence: number;
-  result: 'positive' | 'negative' | 'inconclusive';
-  markers: MarkerResult[];
-  notes: string;
+  id?: number;
+  resultId?: number;
+  sampleId?: number;
+  requestId?: number;
+  resultData?: string;
+  approvedBy?: number;
+  uploadedBy?: number;
+  uploadedTime?: string;
+  approvedTime?: string;
+  staffId?: number;
+  // Additional fields that might be present in API response
+  status?: string;
+  customerName?: string;
+  customerPhone?: string;
+  testType?: string;
+  testId?: string;
+  analysisDate?: string;
+  completionDate?: string;
+  technician?: string;
+  reviewer?: string;
+  confidence?: number;
+  result?: string;
+  notes?: string;
   reportFile?: string;
-  qualityScore: number;
+  qualityScore?: number;
+  // Related data
+  user?: any;
+  service?: any;
+  staff?: any;
+  sample?: any;
 }
-
-interface MarkerResult {
-  marker: string;
-  value1: string;
-  value2: string;
-  match: boolean;
-  confidence: number;
-}
-
-const initialResults: TestResult[] = [
-  {
-    id: "RES001",
-    testId: "XN001",
-    customerName: "Nguyễn Văn A",
-    customerPhone: "0901234567",
-    testType: "Xét nghiệm huyết thống dân sự",
-    sampleId: "SMP001",
-    analysisDate: "2024-03-18",
-    completionDate: "2024-03-20",
-    status: "delivered",
-    technician: "Nguyễn Thị B",
-    reviewer: "Dr. Lê Văn C",
-    confidence: 99.99,
-    result: "positive",
-    markers: [
-      { marker: "D3S1358", value1: "15,16", value2: "15,16", match: true, confidence: 99.9 },
-      { marker: "vWA", value1: "17,18", value2: "17,18", match: true, confidence: 99.9 },
-      { marker: "FGA", value1: "22,24", value2: "22,24", match: true, confidence: 99.9 },
-      { marker: "D8S1179", value1: "13,14", value2: "13,14", match: true, confidence: 99.9 },
-      { marker: "D21S11", value1: "29,31", value2: "29,31", match: true, confidence: 99.9 }
-    ],
-    notes: "Kết quả cho thấy có sự tương đồng cao về DNA giữa hai mẫu được xét nghiệm. Với độ tin cậy 99.99%, có thể khẳng định hai người có quan hệ huyết thống cha-con.",
-    qualityScore: 95
-  },
-  {
-    id: "RES002",
-    testId: "XN002",
-    customerName: "Trần Thị B",
-    customerPhone: "0907654321",
-    testType: "Xét nghiệm huyết thống hành chính",
-    sampleId: "SMP002",
-    analysisDate: "2024-03-19",
-    completionDate: "2024-03-22",
-    status: "reviewed",
-    technician: "Lê Văn C",
-    reviewer: "Dr. Phạm Thị D",
-    confidence: 99.95,
-    result: "positive",
-    markers: [
-      { marker: "D3S1358", value1: "15,17", value2: "15,17", match: true, confidence: 99.9 },
-      { marker: "vWA", value1: "16,18", value2: "16,18", match: true, confidence: 99.9 },
-      { marker: "FGA", value1: "21,23", value2: "21,23", match: true, confidence: 99.9 },
-      { marker: "D8S1179", value1: "12,14", value2: "12,14", match: true, confidence: 99.9 },
-      { marker: "D21S11", value1: "28,30", value2: "28,30", match: true, confidence: 99.9 }
-    ],
-    notes: "Kết quả xác nhận quan hệ huyết thống với độ tin cậy cao. Tất cả các marker DNA đều phù hợp.",
-    qualityScore: 92
-  },
-  {
-    id: "RES003",
-    testId: "XN003",
-    customerName: "Lê Văn C",
-    customerPhone: "0909876543",
-    testType: "Xét nghiệm huyết thống dân sự",
-    sampleId: "SMP003",
-    analysisDate: "2024-03-20",
-    completionDate: "",
-    status: "in_progress",
-    technician: "Phạm Thị D",
-    reviewer: "",
-    confidence: 0,
-    result: "inconclusive",
-    markers: [],
-    notes: "Đang trong quá trình phân tích",
-    qualityScore: 0
-  },
-  {
-    id: "RES004",
-    testId: "XN004",
-    customerName: "Phạm Thị D",
-    customerPhone: "0908765432",
-    testType: "Xét nghiệm huyết thống hành chính",
-    sampleId: "SMP004",
-    analysisDate: "2024-03-17",
-    completionDate: "2024-03-19",
-    status: "completed",
-    technician: "Nguyễn Văn E",
-    reviewer: "",
-    confidence: 99.98,
-    result: "positive",
-    markers: [
-      { marker: "D3S1358", value1: "14,16", value2: "14,16", match: true, confidence: 99.9 },
-      { marker: "vWA", value1: "16,17", value2: "16,17", match: true, confidence: 99.9 },
-      { marker: "FGA", value1: "20,22", value2: "20,22", match: true, confidence: 99.9 },
-      { marker: "D8S1179", value1: "11,13", value2: "11,13", match: true, confidence: 99.9 },
-      { marker: "D21S11", value1: "27,29", value2: "27,29", match: true, confidence: 99.9 }
-    ],
-    notes: "Kết quả xác nhận quan hệ huyết thống. Chờ phê duyệt từ chuyên gia.",
-    qualityScore: 88
-  }
-];
 
 const statusOptions = [
   { value: "all", label: "Tất cả" },
@@ -171,12 +84,15 @@ export default function TestResultsManagement() {
   const [selectedResult, setSelectedResult] = useState<TestResult | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newResult, setNewResult] = useState({
-    testId: "",
-    customerName: "",
-    testType: "",
-    sampleId: "",
-    technician: "",
-    notes: ""
+    resultId: 0,
+    sampleId: 0,
+    requestId: 0,
+    resultData: "",
+    approvedBy: 0,
+    uploadedBy: 0,
+    uploadedTime: "",
+    approvedTime: "",
+    staffId: 0
   });
 
   // Fetch results from API
@@ -186,6 +102,7 @@ export default function TestResultsManagement() {
         setLoading(true);
         setError(null);
         const data = await testResultAPI.getAll();
+        console.log('Fetched test results:', data);
         setResults(Array.isArray(data) ? data : []);
       } catch (err: any) {
         console.error("Error fetching results:", err);
@@ -229,10 +146,14 @@ export default function TestResultsManagement() {
   };
 
   const filteredResults = results.filter(result => {
+    const customerName = result.customerName || result.user?.fullName || result.user?.name || '';
+    const resultId = result.id?.toString() || result.resultId?.toString() || '';
+    const testId = result.testId || result.requestId?.toString() || '';
+    
     const matchesSearch = 
-      result.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      result.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      result.testId.toLowerCase().includes(searchTerm.toLowerCase());
+      customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      resultId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      testId.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === "all" || result.status === statusFilter;
     const matchesResult = resultFilter === "all" || result.result === resultFilter;
@@ -242,10 +163,13 @@ export default function TestResultsManagement() {
 
   const updateResultStatus = async (resultId: string, newStatus: string) => {
     try {
-      await testResultAPI.updateStatus(resultId, newStatus);
+      // Use the update method instead of non-existent updateStatus
+      await testResultAPI.update(parseInt(resultId), { status: newStatus });
       setResults(prev => 
         prev.map(result => 
-          result.id === resultId ? { ...result, status: newStatus as any } : result
+          (result.id?.toString() === resultId || result.resultId?.toString() === resultId) 
+            ? { ...result, status: newStatus } 
+            : result
         )
       );
     } catch (err: any) {
@@ -255,34 +179,36 @@ export default function TestResultsManagement() {
   };
 
   const handleAddResult = async () => {
-    if (!newResult.testId || !newResult.customerName) {
-      alert("Vui lòng điền đầy đủ thông tin bắt buộc");
+    if (!newResult.sampleId || !newResult.requestId) {
+      alert("Vui lòng điền đầy đủ thông tin bắt buộc (Sample ID và Request ID)");
       return;
     }
 
     try {
       const resultData = {
-        testId: newResult.testId,
-        customerName: newResult.customerName,
-        testType: newResult.testType,
+        resultId: newResult.resultId,
         sampleId: newResult.sampleId,
-        technician: newResult.technician,
-        notes: newResult.notes,
-        status: "pending",
-        result: "inconclusive",
-        confidence: 0,
-        qualityScore: 0
+        requestId: newResult.requestId,
+        resultData: newResult.resultData || "Test result data",
+        approvedBy: newResult.approvedBy,
+        uploadedBy: newResult.uploadedBy,
+        uploadedTime: newResult.uploadedTime || new Date().toISOString(),
+        approvedTime: newResult.approvedTime || "",
+        staffId: newResult.staffId
       };
 
       const newResultData = await testResultAPI.create(resultData);
       setResults(prev => [newResultData, ...prev]);
       setNewResult({
-        testId: "",
-        customerName: "",
-        testType: "",
-        sampleId: "",
-        technician: "",
-        notes: ""
+        resultId: 0,
+        sampleId: 0,
+        requestId: 0,
+        resultData: "",
+        approvedBy: 0,
+        uploadedBy: 0,
+        uploadedTime: "",
+        approvedTime: "",
+        staffId: 0
       });
       setShowAddForm(false);
       alert("Thêm kết quả thành công!");
@@ -292,15 +218,57 @@ export default function TestResultsManagement() {
     }
   };
 
-  const handleDownloadReport = (resultId: string) => {
-    // Logic để tải xuống báo cáo
-    console.log('Downloading report for:', resultId);
+  const handleDownloadReport = async (resultId: string) => {
+    try {
+      const blob = await testResultAPI.downloadReport(parseInt(resultId));
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `test-result-${resultId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err: any) {
+      console.error("Error downloading report:", err);
+      alert(`Lỗi tải xuống báo cáo: ${err.message}`);
+    }
   };
 
   const handleUploadReport = (resultId: string) => {
     // Logic để tải lên báo cáo
     console.log('Uploading report for:', resultId);
   };
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto py-8 px-4">
+        <Card>
+          <CardContent className="flex items-center justify-center py-8">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p>Đang tải dữ liệu...</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto py-8 px-4">
+        <Card>
+          <CardContent className="flex items-center justify-center py-8">
+            <div className="text-center text-red-600">
+              <AlertCircle className="w-8 h-8 mx-auto mb-4" />
+              <p>{error}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto py-8 px-4">
@@ -379,51 +347,61 @@ export default function TestResultsManagement() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredResults.map((result) => (
-                  <TableRow key={result.id}>
-                    <TableCell className="font-medium">{result.id}</TableCell>
-                    <TableCell>{result.testId}</TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{result.customerName}</div>
-                        <div className="text-sm text-gray-500">{result.customerPhone}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{result.testType}</TableCell>
-                    <TableCell>{result.completionDate || "Chưa hoàn thành"}</TableCell>
-                    <TableCell>{getStatusBadge(result.status)}</TableCell>
-                    <TableCell>{getResultBadge(result.result)}</TableCell>
-                    <TableCell>
-                      {result.confidence > 0 ? `${result.confidence}%` : "N/A"}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                        <span className="text-sm">{result.qualityScore}%</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setSelectedResult(result)}
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        {result.status === "completed" && (
+                {filteredResults.map((result) => {
+                  const resultId = result.id?.toString() || result.resultId?.toString() || '';
+                  const customerName = result.customerName || result.user?.fullName || result.user?.name || 'N/A';
+                  const customerPhone = result.customerPhone || result.user?.phone || result.user?.phoneNumber || '';
+                  const testType = result.testType || result.service?.name || 'N/A';
+                  const completionDate = result.completionDate || result.approvedTime || 'Chưa hoàn thành';
+                  const confidence = result.confidence || 0;
+                  const qualityScore = result.qualityScore || 0;
+                  
+                  return (
+                    <TableRow key={resultId}>
+                      <TableCell className="font-medium">{resultId}</TableCell>
+                      <TableCell>{result.requestId || result.testId || 'N/A'}</TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{customerName}</div>
+                          <div className="text-sm text-gray-500">{customerPhone}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell>{testType}</TableCell>
+                      <TableCell>{completionDate}</TableCell>
+                      <TableCell>{getStatusBadge(result.status || 'pending')}</TableCell>
+                      <TableCell>{getResultBadge(result.result || 'inconclusive')}</TableCell>
+                      <TableCell>
+                        {confidence > 0 ? `${confidence}%` : "N/A"}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                          <span className="text-sm">{qualityScore}%</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex gap-1">
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleDownloadReport(result.id)}
+                            onClick={() => setSelectedResult(result)}
                           >
-                            <Download className="w-4 h-4" />
+                            <Eye className="w-4 h-4" />
                           </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                          {result.status === "completed" && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDownloadReport(resultId)}
+                            >
+                              <Download className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
@@ -440,7 +418,7 @@ export default function TestResultsManagement() {
       <Dialog open={!!selectedResult} onOpenChange={() => setSelectedResult(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Chi tiết kết quả xét nghiệm - {selectedResult?.id}</DialogTitle>
+            <DialogTitle>Chi tiết kết quả xét nghiệm - {selectedResult?.id || selectedResult?.resultId}</DialogTitle>
             <DialogDescription>
               Thông tin chi tiết và cập nhật trạng thái kết quả xét nghiệm
             </DialogDescription>
@@ -452,20 +430,20 @@ export default function TestResultsManagement() {
                 <div>
                   <h4 className="font-medium text-gray-900 mb-2">Thông tin khách hàng</h4>
                   <div className="space-y-2 text-sm">
-                    <p><strong>Họ tên:</strong> {selectedResult.customerName}</p>
-                    <p><strong>Số điện thoại:</strong> {selectedResult.customerPhone}</p>
-                    <p><strong>Mã xét nghiệm:</strong> {selectedResult.testId}</p>
-                    <p><strong>Mã mẫu:</strong> {selectedResult.sampleId}</p>
+                    <p><strong>Họ tên:</strong> {selectedResult.customerName || selectedResult.user?.fullName || selectedResult.user?.name || 'N/A'}</p>
+                    <p><strong>Số điện thoại:</strong> {selectedResult.customerPhone || selectedResult.user?.phone || selectedResult.user?.phoneNumber || 'N/A'}</p>
+                    <p><strong>Mã xét nghiệm:</strong> {selectedResult.requestId || selectedResult.testId || 'N/A'}</p>
+                    <p><strong>Mã mẫu:</strong> {selectedResult.sampleId || 'N/A'}</p>
                   </div>
                 </div>
                 
                 <div>
                   <h4 className="font-medium text-gray-900 mb-2">Thông tin xét nghiệm</h4>
                   <div className="space-y-2 text-sm">
-                    <p><strong>Loại xét nghiệm:</strong> {selectedResult.testType}</p>
-                    <p><strong>Kỹ thuật viên:</strong> {selectedResult.technician}</p>
-                    <p><strong>Người phê duyệt:</strong> {selectedResult.reviewer || "Chưa có"}</p>
-                    <p><strong>Ngày phân tích:</strong> {selectedResult.analysisDate}</p>
+                    <p><strong>Loại xét nghiệm:</strong> {selectedResult.testType || selectedResult.service?.name || 'N/A'}</p>
+                    <p><strong>Kỹ thuật viên:</strong> {selectedResult.technician || selectedResult.staff?.name || 'N/A'}</p>
+                    <p><strong>Người phê duyệt:</strong> {selectedResult.reviewer || selectedResult.approvedBy || "Chưa có"}</p>
+                    <p><strong>Ngày phân tích:</strong> {selectedResult.analysisDate || selectedResult.uploadedTime || 'N/A'}</p>
                   </div>
                 </div>
               </div>
@@ -473,61 +451,37 @@ export default function TestResultsManagement() {
               <div>
                 <h4 className="font-medium text-gray-900 mb-2">Kết quả phân tích</h4>
                 <div className="space-y-2 text-sm">
-                  <p><strong>Kết quả:</strong> {getResultBadge(selectedResult.result)}</p>
-                  <p><strong>Độ tin cậy:</strong> {selectedResult.confidence}%</p>
-                  <p><strong>Điểm chất lượng:</strong> {selectedResult.qualityScore}%</p>
-                  <p><strong>Ngày hoàn thành:</strong> {selectedResult.completionDate || "Chưa hoàn thành"}</p>
+                  <p><strong>Kết quả:</strong> {getResultBadge(selectedResult.result || 'inconclusive')}</p>
+                  <p><strong>Độ tin cậy:</strong> {selectedResult.confidence || 0}%</p>
+                  <p><strong>Điểm chất lượng:</strong> {selectedResult.qualityScore || 0}%</p>
+                  <p><strong>Ngày hoàn thành:</strong> {selectedResult.completionDate || selectedResult.approvedTime || "Chưa hoàn thành"}</p>
                 </div>
               </div>
 
-              {selectedResult.markers.length > 0 && (
+              {selectedResult.resultData && (
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Chi tiết marker DNA</h4>
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Marker</TableHead>
-                          <TableHead>Giá trị 1</TableHead>
-                          <TableHead>Giá trị 2</TableHead>
-                          <TableHead>Trạng thái</TableHead>
-                          <TableHead>Độ tin cậy</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {selectedResult.markers.map((marker, index) => (
-                          <TableRow key={index}>
-                            <TableCell className="font-medium">{marker.marker}</TableCell>
-                            <TableCell>{marker.value1}</TableCell>
-                            <TableCell>{marker.value2}</TableCell>
-                            <TableCell>
-                              {marker.match ? (
-                                <CheckCircle className="w-4 h-4 text-green-600" />
-                              ) : (
-                                <AlertCircle className="w-4 h-4 text-red-600" />
-                              )}
-                            </TableCell>
-                            <TableCell>{marker.confidence}%</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                  <h4 className="font-medium text-gray-900 mb-2">Dữ liệu kết quả</h4>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <pre className="text-sm whitespace-pre-wrap">{selectedResult.resultData}</pre>
                   </div>
                 </div>
               )}
 
               <div>
                 <h4 className="font-medium text-gray-900 mb-2">Ghi chú</h4>
-                <p className="text-sm text-gray-600">{selectedResult.notes}</p>
+                <p className="text-sm text-gray-600">{selectedResult.notes || 'Không có ghi chú'}</p>
               </div>
 
               <div>
                 <h4 className="font-medium text-gray-900 mb-2">Cập nhật trạng thái</h4>
                 <Select
-                  value={selectedResult.status}
+                  value={selectedResult.status || 'pending'}
                   onValueChange={(value) => {
-                    updateResultStatus(selectedResult.id, value);
-                    setSelectedResult({...selectedResult, status: value as any});
+                    const resultId = selectedResult.id?.toString() || selectedResult.resultId?.toString() || '';
+                    if (resultId) {
+                      updateResultStatus(resultId, value);
+                      setSelectedResult({...selectedResult, status: value});
+                    }
                   }}
                 >
                   <SelectTrigger>
@@ -566,57 +520,52 @@ export default function TestResultsManagement() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium">Mã xét nghiệm *</label>
+                <label className="text-sm font-medium">Sample ID *</label>
                 <Input
-                  value={newResult.testId}
-                  onChange={(e) => setNewResult({...newResult, testId: e.target.value})}
-                  placeholder="XN001"
+                  type="number"
+                  value={newResult.sampleId || ''}
+                  onChange={(e) => setNewResult({...newResult, sampleId: parseInt(e.target.value) || 0})}
+                  placeholder="1"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">Tên khách hàng *</label>
+                <label className="text-sm font-medium">Request ID *</label>
                 <Input
-                  value={newResult.customerName}
-                  onChange={(e) => setNewResult({...newResult, customerName: e.target.value})}
-                  placeholder="Nguyễn Văn A"
+                  type="number"
+                  value={newResult.requestId || ''}
+                  onChange={(e) => setNewResult({...newResult, requestId: parseInt(e.target.value) || 0})}
+                  placeholder="1"
                 />
               </div>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium">Loại xét nghiệm</label>
+                <label className="text-sm font-medium">Staff ID</label>
                 <Input
-                  value={newResult.testType}
-                  onChange={(e) => setNewResult({...newResult, testType: e.target.value})}
-                  placeholder="Xét nghiệm huyết thống dân sự"
+                  type="number"
+                  value={newResult.staffId || ''}
+                  onChange={(e) => setNewResult({...newResult, staffId: parseInt(e.target.value) || 0})}
+                  placeholder="1"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">Mã mẫu</label>
+                <label className="text-sm font-medium">Uploaded By</label>
                 <Input
-                  value={newResult.sampleId}
-                  onChange={(e) => setNewResult({...newResult, sampleId: e.target.value})}
-                  placeholder="SMP001"
+                  type="number"
+                  value={newResult.uploadedBy || ''}
+                  onChange={(e) => setNewResult({...newResult, uploadedBy: parseInt(e.target.value) || 0})}
+                  placeholder="1"
                 />
               </div>
             </div>
             
             <div>
-              <label className="text-sm font-medium">Kỹ thuật viên</label>
-              <Input
-                value={newResult.technician}
-                onChange={(e) => setNewResult({...newResult, technician: e.target.value})}
-                placeholder="Nguyễn Thị B"
-              />
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium">Ghi chú</label>
+              <label className="text-sm font-medium">Result Data</label>
               <Textarea
-                value={newResult.notes}
-                onChange={(e) => setNewResult({...newResult, notes: e.target.value})}
-                placeholder="Ghi chú về kết quả..."
+                value={newResult.resultData}
+                onChange={(e) => setNewResult({...newResult, resultData: e.target.value})}
+                placeholder="Enter test result data..."
                 rows={3}
               />
             </div>

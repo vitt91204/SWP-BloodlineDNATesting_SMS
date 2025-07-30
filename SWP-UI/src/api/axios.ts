@@ -373,6 +373,9 @@ export interface TestRequestResponse extends TestRequest {
   service?: any;
   staff?: any;
   address?: any;
+  serviceName?: string; // Tên dịch vụ từ response body
+  userFullName?: string; // Tên đầy đủ của user từ response body
+  userPhoneNumber?: string; // Số điện thoại của user từ response body
 }
 
 // Thêm API cho TestService
@@ -657,6 +660,25 @@ export const sampleAPI = {
   getByRequestId: async (requestId: number) => {
     const response = await api.get(`/api/Sample/request/${requestId}`);
     return response.data;
+  },
+
+  // Lấy mẫu theo requestId hoặc collectedBy với client-side filtering
+  getByRequestIdOrCollectedBy: async (requestId?: number, collectedBy?: number) => {
+    // Lấy tất cả samples và filter ở client-side
+    const allSamples = await sampleAPI.getAll();
+    
+    if (Array.isArray(allSamples)) {
+      return allSamples.filter((sample: any) => {
+        const sampleRequestId = sample.requestId || sample.request_id;
+        const sampleCollectedBy = sample.collectedBy || sample.collected_by;
+        
+        if (requestId && sampleRequestId === requestId) return true;
+        if (collectedBy && sampleCollectedBy === collectedBy) return true;
+        return false;
+      });
+    }
+    
+    return [];
   },
 
   // Lấy thống kê mẫu
