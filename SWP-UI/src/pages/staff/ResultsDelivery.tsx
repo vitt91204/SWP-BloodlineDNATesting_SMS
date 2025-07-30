@@ -6,14 +6,15 @@ import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { 
   FileText, 
-  PlusCircle,
+
   Upload,
   Download,
   Send,
   Eye,
-  TestTube
+  TestTube,
+  User
 } from 'lucide-react';
-import { testResultAPI, sampleAPI, staffAPI, testRequestAPI } from '@/api/axios';
+import { testResultAPI, sampleAPI, staffAPI, testRequestAPI, subSampleAPI } from '@/api/axios';
 
 interface TestResult {
   id: string;
@@ -50,6 +51,16 @@ interface TestResult {
   slotTime?: string;
   userId?: number;
   serviceId?: number;
+  // Thông tin subsample chi tiết
+  subSamples?: Array<{
+    subSampleId: number;
+    sampleId: number;
+    description: string;
+    createdAt: string;
+    fullName: string;
+    dateOfBirth: string;
+    sampleType: string;
+  }>;
 }
 
 export default function ResultsDelivery() {
@@ -58,7 +69,6 @@ export default function ResultsDelivery() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadingResultId, setUploadingResultId] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [loadingDetails, setLoadingDetails] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentStaffInfo, setCurrentStaffInfo] = useState<any>(null);
@@ -72,64 +82,14 @@ export default function ResultsDelivery() {
         return parsed.userId || parsed.id || null;
       }
     } catch (e) {
-      console.error('Error parsing user data:', e);
+      // Error parsing user data
     }
     return null;
   };
 
 
 
-  // Helper function to get service details
-  const getServiceDetails = async (serviceId: number): Promise<any> => {
-    try {
-      console.log('Fetching service details for service ID:', serviceId);
-      const response = await fetch(`/api/TestService/${serviceId}`);
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Service details fetched:', data);
-        return data;
-      } else {
-        console.warn(`Service API returned ${response.status} for service ID:`, serviceId);
-        return null;
-      }
-    } catch (error) {
-      console.warn('Error fetching service details for service ID:', serviceId, error);
-      return null;
-    }
-  };
 
-  // Helper function to get user details
-  const getUserDetails = async (userId: number): Promise<any> => {
-    try {
-      console.log('Fetching user details for user ID:', userId);
-      const response = await fetch(`/api/User`);
-      if (response.ok) {
-        const users = await response.json();
-        const foundUser = users.find((user: any) => user.userId === userId || user.id === userId);
-        console.log('User details found:', foundUser);
-        return foundUser || null;
-      } else {
-        console.warn(`User API returned ${response.status} for user ID:`, userId);
-        return null;
-      }
-    } catch (error) {
-      console.warn('Error fetching user details for user ID:', userId, error);
-      return null;
-    }
-  };
-
-
-
-
-
-  // Helper function to refresh sample info for all test results
-  const refreshAllSampleInfo = async () => {
-    console.log('Refreshing sample info for all test results...');
-    
-    // No need to fetch samples separately - the sample info should already be included
-    // in the test request data from /api/TestRequest/staff/{staffId}
-    console.log('Sample info refresh completed - using data from test request');
-  };
 
   const fetchTestRequests = async () => {
     setLoading(true);
@@ -144,49 +104,39 @@ export default function ResultsDelivery() {
           const staffInfo = await staffAPI.getById(currentStaffId);
           setCurrentStaffInfo(staffInfo);
         } catch (error) {
-          console.error('Failed to load staff info:', error);
+          // Failed to load staff info
         }
       }
       
       let data;
       if (currentStaffId) {
         // Lấy test requests theo staff ID để đảm bảo bảo mật
-        console.log('Fetching test requests for staff ID:', currentStaffId);
         try {
           data = await testRequestAPI.getByStaffId(currentStaffId);
-          console.log('Test requests fetched successfully:', data);
         } catch (error) {
-          console.error('Failed to fetch test requests for staff ID:', currentStaffId, error);
           setError(`Không thể tải dữ liệu lịch hẹn cho nhân viên ID ${currentStaffId}. Vui lòng kiểm tra kết nối và thử lại.`);
           setLoading(false);
           return;
         }
       } else {
         // Fallback: lấy tất cả nếu không có staff ID (có thể là admin)
-        console.log('No staff ID found, fetching all test requests');
         try {
           data = await testRequestAPI.getAll();
-          console.log('All test requests fetched successfully:', data);
         } catch (error) {
-          console.error('Failed to fetch all test requests:', error);
           setError('Không thể tải dữ liệu lịch hẹn. Vui lòng kiểm tra kết nối và thử lại.');
           setLoading(false);
           return;
         }
       }
       
-      console.log('Raw test request data:', data);
-      
       // Validate data structure
       if (!data) {
-        console.warn('No data received from API');
         setTestResults([]);
         setLoading(false);
         return;
       }
       
       if (!Array.isArray(data)) {
-        console.warn('API returned non-array data:', typeof data, data);
         // Try to handle single object case
         if (typeof data === 'object' && data !== null) {
           data = [data];
@@ -197,32 +147,12 @@ export default function ResultsDelivery() {
         }
       }
       
-      // Log the first item structure if available
-      if (data.length > 0) {
-        console.log('First test request structure:', data[0]);
-        console.log('Available fields:', Object.keys(data[0]));
-      }
-      
       // Map dữ liệu lịch hẹn thành TestResult
       const mapped = await Promise.all(data.map(async (item: any, index: number) => {
         try {
-          console.log(`Processing test request item ${index}:`, item);
-          console.log('Service info:', item.service);
-          console.log('User info:', item.user);
-          console.log('Sample info:', item.sample);
-          console.log('All available fields:', Object.keys(item));
-          console.log('ID fields check:', {
-            id: item.id,
-            requestId: item.requestId,
-            testRequestId: item.testRequestId,
-            staffId: item.staffId,
-            userId: item.userId,
-            serviceId: item.serviceId
-          });
           
           // Validate item has required fields
           if (!item) {
-            console.warn(`Item ${index} is null or undefined`);
             return null;
           }
           
@@ -234,18 +164,7 @@ export default function ResultsDelivery() {
             serviceName = item.service.name || item.service.serviceName || item.service.title || 'Chưa rõ';
             serviceDetails = item.service;
           } else if (item.serviceId) {
-            // Try to fetch service details if not included
-            try {
-              serviceDetails = await getServiceDetails(item.serviceId);
-              if (serviceDetails) {
-                serviceName = serviceDetails.name || serviceDetails.serviceName || serviceDetails.title || `Service ID: ${item.serviceId}`;
-              } else {
-                serviceName = `Service ID: ${item.serviceId}`;
-              }
-            } catch (error) {
-              console.warn('Failed to fetch service details for service ID:', item.serviceId, error);
-              serviceName = `Service ID: ${item.serviceId}`;
-            }
+            serviceName = `Service ID: ${item.serviceId}`;
           }
           
           // Extract customer name with multiple fallbacks
@@ -256,18 +175,7 @@ export default function ResultsDelivery() {
             customerName = item.user.fullName || item.user.name || item.user.username || item.user.email || 'Chưa rõ';
             userDetails = item.user;
           } else if (item.userId) {
-            // Try to fetch user details if not included
-            try {
-              userDetails = await getUserDetails(item.userId);
-              if (userDetails) {
-                customerName = userDetails.fullName || userDetails.name || userDetails.username || userDetails.email || `User ID: ${item.userId}`;
-              } else {
-                customerName = `User ID: ${item.userId}`;
-              }
-            } catch (error) {
-              console.warn('Failed to fetch user details for user ID:', item.userId, error);
-              customerName = `User ID: ${item.userId}`;
-            }
+            customerName = `User ID: ${item.userId}`;
           }
           
           // Extract sample information directly from test request data
@@ -275,22 +183,34 @@ export default function ResultsDelivery() {
           let sampleType = null;
           let subsampleType = null;
           let sampleInfo = null;
+          let subSamples = [];
           
           if (item.sample) {
             // Direct sample object from API response
             sampleId = item.sample.sampleId || item.sample.id;
             sampleType = item.sample.sampleType;
             sampleInfo = item.sample;
-            console.log('Found sample from item.sample:', { sampleId, sampleType });
           } else if (item.samples && Array.isArray(item.samples) && item.samples.length > 0) {
             // Multiple samples array
             const firstSample = item.samples[0];
             sampleId = firstSample.sampleId || firstSample.id;
             sampleType = firstSample.sampleType;
             sampleInfo = firstSample;
-            console.log('Found sample from item.samples array:', { sampleId, sampleType });
-          } else {
-            console.log('No sample information found in test request data');
+          }
+
+          // Extract subsample information
+          if (item.subSamples && Array.isArray(item.subSamples)) {
+            subSamples = item.subSamples;
+          } else if (sampleId) {
+            // Try to fetch subsamples for this sample
+            try {
+              const subsamplesData = await subSampleAPI.getBySampleId(sampleId);
+              if (Array.isArray(subsamplesData)) {
+                subSamples = subsamplesData;
+              }
+            } catch (error) {
+              // No subsamples found for sample ID
+            }
           }
           
           // Generate a unique ID for this item
@@ -339,30 +259,18 @@ export default function ResultsDelivery() {
             userId: item.userId,
             serviceId: item.serviceId,
             sampleId: sampleId,
-            sampleInfo: sampleInfo
+            sampleInfo: sampleInfo,
+            subSamples: subSamples
           } as TestResult;
         } catch (error) {
-          console.error(`Error processing item ${index}:`, error);
           return null;
         }
       }));
       
       // Filter out null results
       const validResults = mapped.filter(result => result !== null);
-      console.log(`Successfully processed ${validResults.length} out of ${data.length} items`);
       setTestResults(validResults);
-      
-      // Auto-refresh sample info after setting test results
-      setTimeout(() => {
-        refreshAllSampleInfo();
-      }, 1000);
-      
-      // Auto-refresh sample info after setting test results
-      setTimeout(() => {
-        refreshAllSampleInfo();
-      }, 1000);
     } catch (err: any) {
-      console.error('Error fetching test requests:', err);
       setError('Không thể tải dữ liệu lịch hẹn. Vui lòng kiểm tra kết nối và thử lại.');
     } finally {
       setLoading(false);
@@ -373,18 +281,7 @@ export default function ResultsDelivery() {
     fetchTestRequests();
   }, []);
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'Ready':
-        return <Badge className="bg-blue-100 text-blue-800">Sẵn sàng gửi</Badge>;
-      case 'Delivered':
-        return <Badge className="bg-green-100 text-green-800">Đã gửi</Badge>;
-      case 'Pending Upload':
-        return <Badge className="bg-yellow-100 text-yellow-800">Chờ tải lên</Badge>;
-      default:
-        return <Badge>{status}</Badge>;
-    }
-  };
+
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -438,25 +335,18 @@ export default function ResultsDelivery() {
         // Lấy sample ID trực tiếp từ test request data
         if (currentResult.sampleId) {
           sampleId = currentResult.sampleId;
-          console.log('Using sample ID from test result data:', sampleId);
         } else if (currentResult.sampleInfo && currentResult.sampleInfo.id) {
           sampleId = currentResult.sampleInfo.id;
-          console.log('Using sample ID from sample info:', sampleId);
         } else if (currentResult.requestData && currentResult.requestData.sample && currentResult.requestData.sample.id) {
           sampleId = currentResult.requestData.sample.id;
-          console.log('Using sample ID from request data sample:', sampleId);
         } else if (currentResult.requestData && currentResult.requestData.samples && currentResult.requestData.samples.length > 0) {
           sampleId = currentResult.requestData.samples[0].id || currentResult.requestData.samples[0].sampleId;
-          console.log('Using sample ID from request data samples array:', sampleId);
         }
         
         if (!sampleId) {
           throw new Error(`Không tìm thấy mẫu xét nghiệm cho yêu cầu này. Vui lòng tạo mẫu xét nghiệm trước trong phần "Quản lý mẫu".`);
         }
-        
-        console.log('Found sample ID:', sampleId);
       } catch (err) {
-        console.error('Lỗi khi lấy sample ID:', err);
         alert(`Lỗi khi tìm mẫu xét nghiệm: ${err.message}`);
         setIsUploading(false);
         return;
@@ -484,25 +374,13 @@ export default function ResultsDelivery() {
         if (!finalSampleValidation) {
           throw new Error('Sample validation failed - sample not found');
         }
-        console.log('Final sample validation successful:', finalSampleValidation);
         
         // Additional validation: Check if sample has valid status
         if (finalSampleValidation.status && !['Received', 'Collected', 'Tested'].includes(finalSampleValidation.status)) {
-          console.warn('Sample has unexpected status:', finalSampleValidation.status);
+          // Sample has unexpected status
         }
         
-        // Log sample details for debugging
-        console.log('Sample details for upload:', {
-          sampleId: sampleId,
-          sampleStatus: finalSampleValidation.status,
-          sampleRequestId: finalSampleValidation.requestId || finalSampleValidation.request_id,
-          sampleCollectedBy: finalSampleValidation.collectedBy || finalSampleValidation.collected_by,
-          sampleType: finalSampleValidation.sampleType
-        });
-        
       } catch (validationError) {
-        console.error('Final sample validation failed:', validationError);
-        
         // Check if it's a 404 error (sample not found)
         if (validationError.response?.status === 404) {
           alert(`Mẫu xét nghiệm với ID ${sampleId} không tồn tại trong hệ thống. Vui lòng tạo mẫu trước khi upload kết quả.`);
@@ -522,42 +400,12 @@ export default function ResultsDelivery() {
               formData.append('StaffId', currentStaffId.toString()); // Try lowercase with underscore
               formData.append('PdfFile', selectedFile);
       
-      // Debug: Log FormData content
-      console.log('=== FORMDATA DEBUG ===');
-      console.log('SampleId:', sampleId);
-      console.log('UploadedBy:', currentStaffId);
-      console.log('StaffId:', currentStaffId);
-      console.log('File name:', selectedFile.name);
-      console.log('File size:', selectedFile.size);
-      console.log('File type:', selectedFile.type);
-      
-      for (let [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
-        if (value instanceof File) {
-          console.log(`${key} file info:`, {
-            name: value.name,
-            size: value.size,
-            type: value.type
-          });
-        }
-      }
-      console.log('=== END FORMDATA DEBUG ===');
+
       
       // Gọi API upload với FormData instance
       let response;
       try {
-        console.log('Calling testResultAPI.createWithPdf with sampleId:', sampleId);
         response = await testResultAPI.createWithPdf(formData);
-        
-        // Debug: Log response để kiểm tra
-        console.log('=== API RESPONSE DEBUG ===');
-        console.log('API Response:', response);
-        console.log('Response type:', typeof response);
-        console.log('Response is null/undefined:', response === null || response === undefined);
-        console.log('Response is empty object:', response && Object.keys(response).length === 0);
-        console.log('Response keys:', response ? Object.keys(response) : 'No response');
-        console.log('Response stringified:', JSON.stringify(response, null, 2));
-        console.log('=== END DEBUG ===');
         
         // Validate response
         if (!response) {
@@ -565,13 +413,6 @@ export default function ResultsDelivery() {
         }
         
       } catch (uploadError: any) {
-        console.error('=== UPLOAD ERROR DEBUG ===');
-        console.error('Upload error:', uploadError);
-        console.error('Error message:', uploadError.message);
-        console.error('Error response status:', uploadError.response?.status);
-        console.error('Error response data:', uploadError.response?.data);
-        console.error('Error response headers:', uploadError.response?.headers);
-        console.error('=== END ERROR DEBUG ===');
         
         // Xử lý lỗi cụ thể theo HTTP status codes
         if (uploadError.response?.status === 404) {
@@ -594,7 +435,6 @@ export default function ResultsDelivery() {
           
           // Check for database constraint errors in 500 responses
           if (errorMsg.includes('foreign key') || errorMsg.includes('sample_id') || errorMsg.includes('FK_')) {
-            console.error('Foreign key constraint error detected:', errorMsg);
             throw new Error(`Lỗi khóa ngoại: Mẫu xét nghiệm với ID ${sampleId} không tồn tại hoặc không hợp lệ. Vui lòng tạo mẫu trước khi upload kết quả.`);
           }
           
@@ -615,7 +455,7 @@ export default function ResultsDelivery() {
         try {
           sampleInfo = await sampleAPI.getById(response.sampleId);
         } catch (error) {
-          console.error('Failed to get sample info:', error);
+          // Failed to get sample info
         }
       }
       
@@ -623,7 +463,7 @@ export default function ResultsDelivery() {
         try {
           staffInfo = await staffAPI.getById(response.staffId);
         } catch (error) {
-          console.error('Failed to get staff info:', error);
+          // Failed to get staff info
         }
       }
       
@@ -660,8 +500,6 @@ export default function ResultsDelivery() {
       alert(`✅ Upload thành công!\n\nFile: ${selectedFile.name}\nResult ID: ${response?.resultId || response?.id || 'N/A'}\nSample ID: ${response?.sampleId || sampleId}\nStaff ID: ${response?.staffId || currentStaffId}`);
       
     } catch (error: any) {
-      console.error('Upload failed:', error);
-      
       // Hiển thị thông báo lỗi cho user
       const errorMessage = error.message || 'Upload thất bại';
       alert(`❌ ${errorMessage}`);
@@ -693,118 +531,6 @@ export default function ResultsDelivery() {
   const handleViewResult = (testId: string) => {
     // Logic để xem trước kết quả
     // TODO: Implement view functionality
-  };
-
-  const loadResultDetails = async (testId: string) => {
-    setLoadingDetails(testId);
-    try {
-      const result = testResults.find(r => r.id === testId);
-      if (!result) return;
-
-      let sampleInfo = null;
-      let staffInfo = null;
-
-      // Giả sử testId có thể dùng để get sample info
-      if (result.sampleId) {
-        try {
-          sampleInfo = await sampleAPI.getById(result.sampleId);
-        } catch (error) {
-          console.error('Failed to get sample info:', error);
-        }
-      }
-
-      if (result.staffId) {
-        try {
-          staffInfo = await staffAPI.getById(result.staffId);
-        } catch (error) {
-          console.error('Failed to get staff info:', error);
-        }
-      }
-
-      // Cập nhật thông tin chi tiết
-      setTestResults(prev =>
-        prev.map(r =>
-          r.id === testId
-            ? { ...r, sampleInfo, staffInfo }
-            : r
-        )
-      );
-    } catch (error) {
-      console.error('Failed to load result details:', error);
-    } finally {
-      setLoadingDetails(null);
-    }
-  };
-
-  const refreshTestResultDetails = async (testId: string) => {
-    setLoadingDetails(testId);
-    try {
-      const result = testResults.find(r => r.id === testId);
-      if (!result || !result.requestData) return;
-
-      const item = result.requestData;
-      let serviceName = result.testName || result.serviceName;
-      let customerName = result.customerName || result.userFullName;
-      let serviceDetails = result.relatedTestRequest?.serviceDetails;
-      let userDetails = result.relatedTestRequest?.userDetails;
-      let sampleInfo = result.sampleInfo;
-      let sampleType = result.sampleType;
-      let sampleId = result.sampleId;
-
-      // Try to fetch service details if still showing "Chưa rõ"
-      if (serviceName === 'Chưa rõ' && item.serviceId) {
-        try {
-          serviceDetails = await getServiceDetails(item.serviceId);
-          if (serviceDetails) {
-            serviceName = serviceDetails.name || serviceDetails.serviceName || serviceDetails.title || `Service ID: ${item.serviceId}`;
-          }
-        } catch (error) {
-          console.error('Failed to fetch service details:', error);
-        }
-      }
-
-      // Try to fetch user details if still showing "Chưa rõ"
-      if (customerName === 'Chưa rõ' && item.userId) {
-        try {
-          userDetails = await getUserDetails(item.userId);
-          if (userDetails) {
-            customerName = userDetails.fullName || userDetails.name || userDetails.username || userDetails.email || `User ID: ${item.userId}`;
-          }
-        } catch (error) {
-          console.error('Failed to fetch user details:', error);
-        }
-      }
-
-      // Sample info should already be available from the test request data
-      // No need to fetch separately
-
-      // Update the test result with new details
-      setTestResults(prev =>
-        prev.map(r =>
-          r.id === testId
-            ? {
-                ...r,
-                testName: serviceName,
-                customerName: customerName,
-                serviceName: serviceName,
-                userFullName: customerName,
-                sampleType: sampleType,
-                sampleId: sampleId,
-                sampleInfo: sampleInfo,
-                relatedTestRequest: {
-                  ...r.relatedTestRequest,
-                  serviceDetails,
-                  userDetails
-                }
-              }
-            : r
-        )
-      );
-    } catch (error) {
-      console.error('Failed to refresh test result details:', error);
-    } finally {
-      setLoadingDetails(null);
-    }
   };
 
   return (
@@ -965,32 +691,197 @@ export default function ResultsDelivery() {
                         
                         {/* Hiển thị thông tin sample */}
                         {(result.sampleType || result.sampleId) && (
-                          <div className="text-xs bg-gray-50 p-2 rounded">
-                            <p className="font-medium">Thông tin mẫu:</p>
-                            {result.sampleId && <p>Sample ID: {result.sampleId}</p>}
-                            {result.sampleType && <p>Loại mẫu: {result.sampleType}</p>}
-                            {result.subsampleType && <p>Loại mẫu con: {result.subsampleType}</p>}
-                            {result.sampleInfo && result.sampleInfo.status && (
-                              <p>Trạng thái mẫu: {result.sampleInfo.status}</p>
+                          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 shadow-sm">
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                <TestTube className="w-4 h-4 text-blue-600" />
+                              </div>
+                              <h4 className="font-semibold text-blue-900">Thông tin mẫu xét nghiệm</h4>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              {result.sampleId && (
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                  <span className="text-sm font-medium text-gray-700">Mã mẫu:</span>
+                                  <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
+                                    #{result.sampleId}
+                                  </Badge>
+                                </div>
+                              )}
+                              
+                              {result.sampleType && (
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                  <span className="text-sm font-medium text-gray-700">Loại mẫu:</span>
+                                  <Badge className="bg-green-100 text-green-800">
+                                    {result.sampleType}
+                                  </Badge>
+                                </div>
+                              )}
+                              
+                              {result.subsampleType && (
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                  <span className="text-sm font-medium text-gray-700">Loại mẫu con:</span>
+                                  <Badge className="bg-purple-100 text-purple-800">
+                                    {result.subsampleType}
+                                  </Badge>
+                                </div>
+                              )}
+                              
+                              {result.sampleInfo && result.sampleInfo.status && (
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                                  <span className="text-sm font-medium text-gray-700">Trạng thái:</span>
+                                  <Badge className={
+                                    result.sampleInfo.status === 'Tested' ? 'bg-green-100 text-green-800' :
+                                    result.sampleInfo.status === 'Collected' ? 'bg-blue-100 text-blue-800' :
+                                    result.sampleInfo.status === 'Received' ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-gray-100 text-gray-800'
+                                  }>
+                                    {result.sampleInfo.status}
+                                  </Badge>
+                                </div>
+                              )}
+                              
+                              {result.sampleInfo && result.sampleInfo.collectionTime && (
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                                  <span className="text-sm font-medium text-gray-700">Thời gian lấy:</span>
+                                  <span className="text-sm text-gray-600">
+                                    {new Date(result.sampleInfo.collectionTime).toLocaleDateString('vi-VN')}
+                                  </span>
+                                </div>
+                              )}
+                              
+                              {result.sampleInfo && result.sampleInfo.receivedTime && (
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                                  <span className="text-sm font-medium text-gray-700">Thời gian nhận:</span>
+                                  <span className="text-sm text-gray-600">
+                                    {new Date(result.sampleInfo.receivedTime).toLocaleDateString('vi-VN')}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Thông tin bổ sung */}
+                            {result.sampleInfo && (result.sampleInfo.relationship || result.sampleInfo.sampleType) && (
+                              <div className="mt-3 pt-3 border-t border-blue-200">
+                                <div className="flex items-center gap-2 text-xs text-blue-700">
+                                  <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+                                  <span className="font-medium">Thông tin bổ sung:</span>
+                                </div>
+                                <div className="mt-1 text-xs text-gray-600">
+                                  {result.sampleInfo.relationship && (
+                                    <span className="inline-block mr-3">
+                                      Quan hệ: <span className="font-medium">{result.sampleInfo.relationship}</span>
+                                    </span>
+                                  )}
+                                  {result.sampleInfo.sampleType && result.sampleInfo.sampleType !== result.sampleType && (
+                                    <span className="inline-block">
+                                      Chi tiết: <span className="font-medium">{result.sampleInfo.sampleType}</span>
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
                             )}
-                            {result.sampleInfo && result.sampleInfo.collectionTime && (
-                              <p>Thời gian lấy: {new Date(result.sampleInfo.collectionTime).toLocaleDateString('vi-VN')}</p>
-                            )}
+                          </div>
+                        )}
+
+                        {/* Hiển thị thông tin subsample chi tiết */}
+                        {result.subSamples && result.subSamples.length > 0 && (
+                          <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4 shadow-sm">
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                <User className="w-4 h-4 text-purple-600" />
+                              </div>
+                              <h4 className="font-semibold text-purple-900">Thông tin người tham gia ({result.subSamples.length} người)</h4>
+                            </div>
+                            
+                            <div className="space-y-3">
+                              {result.subSamples.map((subSample, index) => (
+                                <div key={subSample.subSampleId} className="bg-white rounded-lg p-4 border border-purple-100 shadow-sm hover:shadow-md transition-shadow">
+                                  <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
+                                        <span className="text-xs font-bold text-purple-700">{index + 1}</span>
+                                      </div>
+                                      <div>
+                                        <h5 className="font-semibold text-purple-900 text-sm">{subSample.fullName}</h5>
+                                        <div className="flex items-center gap-2 mt-1">
+                                          <Badge className="bg-purple-100 text-purple-800 text-xs">
+                                            {subSample.sampleType}
+                                          </Badge>
+                                          <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300 text-xs">
+                                            #{subSample.subSampleId}
+                                          </Badge>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="text-right">
+                                      <div className="text-xs text-gray-500">
+                                        Ngày sinh
+                                      </div>
+                                      <div className="text-sm font-medium text-gray-700">
+                                        {new Date(subSample.dateOfBirth).toLocaleDateString('vi-VN')}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                      <span className="text-xs font-medium text-gray-700">Mã subsample:</span>
+                                      <span className="text-xs text-gray-600 font-mono">#{subSample.subSampleId}</span>
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2 h-2 bg-pink-500 rounded-full"></div>
+                                      <span className="text-xs font-medium text-gray-700">Mã mẫu cha:</span>
+                                      <span className="text-xs text-gray-600 font-mono">#{subSample.sampleId}</span>
+                                    </div>
+                                    
+                                    {subSample.createdAt && (
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                                        <span className="text-xs font-medium text-gray-700">Ngày tạo:</span>
+                                        <span className="text-xs text-gray-600">
+                                          {new Date(subSample.createdAt).toLocaleDateString('vi-VN')}
+                                        </span>
+                                      </div>
+                                    )}
+                                    
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                      <span className="text-xs font-medium text-gray-700">Loại mẫu:</span>
+                                      <Badge className="bg-green-100 text-green-800 text-xs">
+                                        {subSample.sampleType}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                  
+                                  {subSample.description && (
+                                    <div className="mt-3 pt-3 border-t border-purple-100">
+                                      <div className="flex items-center gap-2 text-xs text-purple-700 mb-1">
+                                        <div className="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
+                                        <span className="font-medium">Mô tả:</span>
+                                      </div>
+                                      <p className="text-xs text-gray-600 bg-gray-50 p-2 rounded border">
+                                        {subSample.description}
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                            
+
                           </div>
                         )}
                         
-                        {/* Hiển thị cảnh báo nếu chưa có sample */}
-                        {!result.sampleId && !result.sampleType && (
-                          <div className="text-xs bg-yellow-50 border border-yellow-200 p-2 rounded">
-                            <p className="font-medium text-yellow-800 flex items-center gap-1">
-                              <TestTube className="w-3 h-3" />
-                              ⚠️ Chưa có mẫu xét nghiệm
-                            </p>
-                            <p className="text-yellow-700 text-xs mt-1">
-                              Cần tạo mẫu trước khi upload kết quả. Vui lòng tạo mẫu trong phần "Quản lý mẫu".
-                            </p>
-                          </div>
-                        )}
+
                         
                         {/* Hiển thị thông tin từ response body */}
                         {result.resultId && (
@@ -1037,14 +928,6 @@ export default function ResultsDelivery() {
                         )}
                       </div>
                       <div className="text-right">
-                        {getStatusBadge(result.status)}
-                        <p className="text-sm text-gray-500 mt-1">ID: {result.id}</p>
-                        {result.userId && (
-                          <p className="text-xs text-gray-500">User ID: {result.userId}</p>
-                        )}
-                        {result.serviceId && (
-                          <p className="text-xs text-gray-500">Service ID: {result.serviceId}</p>
-                        )}
                         {result.resultFile && (
                           <p className="text-xs text-blue-600 mt-1">
                             {typeof result.resultFile === 'string' ? result.resultFile : 'File uploaded'}
@@ -1058,52 +941,7 @@ export default function ResultsDelivery() {
                       </div>
                     </div>
                     
-                    <div className="flex gap-2 flex-wrap">
-                      {/* Button refresh details if showing "Chưa rõ" */}
-                      {(result.testName === 'Chưa rõ' || result.customerName === 'Chưa rõ' || 
-                        result.serviceName === 'Chưa rõ' || result.userFullName === 'Chưa rõ' ||
-                        !result.sampleType || !result.sampleId) && (
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => refreshTestResultDetails(result.id)}
-                          disabled={loadingDetails === result.id}
-                        >
-                          {loadingDetails === result.id ? (
-                            <>
-                              <Upload className="w-4 h-4 mr-1 animate-spin" />
-                              Đang tải...
-                            </>
-                          ) : (
-                            <>
-                              <FileText className="w-4 h-4 mr-1" />
-                              Làm mới thông tin
-                            </>
-                          )}
-                        </Button>
-                      )}
-                      
-                      {/* Button load chi tiết */}
-                      {!result.sampleInfo && !result.staffInfo && (
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => loadResultDetails(result.id)}
-                          disabled={loadingDetails === result.id}
-                        >
-                          {loadingDetails === result.id ? (
-                            <>
-                              <Upload className="w-4 h-4 mr-1 animate-spin" />
-                              Đang tải...
-                            </>
-                          ) : (
-                            <>
-                              <FileText className="w-4 h-4 mr-1" />
-                              Tải chi tiết
-                            </>
-                          )}
-                        </Button>
-                      )}
+                                        <div className="flex gap-2 flex-wrap">
                       
                       {result.status === 'Pending Upload' && (
                         <Button 

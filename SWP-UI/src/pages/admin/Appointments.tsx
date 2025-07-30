@@ -504,20 +504,7 @@ export const AppointmentsPage = () => {
             <h1 className="text-3xl font-bold text-gray-900">Quản lý lịch hẹn</h1>
             <p className="text-gray-600 mt-1">Theo dõi và quản lý các lịch hẹn thu mẫu ADN</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge className="bg-green-100 text-green-700">
-              API Connected
-            </Badge>
-            <Badge variant="outline">
-              Appointments: {appointments.length}
-            </Badge>
-            <Badge variant="outline">
-              Users: {users.length}
-            </Badge>
-            <Badge variant="outline">
-              Payments: {payments.length}
-            </Badge>
-          </div>
+
         </div>
       </div>
 

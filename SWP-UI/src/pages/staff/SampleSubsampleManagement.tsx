@@ -137,24 +137,7 @@ export default function SampleSubsampleManagement() {
 
 
 
-  // Helper function to get customer display name directly from test request
-  const getCustomerDisplayNameFromRequest = (request: TestRequest) => {
-    return request.userFullName || `User ${request.userId}`;
-  };
 
-  // Helper function to get service display name directly from test request
-  const getServiceDisplayNameFromRequest = (request: TestRequest) => {
-    return request.serviceName || 'Chưa xác định';
-  };
-
-  // Helper function to get detailed customer info for display
-  const getCustomerDetailedInfo = (request: TestRequest) => {
-    return {
-      name: request.userFullName || `User ${request.userId}`,
-      email: 'Thông tin từ API TestRequest', // API này không trả về email
-      phone: 'Thông tin từ API TestRequest'  // API này không trả về phone
-    };
-  };
 
   // Fetch data
   useEffect(() => {
@@ -167,7 +150,6 @@ export default function SampleSubsampleManagement() {
       setError(null);
       
       if (!staffId) {
-        console.warn('No staff ID found, clearing data');
         setTestRequests([]);
         setSamples([]);
         setSubSamples([]);
@@ -205,11 +187,9 @@ export default function SampleSubsampleManagement() {
           
           setTestRequests(validRequests);
         } else {
-          console.warn('Test requests data is not an array:', staffRequests);
           setTestRequests([]);
         }
       } catch (err) {
-        console.error('Error fetching test requests:', err);
         setError('Không thể tải danh sách yêu cầu xét nghiệm');
         setTestRequests([]);
       }
@@ -223,19 +203,14 @@ export default function SampleSubsampleManagement() {
           const validSamples = samplesData.filter(sample => {
             // Prioritize sampleId (backend field) over legacy fields
             const hasValidId = sample.sampleId || sample.id || sample.sample_id;
-            if (!hasValidId) {
-              console.warn('Sample missing valid ID:', sample);
-            }
             return hasValidId;
           });
           
           setSamples(validSamples);
         } else {
-          console.warn('Samples data is not an array:', samplesData);
           setSamples([]);
         }
       } catch (err) {
-        console.error('Error fetching samples:', err);
         setSamples([]);
       }
       
@@ -244,12 +219,10 @@ export default function SampleSubsampleManagement() {
         const subSamplesData = await subSampleAPI.getAll();
         setSubSamples(Array.isArray(subSamplesData) ? subSamplesData : []);
       } catch (err) {
-        console.error('Error fetching subsamples:', err);
         setSubSamples([]);
       }
       
     } catch (err: any) {
-      console.error('Error in fetchData:', err);
       setError('Không thể tải dữ liệu');
     } finally {
       setLoading(false);
@@ -294,9 +267,6 @@ export default function SampleSubsampleManagement() {
     // Validate requestId exists and is valid
     if (!requestId || requestId <= 0) {
       alert('Lỗi: Không tìm thấy ID yêu cầu xét nghiệm hợp lệ. Vui lòng chọn lại yêu cầu.');
-      console.error('Invalid requestId:', requestId);
-      console.error('Selected request object:', selectedRequest);
-      console.error('Available properties:', Object.keys(selectedRequest));
       return;
     }
     
@@ -336,8 +306,6 @@ export default function SampleSubsampleManagement() {
       alert('Tạo mẫu thành công!');
       
     } catch (err: any) {
-      console.error('Error creating sample:', err);
-      
       let errorMessage = 'Lỗi tạo mẫu';
       if (err.response?.data?.message) {
         errorMessage += `: ${err.response.data.message}`;
@@ -386,23 +354,10 @@ export default function SampleSubsampleManagement() {
       try {
         await sampleAPI.getById(sampleId);
       } catch (error) {
-        console.error('Sample verification failed:', error);
         throw new Error('Mẫu gốc không tồn tại trong hệ thống. Vui lòng làm mới trang và thử lại.');
       }
       
-      // Debug: Log the data being sent to ensure sampleId is correct
-      console.log('=== SUBSAMPLE CREATION DEBUG ===');
-      console.log('Selected sample:', selectedSample);
-      console.log('Extracted sampleId:', sampleId);
-      console.log('SubSample data to be sent:', {
-        sampleId: sampleId,
-        description: subSampleForm.description.trim(),
-        createdAt: subSampleForm.createdAt ? new Date(subSampleForm.createdAt).toISOString() : new Date().toISOString(),
-        fullName: subSampleForm.fullName.trim() || undefined,
-        dateOfBirth: subSampleForm.dateOfBirth || undefined,
-        sampleType: subSampleForm.sampleType.trim() || undefined
-      });
-      console.log('=== END DEBUG ===');
+
       
       const subSampleData = {
         sampleId: sampleId, // Ensure this is sampleId, not sample_id
@@ -431,8 +386,6 @@ export default function SampleSubsampleManagement() {
       
       alert('Tạo mẫu con thành công!');
     } catch (err: any) {
-      console.error('Error creating subsample:', err);
-      
       // Hiển thị thông báo lỗi chi tiết hơn
       let errorMessage = 'Lỗi tạo mẫu con';
       if (err.response?.data?.message) {

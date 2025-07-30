@@ -83,10 +83,8 @@ export default function Booking() {
       try {
         setIsLoadingServices(true);
         const data = await testServiceAPI.getAll();
-        console.log('Loaded test services:', data);
         setTestServices(data);
       } catch (error) {
-        console.error('Error loading test services:', error);
         setTestServices([]);
       } finally {
         setIsLoadingServices(false);
@@ -108,7 +106,6 @@ export default function Booking() {
         
         setIsLoadingAddresses(true);
         const addresses = await addressAPI.getByUserId(userId);
-        console.log('Loaded existing addresses for booking:', addresses);
         setExistingAddresses(addresses || []);
         
         // Nếu có địa chỉ và chưa có dữ liệu form, auto-select địa chỉ primary hoặc đầu tiên
@@ -130,7 +127,7 @@ export default function Booking() {
           }
         }
       } catch (error) {
-        console.error('Error loading existing addresses:', error);
+        // Error loading existing addresses
       } finally {
         setIsLoadingAddresses(false);
       }
@@ -185,11 +182,9 @@ export default function Booking() {
 
     try {
       setIsLoadingTimeSlots(true);
-      console.log(`Loading booked time slots for date: ${date}`);
       
       // Gọi API để lấy tất cả test requests
       const allRequests = await testRequestAPI.getAll();
-      console.log('All test requests:', allRequests);
 
       // Filter theo ngày được chọn và status active
       const bookedOnDate = allRequests.filter(request => {
@@ -197,8 +192,6 @@ export default function Booking() {
         const isActiveBooking = ['Pending', 'Confirmed', 'In Progress'].includes(request.status);
         return requestDate === date && isActiveBooking && request.slotTime;
       });
-
-      console.log(`Booked appointments on ${date}:`, bookedOnDate);
 
       // Extract time slots đã được đặt và chuẩn hoá về định dạng HH:MM
       const normalizeTime = (t: string) => {
@@ -211,10 +204,7 @@ export default function Booking() {
         .map(request => normalizeTime(request.slotTime))
         .filter(Boolean);
       setBookedTimeSlots(bookedSlots);
-      
-      console.log('Booked time slots:', bookedSlots);
     } catch (error) {
-      console.error('Error loading booked time slots:', error);
       setBookedTimeSlots([]);
       toast({
         title: "Lỗi tải dữ liệu",
@@ -238,7 +228,6 @@ export default function Booking() {
   // Effect để reset selectedTimeSlot nếu slot đó đã bị đặt
   useEffect(() => {
     if (selectedTimeSlot && bookedTimeSlots.includes(selectedTimeSlot)) {
-      console.log(`Time slot ${selectedTimeSlot} is now booked, resetting selection`);
       setSelectedTimeSlot("");
       toast({
         title: "Khung giờ không còn trống",
@@ -250,54 +239,13 @@ export default function Booking() {
 
   // Cập nhật selectedServiceData khi selectedRelationship thay đổi
   useEffect(() => {
-    console.log('selectedRelationship changed:', selectedRelationship); // Debug log
-    console.log('testServices count:', testServices.length); // Debug log
     if (selectedRelationship && testServices.length > 0) {
       const service = testServices.find(s => s.serviceId?.toString() === selectedRelationship);
-      console.log('Found service:', service); // Debug log
       setSelectedServiceData(service);
     }
   }, [selectedRelationship, testServices]);
 
-  // Thêm danh sách các loại quan hệ
-  const relationships = [
-    {
-      id: "paternity",
-      name: "Xét nghiệm cha con",
-      civilPrice: "2.500.000 - 3.500.000 VNĐ",
-      legalPrice: "3.500.000 - 4.500.000 VNĐ",
-      duration: "5-7 ngày",
-      description: "Xác định mối quan hệ huyết thống giữa cha và con",
-      accuracy: "99.9%"
-    },
-    {
-      id: "maternity",
-      name: "Xét nghiệm mẹ con",
-      civilPrice: "2.500.000 - 3.500.000 VNĐ",
-      legalPrice: "3.500.000 - 4.500.000 VNĐ",
-      duration: "5-7 ngày",
-      description: "Xác định mối quan hệ huyết thống giữa mẹ và con",
-      accuracy: "99.9%"
-    },
-    {
-      id: "sibling",
-      name: "Xét nghiệm anh chị em ruột",
-      civilPrice: "3.000.000 - 4.500.000 VNĐ",
-      legalPrice: "4.000.000 - 5.500.000 VNĐ",
-      duration: "7-10 ngày",
-      description: "Xác định mối quan hệ huyết thống giữa anh chị em ruột",
-      accuracy: "95-99%"
-    },
-    {
-      id: "grandparent",
-      name: "Xét nghiệm ông bà - cháu",
-      civilPrice: "3.500.000 - 5.000.000 VNĐ",
-      legalPrice: "4.500.000 - 6.000.000 VNĐ",
-      duration: "7-14 ngày",
-      description: "Xác định mối quan hệ huyết thống giữa ông bà và cháu",
-      accuracy: "90-95%"
-    }
-  ];
+
 
   const locations = [
     {
@@ -485,7 +433,6 @@ export default function Booking() {
         // Nếu dùng địa chỉ có sẵn, lấy addressId từ selection
         if (useExistingAddress && selectedAddressId) {
           addressId = parseInt(selectedAddressId);
-          console.log('📍 Sử dụng địa chỉ có sẵn:', addressId);
         } else if (formData.addressLine && formData.city && formData.province) {
           // Tạo địa chỉ mới
           const addressData = {
@@ -498,15 +445,12 @@ export default function Booking() {
             isPrimary: formData.isPrimary
           };
           
-          console.log('📍 Tạo địa chỉ:', addressData);
           const addressResponse = await addressAPI.create(userId, addressData);
           addressId = addressResponse?.id || addressResponse?.addressId;
-          console.log('✅ Địa chỉ đã tạo:', addressResponse);
         }
-      } catch (addressError) {
-        console.warn('⚠️ Không thể tạo địa chỉ:', addressError);
-        // Vẫn tiếp tục với booking ngay cả khi tạo địa chỉ thất bại
-      }
+              } catch (addressError) {
+          // Vẫn tiếp tục với booking ngay cả khi tạo địa chỉ thất bại
+        }
 
       // Kiểm tra xem có phải là self-request (DIY kit) không
       const isSelfRequest = selectedLocation === 'home' && selectedHomeOption === 'diy_kit';
@@ -525,9 +469,7 @@ export default function Booking() {
           slotTime: '' // Không cần slot time cho self-request
         };
         
-        console.log('📦 Gửi self-request theo API schema:', selfRequestData);
         response = await testRequestAPI.createSelfRequest(selfRequestData);
-        console.log('✅ Self-request thành công:', response);
       } else {
         // Sử dụng API thông thường cho các trường hợp khác
         let collectionType = 'At Clinic';
@@ -545,9 +487,7 @@ export default function Booking() {
           staffId: null
         };
 
-        console.log('📦 Gửi booking theo API schema:', bookingData);
         response = await testRequestAPI.create(bookingData);
-        console.log('✅ Booking thành công:', response);
       }
 
       // Lưu thông tin booking và user info để sử dụng sau
@@ -608,7 +548,6 @@ export default function Booking() {
         description: message,
         variant: "destructive"
       });
-      console.error('❌ Booking lỗi:', error);
     } finally {
       setIsSubmittingBooking(false);
     }
@@ -688,11 +627,11 @@ export default function Booking() {
                 }));
               }
             } catch (addressError) {
-              console.log('Không thể load địa chỉ user:', addressError);
+              // Không thể load địa chỉ user
             }
           }
         } catch (e) {
-          console.error('Error parsing user data:', e);
+          // Error parsing user data
         }
       }
     };
@@ -838,7 +777,6 @@ export default function Booking() {
                             : 'border-gray-200 hover:border-gray-300'
                         }`}
                         onClick={() => {
-                          console.log('Clicking service:', service.serviceId, service.name); // Debug log
                           setSelectedRelationship(service.serviceId?.toString() || '');
                         }}
                       >

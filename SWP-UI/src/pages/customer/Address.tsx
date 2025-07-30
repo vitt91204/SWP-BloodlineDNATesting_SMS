@@ -69,7 +69,7 @@ export default function AddressTab() {
         const user = JSON.parse(userData);
         return user?.id || user?.userId;
       } catch (e) {
-        console.error('Error parsing user data:', e);
+        // Error parsing user data
       }
     }
     return null;
@@ -90,10 +90,8 @@ export default function AddressTab() {
     try {
       setIsLoading(true);
       const data = await addressAPI.getByUserId(userId);
-      console.log('Loaded addresses:', data);
       setAddresses(data || []);
     } catch (error) {
-      console.error('Error loading addresses:', error);
       toast({
         title: "Lỗi tải dữ liệu",
         description: "Không thể tải danh sách địa chỉ. Vui lòng thử lại.",
@@ -143,7 +141,6 @@ export default function AddressTab() {
     try {
       setIsSubmitting(true);
       const newAddress = await addressAPI.create(userId, formData);
-      console.log('Created address:', newAddress);
       
       toast({
         title: "Thành công",
@@ -154,7 +151,6 @@ export default function AddressTab() {
       setShowAddForm(false);
       await loadAddresses(); // Reload to get updated data
     } catch (error) {
-      console.error('Error creating address:', error);
       toast({
         title: "Lỗi",
         description: "Không thể thêm địa chỉ. Vui lòng thử lại.",
@@ -193,7 +189,6 @@ export default function AddressTab() {
     try {
       setIsSubmitting(true);
       const updatedAddress = await addressAPI.update(editingId, editFormData);
-      console.log('Updated address:', updatedAddress);
       
       toast({
         title: "Thành công",
@@ -203,7 +198,6 @@ export default function AddressTab() {
       setEditingId(null);
       await loadAddresses(); // Reload to get updated data
     } catch (error) {
-      console.error('Error updating address:', error);
       toast({
         title: "Lỗi",
         description: "Không thể cập nhật địa chỉ. Vui lòng thử lại.",
@@ -228,7 +222,6 @@ export default function AddressTab() {
       
       await loadAddresses(); // Reload to get updated data
     } catch (error) {
-      console.error('Error deleting address:', error);
       toast({
         title: "Lỗi",
         description: "Không thể xóa địa chỉ. Vui lòng thử lại.",

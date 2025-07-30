@@ -34,23 +34,12 @@ export default function Login() {
       // Call the actual login API
       const response = await authAPI.login(username, password);
       
-      // Debug: Log the API response
-      console.log('Login API Response:', response);
-      console.log('Response keys:', Object.keys(response));
-      console.log('Response type:', typeof response);
-      
-      
       const token = response.token;
       const user = response.user;
       
-      console.log('Extracted token:', token);
-      console.log('Extracted user:', user);
-      
       if (token) {
         localStorage.setItem('authToken', token);  
-        console.log('Token saved to localStorage:', token);
       } else {
-        console.log('No token found in response, setting dummy token');
         localStorage.setItem('authToken', 'dummy-token-for-testing');
       }
       
@@ -65,7 +54,6 @@ export default function Login() {
         ...user // Spread any additional user data from API
       };
       localStorage.setItem('userData', JSON.stringify(userData));
-      console.log('User data saved to localStorage:', userData);
       
       localStorage.setItem('isAuthenticated', 'true');
       
@@ -79,7 +67,6 @@ export default function Login() {
       
       // Check user role and redirect accordingly
       const userRole = userData?.role || userData?.userRole || user?.role || user?.userRole;
-      console.log('User role:', userRole);
       
       if (user.role === "Manager") {
         navigate("/manager/dashboard");
@@ -89,19 +76,14 @@ export default function Login() {
       // Wait a bit then navigate based on role
       setTimeout(() => {
         if (userRole === 'admin' || userRole === 'Admin' || userRole === 'ADMIN') {
-          console.log('Redirecting to admin dashboard');
           navigate('/admin');
         } else if (userRole === 'staff' || userRole === 'Staff' || userRole === 'STAFF') {
-          console.log('Redirecting to staff dashboard');
           navigate('/staff');
         } else {
-          console.log('Redirecting to home page');
           navigate('/');
         }
       }, 500);
     } catch (error: any) {
-      console.error('Login error:', error);
-      
       const errorMessage = error.response?.data?.message || 
                           error.response?.data?.error || 
                           error.message || 

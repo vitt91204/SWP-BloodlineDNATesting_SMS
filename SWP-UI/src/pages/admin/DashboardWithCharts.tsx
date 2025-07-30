@@ -163,16 +163,7 @@ export const DashboardWithCharts = () => {
           <h1 className="text-3xl font-bold text-gray-900">Dashboard Analytics</h1>
           <p className="text-gray-600 mt-1">Thống kê và phân tích dữ liệu hệ thống</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleRefresh} disabled={loading}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Làm mới
-          </Button>
-          <Button variant="outline" onClick={handleExport}>
-            <Download className="w-4 h-4 mr-2" />
-            Xuất báo cáo
-          </Button>
-        </div>
+
       </div>
 
       {/* Filters */}

@@ -49,16 +49,7 @@ const navigation = [
     href: "/admin/appointments",
     icon: Calendar
   },
-  // {
-  //   name: "Quản lý mẫu",
-  //   href: "/admin/samples",
-  //   icon: TestTube
-  // },
-  // {
-  //   name: "Kết quả xét nghiệm",
-  //   href: "/admin/test-results",
-  //   icon: BarChart3
-  // },
+  
   {
     name: "Quản lý loại dịch vụ",
     href: "/admin/test-services",
