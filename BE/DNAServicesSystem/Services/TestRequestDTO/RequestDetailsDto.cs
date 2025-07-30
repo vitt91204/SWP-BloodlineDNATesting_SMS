@@ -13,6 +13,9 @@ namespace Services.TestRequestDTO
         public string UserFullName { get; set; } = string.Empty;
         public string ServiceName { get; set; } = string.Empty;
 
+        [Phone]
+        public string UserPhoneNumber { get; set; } = string.Empty;
+
         public int RequestId { get; set; }
         public int UserId { get; set; }
 
@@ -34,6 +37,8 @@ namespace Services.TestRequestDTO
         public TimeOnly? SlotTime { get; set; }
 
         public int? StaffId { get; set; }
+
+        public DateTime? CreatedAt { get; set; }
 
         public Sample? Sample { get; set; }
         public List<SubSample>? SubSamples { get; set; } 

@@ -9,16 +9,44 @@ namespace Services
     {
         private readonly SampleRepository _repository;
         private readonly TestRequestRepository _testRequestRepository;
+        private readonly UserRepository _userRepository;
+        private readonly TestServiceRepository _testServiceRepository;
         public SampleService(SampleRepository repository) 
         { 
             _repository = repository; 
             _testRequestRepository = new TestRequestRepository();
+            _userRepository = new UserRepository();
+            _testServiceRepository = new TestServiceRepository();
         }
 
-        public async Task<List<Sample>> GetAllAsync()
+        public async Task<List<SampleDetailsDto>> GetAllAsync()
         {
-            var samples = await _repository.GetAllAsync();
-            return samples;
+            List<Sample> samples = await _repository.GetAllAsync();
+
+            var sampleDetails = new List<SampleDetailsDto>();
+
+            foreach (var sample in samples)
+            {
+                var request = await _testRequestRepository.GetByIdAsync(sample.RequestId);
+                var user = await _userRepository.GetByIdAsync(request.UserId);
+                var service = await _testServiceRepository.GetByIdAsync(request.ServiceId);
+                sampleDetails.Add(
+                    new SampleDetailsDto
+                    {
+                    RequestId = sample.RequestId,
+                    CollectedBy = sample.CollectedBy,
+                    CollectionTime = sample.CollectionTime,
+                    ReceivedTime = sample.ReceivedTime,
+                    Status = sample.Status,
+                    SampleType = sample.SampleType,
+                    Relationship = sample.Relationship,
+                    ServiceName = service.Name,
+                    UserFullName = user.FullName,
+                    UserPhoneNumber = user.Phone
+                });
+
+            }
+            return sampleDetails;
         }
 
         public async Task<Sample?> GetByIdAsync(int id)
