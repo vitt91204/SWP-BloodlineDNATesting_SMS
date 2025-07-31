@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, MapPin, Home, Users, TestTube, Clock, CheckCircle, ArrowRight, Package, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
@@ -16,6 +17,31 @@ export default function Booking() {
   const navigate = useNavigate();
   const { toast } = useToast();
   
+  // Danh sách các quận/huyện của TP.HCM
+  const hcmDistricts = [
+    "Quận 1",
+    "Quận 3", 
+    "Quận 4",
+    "Quận 5",
+    "Quận 6",
+    "Quận 7",
+    "Quận 8",
+    "Quận 10",
+    "Quận 11",
+    "Quận 12",
+    "Quận Bình Tân",
+    "Quận Bình Thạnh",
+    "Quận Gò Vấp",
+    "Quận Phú Nhuận",
+    "Quận Tân Bình",
+    "Quận Tân Phú",
+    "Huyện Bình Chánh",
+    "Thành phố Thủ Đức",
+    "Huyện Củ Chi",
+    "Huyện Hóc Môn",
+    "Huyện Nhà Bè",
+    "Huyện Cần Giờ"
+  ];
 
   const [selectedService, setSelectedService] = useState("");
   const [selectedRelationship, setSelectedRelationship] = useState("");
@@ -35,7 +61,7 @@ export default function Booking() {
     addressLabel: "",
     addressLine: "",
     city: "",
-    province: "",
+    province: "Hồ Chí Minh",
     postalCode: "",
     country: "Việt Nam",
     isPrimary: false
@@ -166,7 +192,7 @@ export default function Booking() {
       addressLabel: "",
       addressLine: "",
       city: "",
-      province: "",
+      province: "Hồ Chí Minh",
       postalCode: "",
       country: "Việt Nam",
       isPrimary: false
@@ -330,7 +356,7 @@ export default function Booking() {
     const requiredFields = formData.fullName && formData.phone && 
                           (
                             (useExistingAddress && selectedAddressId) || // Có chọn địa chỉ có sẵn
-                            (!useExistingAddress && formData.addressLine && formData.city && formData.province) // Hoặc đã nhập đủ thông tin địa chỉ mới
+                            (!useExistingAddress && formData.addressLine && formData.city) // Hoặc đã nhập đủ thông tin địa chỉ mới (province luôn là Hồ Chí Minh)
                           );
 
     if (!requiredFields) return false;
@@ -1171,31 +1197,36 @@ export default function Booking() {
                       <div className="grid md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Thành phố/Quận/Huyện *
+                            Quận/Huyện *
                           </label>
-                          <Input 
-                            placeholder="Nhập thành phố hoặc quận/huyện" 
+                          <Select
                             value={formData.city}
-                            onChange={(e) => updateFormData('city', e.target.value)}
-                            className={showValidation && !formData.city ? 'border-red-300 focus:border-red-500' : ''}
-                          />
+                            onValueChange={(value) => updateFormData('city', value)}
+                          >
+                            <SelectTrigger className={showValidation && !formData.city ? 'border-red-300 focus:border-red-500' : ''}>
+                              <SelectValue placeholder="Chọn quận/huyện" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {hcmDistricts.map((district) => (
+                                <SelectItem key={district} value={district}>
+                                  {district}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           {showValidation && !formData.city && (
-                            <p className="text-red-500 text-xs mt-1">Vui lòng nhập thành phố</p>
+                            <p className="text-red-500 text-xs mt-1">Vui lòng chọn quận/huyện</p>
                           )}
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Tỉnh/Thành phố *
+                            Tỉnh/Thành phố
                           </label>
                           <Input 
-                            placeholder="Nhập tỉnh/thành phố" 
-                            value={formData.province}
-                            onChange={(e) => updateFormData('province', e.target.value)}
-                            className={showValidation && !formData.province ? 'border-red-300 focus:border-red-500' : ''}
+                            value="Hồ Chí Minh"
+                            disabled
+                            className="bg-gray-50 text-gray-600"
                           />
-                          {showValidation && !formData.province && (
-                            <p className="text-red-500 text-xs mt-1">Vui lòng nhập tỉnh/thành phố</p>
-                          )}
                         </div>
                       </div>
 

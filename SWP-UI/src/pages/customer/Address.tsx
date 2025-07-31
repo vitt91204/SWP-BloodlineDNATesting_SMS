@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Edit2, Save, X, Loader2, MapPin } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
@@ -40,6 +41,32 @@ export default function AddressTab() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const { toast } = useToast();
+
+  // Danh sách các quận/huyện của TP.HCM
+  const hcmDistricts = [
+    "Quận 1",
+    "Quận 3", 
+    "Quận 4",
+    "Quận 5",
+    "Quận 6",
+    "Quận 7",
+    "Quận 8",
+    "Quận 10",
+    "Quận 11",
+    "Quận 12",
+    "Quận Bình Tân",
+    "Quận Bình Thạnh",
+    "Quận Gò Vấp",
+    "Quận Phú Nhuận",
+    "Quận Tân Bình",
+    "Quận Tân Phú",
+    "Huyện Bình Chánh",
+    "Thành phố Thủ Đức",
+    "Huyện Củ Chi",
+    "Huyện Hóc Môn",
+    "Huyện Nhà Bè",
+    "Huyện Cần Giờ"
+  ];
 
   const [formData, setFormData] = useState<AddressFormData>({
     label: "",
@@ -111,7 +138,7 @@ export default function AddressTab() {
       label: "",
       addressLine: "",
       city: "",
-      province: "",
+      province: "Thành phố Hồ Chí Minh",
       postalCode: "",
       country: "Việt Nam",
       isPrimary: false
@@ -345,13 +372,22 @@ export default function AddressTab() {
                     
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <Label htmlFor={`edit-city-${addressId}`}>Thành phố/Quận/Huyện *</Label>
-                        <Input
-                          id={`edit-city-${addressId}`}
+                        <Label htmlFor={`edit-city-${addressId}`}>Quận/Huyện *</Label>
+                        <Select
                           value={editFormData.city}
-                          onChange={(e) => updateEditFormData('city', e.target.value)}
-                          placeholder="Thành phố/Quận/Huyện"
-                        />
+                          onValueChange={(value) => updateEditFormData('city', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Chọn quận/huyện" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {hcmDistricts.map((district) => (
+                              <SelectItem key={district} value={district}>
+                                {district}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div>
                         <Label htmlFor={`edit-province-${addressId}`}>Tỉnh/Thành phố *</Label>
@@ -505,13 +541,22 @@ export default function AddressTab() {
                 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label htmlFor="new-city">Thành phố/Quận/Huyện *</Label>
-                    <Input
-                      id="new-city"
+                    <Label htmlFor="new-city">Quận/Huyện *</Label>
+                    <Select
                       value={formData.city}
-                      onChange={(e) => updateFormData('city', e.target.value)}
-                      placeholder="Thành phố/Quận/Huyện"
-                    />
+                      onValueChange={(value) => updateFormData('city', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Chọn quận/huyện" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {hcmDistricts.map((district) => (
+                          <SelectItem key={district} value={district}>
+                            {district}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <Label htmlFor="new-province">Tỉnh/Thành phố *</Label>
