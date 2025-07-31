@@ -14,7 +14,7 @@ import {
   TestTube,
   User
 } from 'lucide-react';
-import { testResultAPI, sampleAPI, staffAPI, testRequestAPI, subSampleAPI } from '@/api/axios';
+import { testResultAPI, sampleAPI, staffAPI, testRequestAPI, subSampleAPI, userAPI, testServiceAPI } from '@/api/axios';
 
 interface TestResult {
   id: string;
@@ -146,6 +146,22 @@ export default function ResultsDelivery() {
           return;
         }
       }
+
+      // Fetch all users and services for lookup
+      let allUsers = [];
+      let allServices = [];
+      
+      try {
+        allUsers = await userAPI.getAllUsers();
+      } catch (error) {
+        console.warn('Failed to fetch users:', error);
+      }
+      
+      try {
+        allServices = await testServiceAPI.getAll();
+      } catch (error) {
+        console.warn('Failed to fetch services:', error);
+      }
       
       // Map dữ liệu lịch hẹn thành TestResult
       const mapped = await Promise.all(data.map(async (item: any, index: number) => {
@@ -161,10 +177,23 @@ export default function ResultsDelivery() {
           let serviceDetails = null;
           
           if (item.service) {
+            // Direct service object from API response
             serviceName = item.service.name || item.service.serviceName || item.service.title || 'Chưa rõ';
             serviceDetails = item.service;
+          } else if (item.serviceName) {
+            // Service name directly from response
+            serviceName = item.serviceName;
           } else if (item.serviceId) {
-            serviceName = `Service ID: ${item.serviceId}`;
+            // Try to find service in fetched services
+            const foundService = allServices.find((s: any) => 
+              s.serviceId === item.serviceId || s.id === item.serviceId
+            );
+            if (foundService) {
+              serviceName = foundService.name || foundService.serviceName || foundService.title || 'Chưa rõ';
+              serviceDetails = foundService;
+            } else {
+              serviceName = `Service ID: ${item.serviceId}`;
+            }
           }
           
           // Extract customer name with multiple fallbacks
@@ -172,10 +201,23 @@ export default function ResultsDelivery() {
           let userDetails = null;
           
           if (item.user) {
+            // Direct user object from API response
             customerName = item.user.fullName || item.user.name || item.user.username || item.user.email || 'Chưa rõ';
             userDetails = item.user;
+          } else if (item.userFullName) {
+            // User full name directly from response
+            customerName = item.userFullName;
           } else if (item.userId) {
-            customerName = `User ID: ${item.userId}`;
+            // Try to find user in fetched users
+            const foundUser = allUsers.find((u: any) => 
+              u.userId === item.userId || u.id === item.userId
+            );
+            if (foundUser) {
+              customerName = foundUser.fullName || foundUser.name || foundUser.username || foundUser.email || 'Chưa rõ';
+              userDetails = foundUser;
+            } else {
+              customerName = `User ID: ${item.userId}`;
+            }
           }
           
           // Extract sample information directly from test request data
