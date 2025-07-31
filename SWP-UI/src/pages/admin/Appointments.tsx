@@ -510,53 +510,7 @@ export const AppointmentsPage = () => {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <Card>
-          <CardContent className="p-6 flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-medium text-gray-600">Tổng lịch hẹn</h3>
-              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-            </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Calendar className="w-6 h-6 text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6 flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-medium text-gray-600">Chờ xác nhận</h3>
-              <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
-            </div>
-            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <AlertCircle className="w-6 h-6 text-yellow-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6 flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-medium text-gray-600">Đã xác nhận</h3>
-              <p className="text-2xl font-bold text-gray-900">{stats.confirmed}</p>
-            </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <CheckCircle className="w-6 h-6 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6 flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-medium text-gray-600">Lịch hẹn hôm nay</h3>
-              <p className="text-2xl font-bold text-gray-900">{stats.todayAppointments}</p>
-            </div>
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <Clock className="w-6 h-6 text-purple-600" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+
 
       <Tabs defaultValue="all" className="space-y-6">
         <TabsList>
