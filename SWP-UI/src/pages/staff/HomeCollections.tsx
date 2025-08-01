@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { Button } from '../../components/ui/button';
-import { Badge } from '../../components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Home, 
   Clock,
@@ -12,12 +12,16 @@ import {
   CheckCircle,
   Package,
   Users,
-  Loader2
+  Loader2,
+  Calendar,
+  Clipboard
 } from 'lucide-react';
-import { testRequestAPI } from '@/api/axios';
+import { testRequestAPI, userAPI, addressAPI } from '@/api/axios';
 import { useToast } from '@/components/ui/use-toast';
+import { format } from 'date-fns';
+import { vi } from 'date-fns/locale';
 
-// Thêm interface cho địa chỉ
+// Interface cho địa chỉ
 interface Address {
   street: string;
   district: string;
@@ -30,16 +34,17 @@ interface Address {
 
 interface HomeCollection {
   id: string;
-  userId: string | number; // Thêm userId để lấy địa chỉ
+  userId: string | number;
   customerName: string;
   phone: string;
   address: string;
-  fullAddress?: Address | null; // Thêm trường này để lưu địa chỉ chi tiết
+  fullAddress?: Address | null;
   date: string;
   timeSlot: string;
-  status: 'Pending' | 'Confirmed' | 'Completed';
+  status: string;
   testType: string;
   collectionType: 'At Home' | 'Self';
+  requestId?: number;
 }
 
 export default function HomeCollections() {
@@ -50,7 +55,7 @@ export default function HomeCollections() {
   const [activeTab, setActiveTab] = useState('at-home');
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
 
-  // Get staff ID from localStorage
+  // Lấy staff ID từ localStorage
   const getStaffId = (): number | null => {
     try {
       const userData = localStorage.getItem('userData');
@@ -73,44 +78,34 @@ export default function HomeCollections() {
         const staffId = getStaffId();
         if (!staffId) {
           setError('Không tìm thấy thông tin nhân viên. Vui lòng đăng nhập lại.');
-          setLoading(false);
           return;
         }
 
-        console.log('Fetching test requests for staff ID:', staffId);
+        // Lấy các yêu cầu được phân công cho nhân viên
         const staffRequests = await testRequestAPI.getByStaffId(staffId);
-        console.log('Staff requests:', staffRequests);
         
-        // Lọc các yêu cầu lấy mẫu tại nhà (cả At Home và Self)
+        // Lọc các yêu cầu lấy mẫu tại nhà và tự thu mẫu
         const homeRequests = (staffRequests || []).filter(
           (req) => req.collectionType?.toLowerCase() === 'at home' || req.collectionType?.toLowerCase() === 'self'
         );
-        console.log('Home requests for staff:', homeRequests);
         
-        // Lấy thông tin user chi tiết
-        const { userAPI, addressAPI } = await import('@/api/axios');
-        let allUsers = [];
-        try {
-          allUsers = await userAPI.getAllUsers();
-          console.log('All users:', allUsers);
-        } catch (userError) {
-          console.error('Error fetching users:', userError);
-        }
+        // Lấy thông tin chi tiết của tất cả users
+        const allUsers = await userAPI.getAllUsers();
         
-        // Tạo một mảng tạm để lưu trữ collections
+        // Xử lý thông tin cơ bản cho mỗi yêu cầu
         const collectionsWithBasicInfo = homeRequests.map((req) => {
           // Tìm thông tin user chi tiết
           const userInfo = allUsers.find(user => 
             user.userId?.toString() === req.userId?.toString() || 
             user.id?.toString() === req.userId?.toString()
           );
-          console.log(`User info for request ${req.requestId}:`, userInfo);
           
           return {
-            id: req.requestId || req.id,
+            id: req.requestId?.toString() || req.id?.toString(),
+            requestId: req.requestId || req.id,
             userId: req.userId || userInfo?.userId || userInfo?.id,
             customerName: req.userFullName || userInfo?.fullName || userInfo?.username || 'Khách hàng',
-            phone: req.user?.phone || userInfo?.phone || 'Chưa có số điện thoại',
+            phone: req.userPhoneNumber || req.user?.phone || userInfo?.phone || 'Chưa có số điện thoại',
             address: req.address?.street || req.address?.addressLine || req.address?.address || 'Chưa có địa chỉ',
             date: req.appointmentDate,
             timeSlot: req.slotTime,
@@ -126,12 +121,10 @@ export default function HomeCollections() {
           collectionsWithBasicInfo.map(async (collection) => {
             if (collection.userId) {
               try {
-                console.log(`Fetching address for user ID: ${collection.userId}`);
                 const addressData = await addressAPI.getByUserId(collection.userId);
-                console.log(`Address data for user ${collection.userId}:`, addressData);
                 
                 if (addressData && addressData.length > 0) {
-                  // Lấy địa chỉ đầu tiên hoặc địa chỉ mặc định nếu có
+                  // Lấy địa chỉ đầu tiên hoặc địa chỉ mặc định
                   const primaryAddress = addressData.find(addr => addr.isDefault) || addressData[0];
                   
                   // Tạo địa chỉ đầy đủ
