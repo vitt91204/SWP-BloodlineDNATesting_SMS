@@ -32,10 +32,12 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 
+// 1. Cập nhật interface TestRequest để bao gồm serviceName
 interface TestRequest {
   requestId: number;
   userId: number;
   serviceId: number;
+  serviceName?: string;  // Thêm trường này
   collectionType: string;
   status: string;
   appointmentDate: string;
@@ -43,35 +45,14 @@ interface TestRequest {
   createdAt: string;
   staffId: number | null;
   addressId: number | null;
-  feedbacks: any[];
-  payments: any[];
-  samples: any[];
-  service: {
-    serviceId: number;
-    name: string;
-    description: string;
-    price: number;
-    isActive: boolean;
-    testKit: any;
-  } | null;
-  address: {
-    addressId: number;
-    street: string;
-    city: string;
-    state: string;
-    country: string;
-    postalCode: string;
-  } | null;
-  user: {
-    userId: number;
-    username: string;
-    fullName: string;
-    email: string;
-    phone: string;
-    dateOfBirth: string;
-    gender: string;
-    role: string;
-  } | null;
+  payment?: {
+    paymentId: number;
+    amount: number;
+    status: string;
+    paidAt: string;
+    token: string;
+  };
+  // Các trường khác...
 }
 
 export default function ManagerDashboard() {
@@ -190,25 +171,25 @@ export default function ManagerDashboard() {
     return staff?.fullName || staff?.username || `Staff ${staffId}`;
   };
 
-  const filteredRequests = testRequests
-    .filter(request => {
-      const matchesSearch = 
-        getUserName(request.userId).toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (request.requestId ? request.requestId.toString() : "").includes(searchTerm) ||
-        request.service?.name?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesStatus = statusFilter === 'all' || request.status === statusFilter;
-      const matchesCollectionType = collectionTypeFilter === 'all' || 
-        request.collectionType?.toLowerCase() === collectionTypeFilter.toLowerCase();
-      
-      return matchesSearch && matchesStatus && matchesCollectionType;
-    })
-    .sort((a, b) => {
-      // Sort by appointment date in descending order (newest first)
-      const dateA = new Date(a.appointmentDate);
-      const dateB = new Date(b.appointmentDate);
-      return dateB.getTime() - dateA.getTime();
-    });
+  // 1. Sửa trong hàm tìm kiếm/filter
+  const filteredRequests = testRequests.filter((request) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      request.requestId.toString().includes(searchLower) ||
+      getUserName(request.userId).toLowerCase().includes(searchLower) ||
+      // Sửa dòng này
+      (request.serviceName?.toLowerCase().includes(searchLower) || false) ||
+      // Dùng cách này nếu muốn tương thích cả hai cấu trúc
+      // (request.serviceName?.toLowerCase().includes(searchLower) || 
+      //  request.service?.name?.toLowerCase().includes(searchLower) || false) ||
+      (request.collectionType?.toLowerCase().includes(searchLower) || false)
+    );
+  }).sort((a, b) => {
+    // Sort by appointment date in descending order (newest first)
+    const dateA = new Date(a.appointmentDate);
+    const dateB = new Date(b.appointmentDate);
+    return dateB.getTime() - dateA.getTime();
+  });
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
@@ -405,18 +386,23 @@ export default function ManagerDashboard() {
                   <TableRow key={request.requestId}>
                     <TableCell className="font-medium">YC{request.requestId}</TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <User className="w-4 h-4 text-gray-400" />
-                        <div>
-                          <div className="font-medium">{getUserName(request.userId)}</div>
-                          <div className="text-sm text-gray-500">{request.user?.phone || 'Chưa có SĐT'}</div>
-                        </div>
+                      {/* Chỉ hiển thị tên khách hàng, xóa phần SĐT */}
+                      <div className="flex items-center">
+                        <User className="w-4 h-4 text-gray-400 mr-2" />
+                        <span className="font-medium">{getUserName(request.userId)}</span>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div>
-                        <div className="font-medium">{request.service?.name || 'Chưa xác định'}</div>
-                        <div className="text-sm text-gray-500">{request.service?.price?.toLocaleString('vi-VN')} VNĐ</div>
+                      <div className="flex flex-col">
+                        {/* Hiển thị tên dịch vụ */}
+                        <div className="font-medium">{request.serviceName || "Chưa xác định"}</div>
+                        
+                        {/* Hiển thị giá, bỏ VND khi không có giá */}
+                        <div className="text-sm font-medium text-green-600">
+                          {request.payment?.amount 
+                            ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(request.payment.amount)
+                            : ''}
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -492,4 +478,4 @@ export default function ManagerDashboard() {
       </Card>
     </div>
   );
-} 
+}
