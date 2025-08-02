@@ -1,3 +1,5 @@
+using System.IO;
+using System.Threading.Tasks;
 using Repositories;
 using Services.BlogPostDTO;
 using Repositories.Models;
@@ -24,16 +26,16 @@ namespace Services
             return await _repository.GetByIdAsync(id);
         }
 
-        public async Task<int> CreateAsync(BlogPostDto dto)
-        {
-            var post = new BlogPost
-            {
-                Title = dto.Title,
-                Content = dto.Content,
-                CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"))
-            };
-            return await _repository.CreateAsync(post);
-        }
+        //public async Task<int> CreateAsync(BlogPostDto dto)
+        //{
+        //    var post = new BlogPost
+        //    {
+        //        Title = dto.Title,
+        //        Content = dto.Content,
+        //        CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"))
+        //    };
+        //    return await _repository.CreateAsync(post);
+        //}
 
         public async Task<bool> UpdateAsync(int id, BlogPostDto dto)
         {
@@ -54,6 +56,27 @@ namespace Services
             if (post == null) return false;
             await _repository.DeleteAsync(post);
             return true;
+        }
+
+        public async Task<BlogPost> CreateBlogPostAsync(BlogPostDto dto)
+        {
+            var blogPost = new BlogPost
+            {
+                Title = dto.Title,
+                Content = dto.Content,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            if (dto.ImageFile != null)
+            {
+                using var ms = new MemoryStream();
+                await dto.ImageFile.CopyToAsync(ms);
+                var imageBytes = ms.ToArray();
+                blogPost.PostImage = Convert.ToBase64String(imageBytes);
+            }
+
+
+            return blogPost;
         }
     }
 }

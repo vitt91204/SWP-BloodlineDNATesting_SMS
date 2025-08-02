@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -14,5 +15,7 @@ namespace Services.BlogPostDTO
 
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+
+        public IFormFile? ImageFile { get; set; }
     }
 }

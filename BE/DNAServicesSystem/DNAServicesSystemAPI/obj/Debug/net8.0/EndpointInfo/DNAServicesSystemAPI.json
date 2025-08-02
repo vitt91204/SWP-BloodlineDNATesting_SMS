@@ -280,19 +280,52 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/BlogPostDto"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/BlogPostDto"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/BlogPostDto"
+                "required": [
+                  "Content",
+                  "Title"
+                ],
+                "type": "object",
+                "properties": {
+                  "Title": {
+                    "maxLength": 200,
+                    "minLength": 0,
+                    "type": "string"
+                  },
+                  "Content": {
+                    "type": "string"
+                  },
+                  "CreatedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "UpdatedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "ImageFile": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "Title": {
+                  "style": "form"
+                },
+                "Content": {
+                  "style": "form"
+                },
+                "CreatedAt": {
+                  "style": "form"
+                },
+                "UpdatedAt": {
+                  "style": "form"
+                },
+                "ImageFile": {
+                  "style": "form"
+                }
               }
             }
           }
@@ -367,6 +400,29 @@
         }
       },
       "delete": {
+        "tags": [
+          "BlogPost"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/BlogPost/{id}/image": {
+      "get": {
         "tags": [
           "BlogPost"
         ],
@@ -2284,6 +2340,11 @@
           "updatedAt": {
             "type": "string",
             "format": "date-time",
+            "nullable": true
+          },
+          "imageFile": {
+            "type": "string",
+            "format": "binary",
             "nullable": true
           }
         },
