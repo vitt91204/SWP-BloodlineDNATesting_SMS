@@ -12,16 +12,32 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { blogAPI } from "@/api/axios";
-
 export const BlogSection = () => {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Hàm lấy ảnh cho từng blog
+  const fetchBlogImages = async (blogList) => {
+    const blogsWithImages = await Promise.all(
+      blogList.map(async (post) => {
+        const blogId = post.postId || post.id || post.blogPostId;
+        try {
+          const blob = await blogAPI.getImage(blogId);
+          const imgUrl = URL.createObjectURL(blob);
+          return { ...post, imgUrl };
+        } catch {
+          return { ...post, imgUrl: null };
+        }
+      })
+    );
+    setBlogs(blogsWithImages);
+  };
 
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
         const data = await blogAPI.getAll();
-        setBlogs(data);
+        await fetchBlogImages(data);
       } catch (error) {
         toast({ title: "Lỗi khi lấy blog!", variant: "destructive" });
       } finally {
@@ -55,13 +71,16 @@ export const BlogSection = () => {
         ) : (
           <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8">
             {blogs.map((post) => {
-              const blogId = post.postId;
+              const blogId = post.postId || post.id || post.blogPostId;
               return (
                 <Card
                   key={blogId || Math.random()}
                   className="bg-white border-gray-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
                 >
                   <CardHeader className="pb-4">
+                    {post.imgUrl && (
+                      <img src={post.imgUrl} alt="blog" className="w-full h-48 object-cover rounded mb-2" />
+                    )}
                     <CardTitle className="text-xl text-gray-900 line-clamp-2 hover:text-blue-600 transition-colors">
                       {post.title || "Không có tiêu đề"}
                     </CardTitle>
@@ -69,7 +88,6 @@ export const BlogSection = () => {
                       {(post.content || "").slice(0, 100)}...
                     </CardDescription>
                   </CardHeader>
-
                   <CardContent className="pt-0">
                     <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
                       <div className="flex items-center space-x-4">
@@ -88,7 +106,6 @@ export const BlogSection = () => {
                       </div>
                       <div className="text-xs text-gray-400">5 phút đọc</div>
                     </div>
-
                     {blogId ? (
                       <Link to={`/blog/${blogId}`}>
                         <Button variant="outline" className="w-full group">
@@ -110,4 +127,4 @@ export const BlogSection = () => {
       </div>
     </section>
   );
-};
+              }
