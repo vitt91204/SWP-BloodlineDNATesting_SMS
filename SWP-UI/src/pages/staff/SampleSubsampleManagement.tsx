@@ -17,10 +17,14 @@ import {
   Clock,
   Package,
   FileText,
-  FlaskConical
+  FlaskConical,
+  Loader2,
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react';
 import { testRequestAPI, sampleAPI, subSampleAPI, userAPI } from '@/api/axios';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/components/ui/use-toast';
 
 interface TestRequest {
   requestId?: number;
@@ -92,6 +96,7 @@ interface SubSample {
 }
 
 export default function SampleSubsampleManagement() {
+  const { toast } = useToast();
   const [testRequests, setTestRequests] = useState<TestRequest[]>([]);
   const [samples, setSamples] = useState<Sample[]>([]);
   const [subSamples, setSubSamples] = useState<SubSample[]>([]);
@@ -99,7 +104,7 @@ export default function SampleSubsampleManagement() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [activeTab, setActiveTab] = useState('self');
+  const [activeTab, setActiveTab] = useState('at-home');
   
   // Dialog states
   const [showCreateSampleDialog, setShowCreateSampleDialog] = useState(false);
@@ -109,19 +114,47 @@ export default function SampleSubsampleManagement() {
   // Form states
   const [sampleForm, setSampleForm] = useState({
     sampleType: '',
-    fullName: ''
+    fullName: '',
+    dateOfBirth: '',
+    notes: ''
   });
   
   const [subSampleForm, setSubSampleForm] = useState({
     fullName: '',
+    dateOfBirth: '',
     sampleType: ''
   });
 
   // New state for form flow
   const [isCreatingSubSample, setIsCreatingSubSample] = useState(false);
   const [createdSampleId, setCreatedSampleId] = useState<number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Sample type options
+  const sampleTypes = [
+    { value: "Máu", label: "Máu" },
+    { value: "Niêm mạc miệng", label: "Niêm mạc miệng" },
+    { value: "Tóc", label: "Tóc" },
+    { value: "Móng tay/móng chân", label: "Móng tay/móng chân" },
+    { value: "Cuống rốn", label: "Cuống rốn" },
+    { value: "Nước ối", label: "Nước ối" },
+  ];
 
+  const genderOptions = [
+    { value: "Male", label: "Nam" },
+    { value: "Female", label: "Nữ" },
+    { value: "Other", label: "Khác" },
+  ];
+
+  const relationshipOptions = [
+    { value: "Self", label: "Bản thân" },
+    { value: "Father", label: "Cha" },
+    { value: "Mother", label: "Mẹ" },
+    { value: "Child", label: "Con" },
+    { value: "Sibling", label: "Anh/Chị/Em" },
+    { value: "Spouse", label: "Vợ/Chồng" },
+    { value: "Other", label: "Khác" },
+  ];
 
   // Get staff ID from localStorage (ưu tiên userId, sau đó id)
   let staffId: number | null = null;
@@ -258,23 +291,74 @@ export default function SampleSubsampleManagement() {
     return <Badge className={config.className}>{config.text}</Badge>;
   };
 
-    const handleCreateSample = async () => {
-    if (!selectedRequest) return;
-    
-    // Validation
+  const validateMainSample = () => {
     if (!sampleForm.sampleType.trim()) {
-      alert('Vui lòng chọn loại mẫu');
-      return;
+      toast({
+        title: "Lỗi",
+        description: "Vui lòng chọn loại mẫu",
+        variant: "destructive",
+      });
+      return false;
     }
     
-    if (!sampleForm.fullName.trim()) {
-      alert('Vui lòng nhập tên mẫu');
+    return true;
+  };
+
+  const validateSubSample = () => {
+    if (!subSampleForm.sampleType.trim()) {
+      toast({
+        title: "Lỗi",
+        description: "Vui lòng chọn loại mẫu con",
+        variant: "destructive",
+      });
+      return false;
+    }
+    if (!subSampleForm.fullName.trim()) {
+      toast({
+        title: "Lỗi",
+        description: "Vui lòng nhập tên mẫu con",
+        variant: "destructive",
+      });
+      return false;
+    }
+    if (!subSampleForm.dateOfBirth) {
+      toast({
+        title: "Lỗi",
+        description: "Vui lòng nhập ngày sinh mẫu con",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    // Validate date of birth
+    const birthDate = new Date(subSampleForm.dateOfBirth);
+    const today = new Date();
+    if (birthDate > today) {
+      toast({
+        title: "Lỗi",
+        description: "Ngày sinh không thể là ngày trong tương lai",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    return true;
+  };
+
+  const handleCreateSample = async () => {
+    if (!selectedRequest) return;
+    
+    if (!validateMainSample()) {
       return;
     }
     
     // Validate staffId
     if (!staffId || typeof staffId !== 'number') {
-      alert('Lỗi: Không tìm thấy thông tin nhân viên. Vui lòng đăng nhập lại.');
+      toast({
+        title: "Lỗi",
+        description: "Không tìm thấy thông tin nhân viên. Vui lòng đăng nhập lại.",
+        variant: "destructive",
+      });
       return;
     }
     
@@ -283,19 +367,31 @@ export default function SampleSubsampleManagement() {
     
     // Validate requestId exists and is valid
     if (!requestId || requestId <= 0) {
-      alert('Lỗi: Không tìm thấy ID yêu cầu xét nghiệm hợp lệ. Vui lòng chọn lại yêu cầu.');
+      toast({
+        title: "Lỗi",
+        description: "Không tìm thấy ID yêu cầu xét nghiệm hợp lệ. Vui lòng chọn lại yêu cầu.",
+        variant: "destructive",
+      });
       return;
     }
     
+    setIsSubmitting(true);
+
     try {
+      // Show progress toast
+      toast({
+        title: "Đang xử lý...",
+        description: "Đang tạo mẫu chính...",
+      });
+
       // Prepare sample data according to API specification
       const sampleData = {
         requestId: requestId,
         collectedBy: staffId,
         collectionTime: new Date().toISOString(),
-        receivedTime: null,
+        receivedTime: new Date().toISOString(), // Set to current time by default
         status: 'Waiting',
-        relationship: '',
+        relationship: 'Self', // Default to Self since we removed the field
         sampleType: sampleForm.sampleType || ''
       };
       
@@ -306,10 +402,60 @@ export default function SampleSubsampleManagement() {
       const response = await sampleAPI.create(sampleData);
       console.log('Sample creation response:', response);
       
-      // Store the created sample ID for subsample creation
-      const createdSample = response;
-      const sampleId = createdSample.sampleId || createdSample.id || createdSample.sample_id;
-      setCreatedSampleId(sampleId);
+      // Show progress toast for getting sample info
+      toast({
+        title: "Đang xử lý...",
+        description: "Đang lấy thông tin mẫu...",
+      });
+      
+      // Add delay to ensure server has saved the sample
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Get all samples to find the newly created one
+      const allSamples = await sampleAPI.getAll();
+      console.log('All samples:', allSamples);
+      
+      // Find the newly created sample based on requestId and other criteria
+      const createdSample = allSamples.find((sample: any) => {
+        const matchesRequestId = sample.requestId === requestId;
+        const matchesSampleType = sample.sampleType === sampleForm.sampleType;
+        const matchesCollectedBy = sample.collectedBy === staffId;
+        
+        console.log(`Sample ${sample.sampleId}:`, {
+          requestId: sample.requestId,
+          sampleType: sample.sampleType,
+          collectedBy: sample.collectedBy,
+          matches: { matchesRequestId, matchesSampleType, matchesCollectedBy }
+        });
+        
+        return matchesRequestId && matchesSampleType && matchesCollectedBy;
+      });
+      
+      console.log('Found created sample:', createdSample);
+      
+      if (createdSample && createdSample.sampleId) {
+        const sampleId = createdSample.sampleId;
+        setCreatedSampleId(sampleId);
+        console.log('Successfully extracted sampleId:', sampleId);
+        
+        toast({
+          title: "Thành công",
+          description: `Đã tạo mẫu chính thành công (ID: ${sampleId})`,
+        });
+      } else {
+        console.error('Could not find created sample in the list');
+        console.log('Available samples for this requestId:', 
+          allSamples.filter((s: any) => s.requestId === requestId)
+        );
+        // Fallback: use requestId as temporary sampleId
+        setCreatedSampleId(requestId);
+        console.warn('Using requestId as fallback sampleId:', requestId);
+        
+        toast({
+          title: "Thành công",
+          description: "Đã tạo mẫu chính thành công",
+        });
+      }
       
       // Refresh data
       await fetchData();
@@ -318,23 +464,34 @@ export default function SampleSubsampleManagement() {
       setIsCreatingSubSample(true);
       
     } catch (err: any) {
-      let errorMessage = 'Lỗi tạo mẫu';
-      if (err.response?.data?.message) {
+      console.error('Error creating sample:', err);
+      
+      let errorMessage = "Có lỗi xảy ra khi tạo mẫu chính";
+      
+      if (err.response?.status === 400) {
+        errorMessage = "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin.";
+      } else if (err.response?.status === 404) {
+        errorMessage = "Không tìm thấy thông tin đặt dịch vụ.";
+      } else if (err.response?.status === 500) {
+        errorMessage = "Lỗi server. Vui lòng thử lại sau.";
+      } else if (err.response?.data?.message) {
         errorMessage += `: ${err.response.data.message}`;
       } else if (err.response?.data?.errors) {
         // Handle validation errors from ASP.NET Core
         const errors = err.response.data.errors;
         const errorDetails = Object.keys(errors).map(key => `${key}: ${errors[key].join(', ')}`).join('; ');
         errorMessage += `: ${errorDetails}`;
-      } else if (err.response?.status === 400) {
-        errorMessage += ': Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin.';
-      } else if (err.response?.status === 500) {
-        errorMessage += ': Lỗi máy chủ. Vui lòng thử lại sau.';
-      } else {
-        errorMessage += `: ${err.message || 'Lỗi không xác định'}`;
+      } else if (err.message) {
+        errorMessage += `: ${err.message}`;
       }
       
-      alert(errorMessage);
+      toast({
+        title: "Lỗi",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -347,10 +504,13 @@ export default function SampleSubsampleManagement() {
     setShowCreateSampleDialog(false);
     setSampleForm({
       sampleType: '',
-      fullName: ''
+      fullName: '',
+      dateOfBirth: '',
+      notes: ''
     });
     setSubSampleForm({
       fullName: '',
+      dateOfBirth: '',
       sampleType: ''
     });
     setIsCreatingSubSample(false);
@@ -358,75 +518,72 @@ export default function SampleSubsampleManagement() {
     setSelectedRequest(null);
   };
 
-     const handleUpdateStatus = async (requestId: number | undefined, newStatus: "Pending" | "On-going" | "Arrived" | "Collected" | "Testing" | "Completed") => {
-     if (!requestId) return;
-     
-     try {
-       // Cập nhật trạng thái yêu cầu xét nghiệm
-       await testRequestAPI.updateStatus(requestId, newStatus);
-       
-       // Refresh data
-       await fetchData();
-       
-       alert('Cập nhật trạng thái thành công!');
-     } catch (err: any) {
-       let errorMessage = 'Lỗi cập nhật trạng thái';
-       if (err.response?.data?.message) {
-         errorMessage += `: ${err.response.data.message}`;
-       } else if (err.message) {
-         errorMessage += `: ${err.message}`;
-       }
-       alert(errorMessage);
-     }
-   };
-
-   const handleCreateSubSample = async () => {
-     // Use createdSampleId if available, otherwise use selectedSample
-     let sampleId: number;
-     
-     if (createdSampleId) {
-       sampleId = createdSampleId;
-     } else if (selectedSample) {
-       // Handle different possible property names for sample ID (prioritize sampleId for backend)
-       if (selectedSample.sampleId) {
-         sampleId = selectedSample.sampleId;
-       } else if (selectedSample.id) {
-         sampleId = selectedSample.id;
-       } else if (selectedSample.sample_id) {
-         sampleId = selectedSample.sample_id;
-       } else {
-         throw new Error('Không tìm thấy ID của mẫu gốc');
-       }
-     } else {
-       throw new Error('Không tìm thấy mẫu gốc');
-     }
-     
-     // Validation
-     if (!subSampleForm.fullName.trim()) {
-       alert('Vui lòng nhập tên mẫu con');
-       return;
-     }
-     
-     if (!subSampleForm.sampleType.trim()) {
-       alert('Vui lòng chọn loại mẫu');
-       return;
-     }
+  const handleCreateSubSample = async () => {
+    // Use createdSampleId if available, otherwise use selectedSample
+    let sampleId: number;
     
+    if (createdSampleId) {
+      sampleId = createdSampleId;
+    } else if (selectedSample) {
+      // Handle different possible property names for sample ID (prioritize sampleId for backend)
+      if (selectedSample.sampleId) {
+        sampleId = selectedSample.sampleId;
+      } else if (selectedSample.id) {
+        sampleId = selectedSample.id;
+      } else if (selectedSample.sample_id) {
+        sampleId = selectedSample.sample_id;
+      } else {
+        toast({
+          title: "Lỗi",
+          description: "Không tìm thấy ID của mẫu gốc",
+          variant: "destructive",
+        });
+        return;
+      }
+    } else {
+      toast({
+        title: "Lỗi",
+        description: "Không tìm thấy mẫu gốc",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!validateSubSample()) {
+      return;
+    }
+    
+    setIsSubmitting(true);
+
     try {
+      // Show progress toast
+      toast({
+        title: "Đang xử lý...",
+        description: "Đang tạo mẫu con...",
+      });
+
       // Verify the sample exists by fetching it first
       try {
         await sampleAPI.getById(sampleId);
       } catch (error) {
-        throw new Error('Mẫu gốc không tồn tại trong hệ thống. Vui lòng làm mới trang và thử lại.');
+        toast({
+          title: "Lỗi",
+          description: "Mẫu gốc không tồn tại trong hệ thống. Vui lòng làm mới trang và thử lại.",
+          variant: "destructive",
+        });
+        return;
       }
       
       const subSampleData = {
         sampleId: sampleId, // Ensure this is sampleId, not sample_id
-        description: `Mẫu con của ${subSampleForm.fullName.trim()}`,
+        description: [
+          `Tên: ${subSampleForm.fullName.trim()}`,
+          `Ngày sinh: ${subSampleForm.dateOfBirth}`
+        ].filter(Boolean).join(' | '),
         createdAt: new Date().toISOString(),
         fullName: subSampleForm.fullName.trim(),
-        dateOfBirth: undefined,
-        sampleType: subSampleForm.sampleType || undefined
+        dateOfBirth: subSampleForm.dateOfBirth,
+        sampleType: subSampleForm.sampleType || ''
       };
       
       await subSampleAPI.create(subSampleData);
@@ -434,20 +591,33 @@ export default function SampleSubsampleManagement() {
       // Refresh data
       await fetchData();
       
+      toast({
+        title: "Thành công",
+        description: "Đã tạo mẫu con thành công!",
+      });
+      
       // Close dialog and reset form
       setSubSampleForm({ 
         fullName: '',
+        dateOfBirth: '',
         sampleType: ''
       });
       setSelectedSample(null);
       setIsCreatingSubSample(false);
       setCreatedSampleId(null);
       
-      alert('Tạo mẫu con thành công!');
     } catch (err: any) {
-      // Hiển thị thông báo lỗi chi tiết hơn
-      let errorMessage = 'Lỗi tạo mẫu con';
-      if (err.response?.data?.message) {
+      console.error('Error creating subsample:', err);
+      
+      let errorMessage = "Có lỗi xảy ra khi tạo mẫu con";
+      
+      if (err.response?.status === 400) {
+        errorMessage = "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin.";
+      } else if (err.response?.status === 404) {
+        errorMessage = "Không tìm thấy thông tin mẫu gốc.";
+      } else if (err.response?.status === 500) {
+        errorMessage = "Lỗi server. Vui lòng thử lại sau.";
+      } else if (err.response?.data?.message) {
         errorMessage += `: ${err.response.data.message}`;
       } else if (err.response?.data?.errors) {
         // Handle validation errors
@@ -460,7 +630,65 @@ export default function SampleSubsampleManagement() {
         errorMessage += `: ${err.message}`;
       }
       
-      alert(errorMessage);
+      toast({
+        title: "Lỗi",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSkipSubSample = () => {
+    // Close dialog and reset forms
+    handleFinishSampleCreation();
+    toast({
+      title: "Thành công",
+      description: "Đã tạo mẫu chính thành công",
+    });
+  };
+
+  // Function to populate sample form with user info from test request
+  const populateSampleFormFromRequest = (request: TestRequest) => {
+    // Try to get user info from the request
+    const userInfo = request.user || {};
+    
+    setSampleForm({
+      sampleType: '',
+      fullName: request.userFullName || userInfo.fullName || '',
+      dateOfBirth: userInfo.dateOfBirth || userInfo.dateOfBirth || '',
+      notes: ''
+    });
+  };
+
+  const handleUpdateStatus = async (requestId: number | undefined, newStatus: "Pending" | "On-going" | "Arrived" | "Collected" | "Testing" | "Completed") => {
+    if (!requestId) return;
+    
+    try {
+      // Cập nhật trạng thái yêu cầu xét nghiệm
+      await testRequestAPI.updateStatus(requestId, newStatus);
+      
+      // Refresh data
+      await fetchData();
+      
+      toast({
+        title: "Thành công",
+        description: "Cập nhật trạng thái thành công!",
+      });
+    } catch (err: any) {
+      let errorMessage = 'Lỗi cập nhật trạng thái';
+      if (err.response?.data?.message) {
+        errorMessage += `: ${err.response.data.message}`;
+      } else if (err.message) {
+        errorMessage += `: ${err.message}`;
+      }
+      
+      toast({
+        title: "Lỗi",
+        description: errorMessage,
+        variant: "destructive",
+      });
     }
   };
 
@@ -474,9 +702,7 @@ export default function SampleSubsampleManagement() {
     
     // Filter by collection type based on active tab
     let matchesCollectionType = true;
-    if (activeTab === 'self') {
-      matchesCollectionType = request.collectionType?.toLowerCase() === 'self';
-    } else if (activeTab === 'at-home') {
+    if (activeTab === 'at-home') {
       matchesCollectionType = request.collectionType?.toLowerCase() === 'at home';
     } else if (activeTab === 'at-clinic') {
       matchesCollectionType = request.collectionType?.toLowerCase() === 'at clinic';
@@ -577,8 +803,6 @@ export default function SampleSubsampleManagement() {
         return 'Tại cơ sở';
       case 'at home':
         return 'Thu mẫu tại nhà';
-      case 'self':
-        return 'Tự thu mẫu';
       default:
         return type || 'Không xác định';
     }
@@ -666,11 +890,7 @@ export default function SampleSubsampleManagement() {
 
                      {/* Tabs */}
            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-             <TabsList className="grid w-full grid-cols-3">
-               <TabsTrigger value="self" className="flex items-center gap-2">
-                 <User className="w-4 h-4" />
-                 Tự thu mẫu
-               </TabsTrigger>
+             <TabsList className="grid w-full grid-cols-2">
                <TabsTrigger value="at-home" className="flex items-center gap-2">
                  <Package className="w-4 h-4" />
                  Thu mẫu tại nhà
@@ -681,55 +901,7 @@ export default function SampleSubsampleManagement() {
                </TabsTrigger>
              </TabsList>
 
-                         <TabsContent value="self" className="mt-6">
-               <div className="overflow-x-auto">
-                 <Table>
-                   <TableHeader>
-                     <TableRow>
-                       <TableHead>Mã yêu cầu</TableHead>
-                       <TableHead>Khách hàng</TableHead>
-                       <TableHead>Dịch vụ</TableHead>
-                       <TableHead>Loại thu mẫu</TableHead>
-                       <TableHead>Ngày hẹn</TableHead>
-                       <TableHead>Trạng thái</TableHead>
-                       <TableHead className="text-right">Thao tác</TableHead>
-                     </TableRow>
-                   </TableHeader>
-                   <TableBody>
-                     {filteredRequests.map((request, index) => (
-                       <TableRow key={request.requestId || `request-${index}`}>
-                         <TableCell className="font-medium">YC{request.requestId}</TableCell>
-                         <TableCell>
-                           <div>
-                             <div className="font-medium">{request.userFullName}</div>
-                             <div className="text-xs text-gray-500">
-                               User ID: {request.userId}
-                             </div>
-                           </div>
-                         </TableCell>
-                         <TableCell>{request.serviceName}</TableCell>
-                         <TableCell>{getCollectionTypeVN(request.collectionType)}</TableCell>
-                         <TableCell>
-                           <div className="text-sm">
-                             <div>{request.appointmentDate}</div>
-                             <div className="text-gray-500">{request.slotTime}</div>
-                           </div>
-                         </TableCell>
-                         <TableCell>{getStatusBadge(request.status)}</TableCell>
-                         <TableCell className="text-right">
-                           {/* Không có thao tác cho tự thu mẫu */}
-                         </TableCell>
-                       </TableRow>
-                     ))}
-                   </TableBody>
-                 </Table>
-               </div>
-               {filteredRequests.length === 0 && (
-                 <div className="text-center py-8 text-gray-500">
-                   Không có yêu cầu xét nghiệm tự thu mẫu nào
-                 </div>
-               )}
-             </TabsContent>
+
 
                                          <TabsContent value="at-home" className="mt-6">
                 <div className="overflow-x-auto">
@@ -788,6 +960,7 @@ export default function SampleSubsampleManagement() {
                                 size="sm"
                                 onClick={() => {
                                   setSelectedRequest(request);
+                                  populateSampleFormFromRequest(request);
                                   setShowCreateSampleDialog(true);
                                 }}
                                 disabled={request.status === 'Completed' || request.status === 'Collected'}
@@ -809,7 +982,7 @@ export default function SampleSubsampleManagement() {
                 )}
               </TabsContent>
 
-                                                       <TabsContent value="at-clinic" className="mt-6">
+              <TabsContent value="at-clinic" className="mt-6">
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
@@ -848,7 +1021,6 @@ export default function SampleSubsampleManagement() {
                             {request.sample ? (
                               <div className="text-sm">
                                 <div className="font-medium">Loại mẫu: {request.sample.sampleType || 'Chưa xác định'}</div>
-                                <div className="text-gray-500">Tên mẫu: {request.sample.fullName || 'Chưa xác định'}</div>
                                 {request.status === 'Testing' && (
                                   <Button
                                     variant="outline"
@@ -866,6 +1038,7 @@ export default function SampleSubsampleManagement() {
                                 size="sm"
                                 onClick={() => {
                                   setSelectedRequest(request);
+                                  populateSampleFormFromRequest(request);
                                   setShowCreateSampleDialog(true);
                                 }}
                                 disabled={request.status === 'Completed' || request.status === 'Collected'}
@@ -894,10 +1067,20 @@ export default function SampleSubsampleManagement() {
 
       {/* Create Sample Dialog */}
       <Dialog open={showCreateSampleDialog} onOpenChange={setShowCreateSampleDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
-              {isCreatingSubSample ? 'Tạo mẫu con' : 'Tạo mẫu xét nghiệm'}
+            <DialogTitle className="flex items-center gap-2">
+              {isCreatingSubSample ? (
+                <>
+                  <TestTube className="w-5 h-5" />
+                  Tạo mẫu con
+                </>
+              ) : (
+                <>
+                  <User className="w-5 h-5" />
+                  Tạo mẫu xét nghiệm
+                </>
+              )}
             </DialogTitle>
             <DialogDescription>
               {isCreatingSubSample 
@@ -909,87 +1092,161 @@ export default function SampleSubsampleManagement() {
           
           {!isCreatingSubSample ? (
             // Sample creation form
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Loại mẫu <span className="text-red-500">*</span></label>
-                <Select 
-                  value={sampleForm.sampleType || ''} 
-                  onValueChange={(value) => setSampleForm({...sampleForm, sampleType: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn loại mẫu" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Máu">Máu</SelectItem>
-                    <SelectItem value="Niêm mạc miệng">Niêm mạc miệng</SelectItem>
-                    <SelectItem value="Tóc">Tóc</SelectItem>
-                    <SelectItem value="Móng tay/móng chân">Móng tay/móng chân</SelectItem>
-                    <SelectItem value="Cuống rốn">Cuống rốn</SelectItem>
-                    <SelectItem value="Nước ối">Nước ối</SelectItem>
-                  </SelectContent>
-                </Select>
+            <div className="space-y-6">
+              {/* Display user info from test request */}
+              {selectedRequest && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 className="font-medium text-blue-900 mb-2">Thông tin khách hàng từ yêu cầu xét nghiệm</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="font-medium">Họ và tên:</span>
+                      <span className="ml-2 text-blue-700">{selectedRequest.userFullName || 'Chưa có thông tin'}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium">Dịch vụ:</span>
+                      <span className="ml-2 text-blue-700">{selectedRequest.serviceName || 'Chưa có thông tin'}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium">Loại mẫu <span className="text-red-500">*</span></label>
+                  <Select 
+                    value={sampleForm.sampleType} 
+                    onValueChange={(value) => setSampleForm({...sampleForm, sampleType: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Chọn loại mẫu" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sampleTypes.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              
+
               <div>
-                <label className="text-sm font-medium">Tên mẫu <span className="text-red-500">*</span></label>
-                <Input
-                  type="text"
-                  value={sampleForm.fullName}
-                  onChange={e => setSampleForm({ ...sampleForm, fullName: e.target.value })}
-                  placeholder="Nhập tên mẫu..."
+                <label className="text-sm font-medium">Ghi chú</label>
+                <Textarea
+                  value={sampleForm.notes}
+                  onChange={e => setSampleForm({ ...sampleForm, notes: e.target.value })}
+                  placeholder="Nhập ghi chú (nếu có)"
+                  rows={3}
                 />
               </div>
             </div>
           ) : (
             // SubSample creation form
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Loại mẫu con <span className="text-red-500">*</span></label>
-                <Select 
-                  value={subSampleForm.sampleType || ''} 
-                  onValueChange={(value) => setSubSampleForm({...subSampleForm, sampleType: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn loại mẫu con" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Máu">Máu</SelectItem>
-                    <SelectItem value="Niêm mạc miệng">Niêm mạc miệng</SelectItem>
-                    <SelectItem value="Tóc">Tóc</SelectItem>
-                    <SelectItem value="Móng tay/móng chân">Móng tay/móng chân</SelectItem>
-                    <SelectItem value="Cuống rốn">Cuống rốn</SelectItem>
-                    <SelectItem value="Nước ối">Nước ối</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium">Tên mẫu con <span className="text-red-500">*</span></label>
-                <Input
-                  type="text"
-                  value={subSampleForm.fullName}
-                  onChange={e => setSubSampleForm({ ...subSampleForm, fullName: e.target.value })}
-                  placeholder="Nhập tên mẫu con..."
-                />
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium">Loại mẫu con <span className="text-red-500">*</span></label>
+                  <Select 
+                    value={subSampleForm.sampleType} 
+                    onValueChange={(value) => setSubSampleForm({...subSampleForm, sampleType: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Chọn loại mẫu con" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sampleTypes.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Họ và tên <span className="text-red-500">*</span></label>
+                  <Input
+                    value={subSampleForm.fullName}
+                    onChange={e => setSubSampleForm({ ...subSampleForm, fullName: e.target.value })}
+                    placeholder="Nhập họ và tên"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Ngày sinh <span className="text-red-500">*</span></label>
+                  <Input
+                    type="date"
+                    value={subSampleForm.dateOfBirth}
+                    onChange={e => setSubSampleForm({ ...subSampleForm, dateOfBirth: e.target.value })}
+                  />
+                </div>
               </div>
             </div>
           )}
 
-          <DialogFooter>
+          <DialogFooter className="flex gap-2">
             {!isCreatingSubSample ? (
               <>
-                <Button onClick={handleCreateSample}>Tạo mẫu</Button>
-                <Button variant="outline" onClick={handleContinueToSubSample}>
+                <Button 
+                  onClick={handleCreateSample}
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2"
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <CheckCircle className="w-4 h-4" />
+                  )}
+                  {isSubmitting ? "Đang xử lý..." : "Tạo mẫu"}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={handleContinueToSubSample}
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2"
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Plus className="w-4 h-4" />
+                  )}
                   Tạo mẫu & Tiếp tục
                 </Button>
-                <Button variant="outline" onClick={() => setShowCreateSampleDialog(false)}>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowCreateSampleDialog(false)}
+                  disabled={isSubmitting}
+                >
                   Hủy
                 </Button>
               </>
             ) : (
               <>
-                <Button onClick={handleCreateSubSample}>Tạo mẫu con</Button>
-                <Button variant="outline" onClick={handleFinishSampleCreation}>
+                <Button 
+                  onClick={handleCreateSubSample}
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2"
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <CheckCircle className="w-4 h-4" />
+                  )}
+                  {isSubmitting ? "Đang xử lý..." : "Tạo mẫu con"}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={handleSkipSubSample}
+                  disabled={isSubmitting}
+                >
+                  Bỏ qua mẫu con
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={handleFinishSampleCreation}
+                  disabled={isSubmitting}
+                >
                   Hoàn thành
                 </Button>
               </>

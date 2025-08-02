@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { TestTube, Download, Eye, CreditCard, Calendar, User, FileText, MessageSquare } from "lucide-react";
+import { TestTube, Download, Eye, CreditCard, Calendar, User, FileText, MessageSquare, CheckCircle, Package } from "lucide-react";
 import axios from '@/api/axios';
 import { testResultAPI, testRequestAPI, sampleAPI } from '@/api/axios';
 import { Navigation } from "@/components/Navigation";
@@ -63,6 +63,8 @@ export default function TestHistory() {
   const [error, setError] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [selectedRequestId, setSelectedRequestId] = useState<number | null>(null);
+  const [confirmingKit, setConfirmingKit] = useState<number | null>(null);
+  const [sendingKit, setSendingKit] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchTestHistory = async () => {
@@ -105,7 +107,15 @@ export default function TestHistory() {
             };
           });
         }
-        setTestHistory(mapped);
+        
+        // Sắp xếp theo requestId giảm dần (lớn nhất lên đầu)
+        const sortedMapped = mapped.sort((a, b) => {
+          const requestIdA = a.requestId || 0;
+          const requestIdB = b.requestId || 0;
+          return requestIdB - requestIdA;
+        });
+        
+        setTestHistory(sortedMapped);
       } catch (err: any) {
         setError('Không thể tải dữ liệu lịch sử xét nghiệm');
       } finally {
@@ -168,6 +178,140 @@ export default function TestHistory() {
     } catch (err) {
       console.error('Error viewing PDF:', err);
       alert('Không thể xem file PDF!');
+    }
+  };
+
+  // Thêm hàm xác nhận đã nhận bộ kit
+  const handleConfirmKitReceived = async (requestId: number, event?: React.MouseEvent) => {
+    // Ngăn chặn event bubbling
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
+    try {
+      setConfirmingKit(requestId);
+      console.log('Confirming kit received for requestId:', requestId);
+      
+      // Gọi API cập nhật trạng thái thành "Arrived"
+      await testRequestAPI.updateStatus(requestId, 'Arrived');
+      
+      // Cập nhật lại danh sách test history
+      const userData = localStorage.getItem('userData');
+      let userId = null;
+      if (userData) {
+        const parsed = JSON.parse(userData);
+        userId = parsed.userId || parsed.id;
+      }
+      
+      if (userId) {
+        const response = await testRequestAPI.getByUserId(Number(userId));
+        let mapped: any[] = [];
+        if (Array.isArray(response)) {
+          mapped = response.map((item: any) => {
+            return {
+              id: String(item.requestId || item.id),
+              requestId: item.requestId || item.id,
+              testName: item.serviceName || item.service?.name || 'Chưa rõ',
+              date: item.appointmentDate || '',
+              status: item.status || '',
+              result: item.resultStatus || (item.status === 'Completed' || item.status === 'Hoàn thành' ? 'Có kết quả' : 'Chờ kết quả'),
+              price: item.payment?.amount ? item.payment.amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) : '',
+              userFullName: item.userFullName || '',
+              serviceName: item.serviceName || item.service?.name || '',
+              collectionType: item.collectionType || '',
+              slotTime: item.slotTime || '',
+              staffId: item.staffId || null,
+              payment: item.payment || null,
+              sample: item.sample || null,
+              subSamples: item.subSamples || [],
+            };
+          });
+        }
+        
+        // Sắp xếp theo requestId giảm dần
+        const sortedMapped = mapped.sort((a, b) => {
+          const requestIdA = a.requestId || 0;
+          const requestIdB = b.requestId || 0;
+          return requestIdB - requestIdA;
+        });
+        
+        setTestHistory(sortedMapped);
+      }
+      
+      alert('Đã xác nhận nhận được bộ kit xét nghiệm!');
+    } catch (err: any) {
+      console.error('Error confirming kit received:', err);
+      alert('Không thể xác nhận nhận kit. Vui lòng thử lại!');
+    } finally {
+      setConfirmingKit(null);
+    }
+  };
+
+  // Thêm hàm xác nhận đã gửi kit về trung tâm
+  const handleConfirmKitSent = async (requestId: number, event?: React.MouseEvent) => {
+    // Ngăn chặn event bubbling
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
+    try {
+      setSendingKit(requestId);
+      console.log('Confirming kit sent back for requestId:', requestId);
+      
+      // Gọi API cập nhật trạng thái thành "Returning"
+      await testRequestAPI.updateStatus(requestId, 'Returning');
+      
+      // Cập nhật lại danh sách test history
+      const userData = localStorage.getItem('userData');
+      let userId = null;
+      if (userData) {
+        const parsed = JSON.parse(userData);
+        userId = parsed.userId || parsed.id;
+      }
+      
+      if (userId) {
+        const response = await testRequestAPI.getByUserId(Number(userId));
+        let mapped: any[] = [];
+        if (Array.isArray(response)) {
+          mapped = response.map((item: any) => {
+            return {
+              id: String(item.requestId || item.id),
+              requestId: item.requestId || item.id,
+              testName: item.serviceName || item.service?.name || 'Chưa rõ',
+              date: item.appointmentDate || '',
+              status: item.status || '',
+              result: item.resultStatus || (item.status === 'Completed' || item.status === 'Hoàn thành' ? 'Có kết quả' : 'Chờ kết quả'),
+              price: item.payment?.amount ? item.payment.amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) : '',
+              userFullName: item.userFullName || '',
+              serviceName: item.serviceName || item.service?.name || '',
+              collectionType: item.collectionType || '',
+              slotTime: item.slotTime || '',
+              staffId: item.staffId || null,
+              payment: item.payment || null,
+              sample: item.sample || null,
+              subSamples: item.subSamples || [],
+            };
+          });
+        }
+        
+        // Sắp xếp theo requestId giảm dần
+        const sortedMapped = mapped.sort((a, b) => {
+          const requestIdA = a.requestId || 0;
+          const requestIdB = b.requestId || 0;
+          return requestIdB - requestIdA;
+        });
+        
+        setTestHistory(sortedMapped);
+      }
+      
+      alert('Đã xác nhận gửi bộ kit về trung tâm xét nghiệm!');
+    } catch (err: any) {
+      console.error('Error confirming kit sent:', err);
+      alert('Không thể xác nhận gửi kit. Vui lòng thử lại!');
+    } finally {
+      setSendingKit(null);
     }
   };
 
@@ -336,6 +480,54 @@ export default function TestHistory() {
                       </div>
                       
                       <div className="flex gap-2">
+                        {/* Nút xác nhận nhận kit - chỉ hiển thị cho các trạng thái phù hợp */}
+                        {(test.status === 'Sending') && 
+                         test.collectionType === 'Self' && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={(e) => handleConfirmKitReceived(test.requestId, e)}
+                            disabled={confirmingKit === test.requestId}
+                            className="flex items-center gap-2"
+                          >
+                            {confirmingKit === test.requestId ? (
+                              <>
+                                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                Đang xác nhận...
+                              </>
+                            ) : (
+                              <>
+                                <Package className="w-4 h-4" />
+                                Xác nhận nhận kit
+                              </>
+                            )}
+                          </Button>
+                        )}
+                        
+                        {/* Nút xác nhận đã gửi kit về trung tâm */}
+                        {(test.status === 'Arrived') && 
+                         test.collectionType === 'Self' && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={(e) => handleConfirmKitSent(test.requestId, e)}
+                            disabled={sendingKit === test.requestId}
+                            className="flex items-center gap-2"
+                          >
+                            {sendingKit === test.requestId ? (
+                              <>
+                                <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                                Đang xác nhận...
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle className="w-4 h-4" />
+                                Đã gửi kit về trung tâm
+                              </>
+                            )}
+                          </Button>
+                        )}
+                        
                         <Button 
                           variant="outline" 
                           size="sm"

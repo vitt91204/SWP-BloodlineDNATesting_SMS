@@ -12,7 +12,9 @@ import {
   Send,
   Eye,
   TestTube,
-  User
+  User,
+  CheckSquare,
+  Square
 } from 'lucide-react';
 import { testResultAPI, sampleAPI, staffAPI, testRequestAPI, subSampleAPI, userAPI, testServiceAPI } from '@/api/axios';
 
@@ -72,6 +74,7 @@ export default function ResultsDelivery() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentStaffInfo, setCurrentStaffInfo] = useState<any>(null);
+  const [isMatch, setIsMatch] = useState(true); // Thêm state cho checkbox IsMatch
 
   // Helper function to get current staff ID from localStorage
   const getCurrentStaffId = (): number | null => {
@@ -309,9 +312,24 @@ export default function ResultsDelivery() {
         }
       }));
       
-      // Filter out null results
+      // Filter out null results and sort by request ID (highest first)
       const validResults = mapped.filter(result => result !== null);
-      setTestResults(validResults);
+      
+      // Sort by request ID in descending order (highest first)
+      const sortedResults = validResults.sort((a, b) => {
+        // Extract request IDs with fallbacks
+        const aRequestId = a.requestData?.id || a.requestData?.requestId || a.requestData?.testRequestId || 0;
+        const bRequestId = b.requestData?.id || b.requestData?.requestId || b.requestData?.testRequestId || 0;
+        
+        // Convert to numbers for proper sorting
+        const aNum = typeof aRequestId === 'string' ? parseInt(aRequestId) || 0 : aRequestId;
+        const bNum = typeof bRequestId === 'string' ? parseInt(bRequestId) || 0 : bRequestId;
+        
+        // Sort in descending order (highest first)
+        return bNum - aNum;
+      });
+      
+      setTestResults(sortedResults);
     } catch (err: any) {
       setError('Không thể tải dữ liệu lịch hẹn. Vui lòng kiểm tra kết nối và thử lại.');
     } finally {
@@ -436,11 +454,12 @@ export default function ResultsDelivery() {
       // Tạo FormData để gửi file theo đúng API specification
       const formData = new FormData();
       
-              // Required fields theo API documentation - ensure proper field mapping
-              formData.append('SampleId', sampleId); // Try lowercase with underscore first
-              formData.append('UploadedBy', currentStaffId.toString()); // Try lowercase with underscore
-              formData.append('StaffId', currentStaffId.toString()); // Try lowercase with underscore
-              formData.append('PdfFile', selectedFile);
+      // Required fields theo API documentation - ensure proper field mapping
+      formData.append('SampleId', sampleId);
+      formData.append('UploadedBy', currentStaffId.toString());
+      formData.append('StaffId', currentStaffId.toString());
+      formData.append('IsMatch', isMatch.toString()); // Sử dụng giá trị từ checkbox
+      formData.append('PdfFile', selectedFile);
       
 
       
@@ -537,6 +556,7 @@ export default function ResultsDelivery() {
       setSelectedFile(null);
       setIsUploadMode(false);
       setUploadingResultId(null);
+      setIsMatch(true); // Reset checkbox về true khi upload thành công
       
       // Hiển thị thông báo thành công
       alert(`✅ Upload thành công!\n\nFile: ${selectedFile.name}\nResult ID: ${response?.resultId || response?.id || 'N/A'}\nSample ID: ${response?.sampleId || sampleId}\nStaff ID: ${response?.staffId || currentStaffId}`);
@@ -650,9 +670,28 @@ export default function ResultsDelivery() {
                           )}
                         </div>
                       </div>
-                    )}
-                    
-                    <div className="flex gap-2">
+                                         )}
+                     
+                     {/* Checkbox cho IsMatch */}
+                     <div className="flex items-center space-x-2 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                       <button
+                         type="button"
+                         onClick={() => setIsMatch(!isMatch)}
+                         className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded transition-colors"
+                         disabled={isUploading}
+                       >
+                         {isMatch ? (
+                           <CheckSquare className="w-5 h-5 text-blue-600" />
+                         ) : (
+                           <Square className="w-5 h-5 text-gray-400" />
+                         )}
+                         <span className="text-sm font-medium text-gray-700">
+                           Kết quả khớp với mẫu xét nghiệm
+                         </span>
+                       </button>
+                     </div>
+                     
+                     <div className="flex gap-2">
                       <Button
                         onClick={() => {
                           if (uploadingResultId) {
@@ -676,17 +715,18 @@ export default function ResultsDelivery() {
                           </>
                         )}
                       </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setIsUploadMode(false);
-                          setSelectedFile(null);
-                          setUploadingResultId(null);
-                        }}
-                        disabled={isUploading}
-                      >
-                        Hủy
-                      </Button>
+                                             <Button
+                         variant="outline"
+                         onClick={() => {
+                           setIsUploadMode(false);
+                           setSelectedFile(null);
+                           setUploadingResultId(null);
+                           setIsMatch(true); // Reset checkbox khi hủy
+                         }}
+                         disabled={isUploading}
+                       >
+                         Hủy
+                       </Button>
                     </div>
                     
                     {isUploading && (

@@ -185,10 +185,8 @@ export default function ManagerDashboard() {
       (request.collectionType?.toLowerCase().includes(searchLower) || false)
     );
   }).sort((a, b) => {
-    // Sort by appointment date in descending order (newest first)
-    const dateA = new Date(a.appointmentDate);
-    const dateB = new Date(b.appointmentDate);
-    return dateB.getTime() - dateA.getTime();
+    // Sort by request ID in descending order (highest ID first)
+    return b.requestId - a.requestId;
   });
 
   const handleLogout = () => {

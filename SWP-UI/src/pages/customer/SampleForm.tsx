@@ -270,7 +270,7 @@ export default function SampleForm() {
             description: "Đang tạo mẫu chính...",
           });
           
-          const mainSampleResponse = await sampleAPI.create(mainSampleData);
+          const mainSampleResponse = await sampleAPI.createCustomer(mainSampleData);
           console.log('Main sample response:', mainSampleResponse);
           
           // Sau khi tạo mẫu thành công, lấy sampleId từ danh sách mẫu
@@ -487,7 +487,7 @@ export default function SampleForm() {
         description: "Đang tạo mẫu chính...",
       });
       
-      await sampleAPI.create(mainSampleData);
+      await sampleAPI.createCustomer(mainSampleData);
 
       toast({
         title: "Thành công",

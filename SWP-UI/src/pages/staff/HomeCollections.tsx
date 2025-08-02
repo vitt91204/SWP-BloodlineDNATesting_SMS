@@ -161,13 +161,21 @@ export default function HomeCollections() {
     fetchHomeCollections();
   }, []);
 
-  // Lọc dữ liệu theo tab hiện tại
+  // Lọc dữ liệu theo tab hiện tại và sắp xếp theo requestId giảm dần
   const getFilteredCollections = () => {
+    let filteredCollections;
     if (activeTab === 'at-home') {
-      return allCollections.filter(collection => collection.collectionType === 'At Home');
+      filteredCollections = allCollections.filter(collection => collection.collectionType === 'At Home');
     } else {
-      return allCollections.filter(collection => collection.collectionType === 'Self');
+      filteredCollections = allCollections.filter(collection => collection.collectionType === 'Self');
     }
+    
+    // Sắp xếp theo requestId giảm dần (lớn nhất lên đầu)
+    return filteredCollections.sort((a, b) => {
+      const requestIdA = a.requestId || 0;
+      const requestIdB = b.requestId || 0;
+      return requestIdB - requestIdA;
+    });
   };
 
   const getStatusBadge = (status: string) => {
@@ -176,6 +184,12 @@ export default function HomeCollections() {
         return <Badge className="bg-yellow-100 text-yellow-800">Chờ xác nhận</Badge>;
       case 'Confirmed':
         return <Badge className="bg-blue-100 text-blue-800">Đã xác nhận</Badge>;
+      case 'Sending':
+        return <Badge className="bg-orange-100 text-orange-800">Đang gửi kit</Badge>;
+      case 'Returning':
+        return <Badge className="bg-indigo-100 text-indigo-800">Đang gửi về</Badge>;
+      case 'Collected':
+        return <Badge className="bg-purple-100 text-purple-800">Đã thu lại kit</Badge>;
       case 'Completed':
         return <Badge className="bg-green-100 text-green-800">Hoàn thành</Badge>;
       default:
@@ -206,28 +220,71 @@ export default function HomeCollections() {
     return collection.address;
   };
 
-  const handleStatusUpdate = async (id: string, newStatus: 'Pending' | 'Confirmed' | 'Completed') => {
+  const handleStatusUpdate = async (id: string, newStatus: 'Pending' | 'Confirmed' | 'Completed' | 'Sending' | 'Collected' | 'Returning') => {
     try {
       console.log(`Updating status for request ${id} to: ${newStatus}`);
       
       // Set loading state
       setUpdatingIds(prev => new Set(prev).add(id));
       
+      // Map UI status to API status
+      let apiStatus: 'Pending' | 'On-going' | 'Arrived' | 'Collected' | 'Testing' | 'Completed' | 'Sending' | 'Returning';
+      switch (newStatus) {
+        case 'Confirmed':
+          apiStatus = 'Arrived';
+          break;
+        case 'Sending':
+          apiStatus = 'Sending';
+          break;
+        case 'Completed':
+          apiStatus = 'Completed';
+          break;
+        case 'Collected':
+          apiStatus = 'Collected';
+          break;
+        case 'Returning':
+          apiStatus = 'Returning';
+          break;
+        default:
+          apiStatus = 'Pending';
+      }
+      
       // Gọi API để cập nhật status
-      const response = await testRequestAPI.updateStatus(Number(id), 'Arrived');
+      const response = await testRequestAPI.updateStatus(Number(id), apiStatus);
       console.log('API response:', response);
       
       // Cập nhật UI nếu API call thành công
       if (response) {
         setAllCollections(prev => 
           prev.map(collection => 
-            collection.id === id ? { ...collection, status: 'Confirmed' } : collection
+            collection.id === id ? { ...collection, status: newStatus } : collection
           )
         );
         
+        let statusMessage = '';
+        switch (newStatus) {
+          case 'Confirmed':
+            statusMessage = 'Đã xác nhận';
+            break;
+          case 'Sending':
+            statusMessage = 'Đang gửi kit';
+            break;
+          case 'Completed':
+            statusMessage = 'Hoàn thành';
+            break;
+          case 'Collected':
+            statusMessage = 'Đã thu lại kit';
+            break;
+          case 'Returning':
+            statusMessage = 'Đang gửi về';
+            break;
+          default:
+            statusMessage = newStatus;
+        }
+        
         toast({
           title: "Cập nhật thành công",
-          description: "Trạng thái lịch hẹn đã được cập nhật thành 'Đã xác nhận'",
+          description: `Trạng thái lịch hẹn đã được cập nhật thành '${statusMessage}'`,
         });
       }
     } catch (error) {
@@ -424,29 +481,57 @@ export default function HomeCollections() {
                               <Button 
                                 size="sm" 
                                 variant="outline"
-                                onClick={() => handleStatusUpdate(collection.id, 'Confirmed')}
+                                onClick={() => handleStatusUpdate(collection.id, 'Sending')}
                                 disabled={updatingIds.has(collection.id)}
                               >
                                 {updatingIds.has(collection.id) ? (
                                   <Loader2 className="w-4 h-4 mr-1 animate-spin" />
                                 ) : (
-                                  <CheckCircle className="w-4 h-4 mr-1" />
+                                  <Package className="w-4 h-4 mr-1" />
                                 )}
-                                {updatingIds.has(collection.id) ? 'Đang cập nhật...' : 'Xác nhận gửi kit'}
+                                {updatingIds.has(collection.id) ? 'Đang cập nhật...' : 'Gửi bộ kit'}
                               </Button>
                             )}
-                            {collection.status === 'Confirmed' && (
+                            {collection.status === 'Sending' && (
                               <Button 
                                 size="sm"
-                                onClick={() => handleStatusUpdate(collection.id, 'Completed')}
+                                onClick={() => handleStatusUpdate(collection.id, 'Collected')}
                                 disabled={updatingIds.has(collection.id)}
                               >
                                 {updatingIds.has(collection.id) ? (
                                   <Loader2 className="w-4 h-4 mr-1 animate-spin" />
                                 ) : (
-                                  <CheckCircle className="w-4 h-4 mr-1" />
+                                  <Clipboard className="w-4 h-4 mr-1" />
                                 )}
-                                {updatingIds.has(collection.id) ? 'Đang cập nhật...' : 'Đã gửi kit'}
+                                {updatingIds.has(collection.id) ? 'Đang cập nhật...' : 'Xác nhận đã thu lại kit'}
+                              </Button>
+                            )}
+                            {collection.status === 'Collected' && (
+                              <Button 
+                                size="sm"
+                                onClick={() => handleStatusUpdate(collection.id, 'Returning')}
+                                disabled={updatingIds.has(collection.id)}
+                              >
+                                {updatingIds.has(collection.id) ? (
+                                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                ) : (
+                                  <Clipboard className="w-4 h-4 mr-1" />
+                                )}
+                                {updatingIds.has(collection.id) ? 'Đang cập nhật...' : 'Xác nhận đã thu lại kit'}
+                              </Button>
+                            )}
+                            {collection.status === 'Returning' && (
+                              <Button 
+                                size="sm"
+                                onClick={() => handleStatusUpdate(collection.id, 'Collected')}
+                                disabled={updatingIds.has(collection.id)}
+                              >
+                                {updatingIds.has(collection.id) ? (
+                                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                ) : (
+                                  <Clipboard className="w-4 h-4 mr-1" />
+                                )}
+                                {updatingIds.has(collection.id) ? 'Đang cập nhật...' : 'Xác nhận đã thu lại kit'}
                               </Button>
                             )}
                           </div>

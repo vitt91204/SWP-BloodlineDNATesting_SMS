@@ -1606,7 +1606,7 @@ export default function Booking() {
                     ) : (
                       <>
                         {selectedLocation === 'home' && selectedHomeOption === 'diy_kit' 
-                          ? 'Xác nhận yêu cầu gửi kit'
+                          ? 'Xác nhận yêu cầu đặt lịch tại nhà'
                           : 'Xác nhận đặt lịch'
                         }
                         <CheckCircle className="w-4 h-4 ml-2" />

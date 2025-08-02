@@ -634,6 +634,44 @@ export const sampleAPI = {
     return response.data;
   },
 
+  // Tạo mẫu cho khách hàng
+  createCustomer: async (sampleData: {
+    requestId: number;
+    collectedBy: number;
+    receivedTime: string; // ISO date string (YYYY-MM-DDTHH:mm:ss.ssss)
+    sampleType: string;
+  }) => {
+    console.log('Creating customer sample with data:', sampleData);
+    console.log('API endpoint: POST /api/Sample/customer');
+    
+    // Ensure all required fields are present
+    if (!sampleData.requestId || !sampleData.collectedBy) {
+      throw new Error('requestId and collectedBy are required fields');
+    }
+    
+    // Validate receivedTime format
+    if (!sampleData.receivedTime) {
+      throw new Error('receivedTime is required');
+    }
+    
+    // Map fields to match API specification exactly
+    const mappedData = {
+      requestId: sampleData.requestId,        // Maps to request_id in Sample table
+      collectedBy: sampleData.collectedBy,    // Maps to collected_by in Sample table
+      receivedTime: sampleData.receivedTime,  // ISO date string
+      sampleType: sampleData.sampleType
+    };
+    
+    console.log('Mapped data for customer API:', mappedData);
+    
+    const response = await api.post('/api/Sample/customer', mappedData);
+    console.log('Customer sample creation response:', response.data);
+    console.log('Customer sample creation response status:', response.status);
+    console.log('Customer sample creation response headers:', response.headers);
+    console.log('Customer sample creation full response:', response);
+    return response.data;
+  },
+
   // Cập nhật mẫu
   update: async (id: number, sampleData: any) => {
     const response = await api.put(`/api/Sample/${id}`, sampleData);
@@ -724,11 +762,6 @@ export const testResultAPI = {
     return response.data;
   },
 
-  // Phê duyệt kết quả
-  approve: async (id: number, approvedBy: number) => {
-    const response = await api.patch(`/api/TestResult/${id}/approve`, { approved_by: approvedBy });
-    return response.data;
-  },
 
   // Lấy kết quả theo sample ID
   getBySampleId: async (sampleId: number) => {
@@ -742,13 +775,6 @@ export const testResultAPI = {
     return response.data;
   },
 
-  // Tải xuống báo cáo PDF
-  downloadReport: async (resultId: number) => {
-    const response = await api.get(`/api/TestResult/${resultId}/download`, {
-      responseType: 'blob'
-    });
-    return response.data;
-  },
 
   // Xem PDF kết quả theo requestId
   viewPdf: async (requestId: number) => {
@@ -757,18 +783,6 @@ export const testResultAPI = {
     });
     return response.data;
   },
-
-  // Gửi kết quả qua email
-  sendByEmail: async (resultId: number, emailData: any) => {
-    const response = await api.post(`/api/TestResult/${resultId}/send-email`, emailData);
-    return response.data;
-  },
-
-  // Lấy thống kê kết quả
-  getStats: async () => {
-    const response = await api.get('/api/TestResult/stats');
-    return response.data;
-  }
 };
 
 
@@ -809,7 +823,7 @@ export const testRequestAPI = {
   },
 
   // Cập nhật trạng thái yêu cầu
-  updateStatus: async (id: number, status: 'Pending' | 'On-going' | 'Arrived' | 'Collected' | 'Testing' | 'Completed') => {
+  updateStatus: async (id: number, status: 'Pending' | 'On-going' | 'Arrived' | 'Collected' | 'Testing' | 'Completed' | 'Sending' | 'Returning') => {
     const response = await api.put(`/api/TestRequest/update-status/${id}`, status);
     return response.data;
   },
@@ -915,10 +929,7 @@ export const paymentAPI = {
   },
 
   // Cập nhật trạng thái thanh toán
-  updateStatus: async (id: number, status: 'Pending' | 'Paid' | 'Failed' | 'Refunded') => {
-    const response = await api.patch(`/api/Payment/${id}/status`, { status });
-    return response.data;
-  },
+ 
 
   // Lấy thanh toán theo request ID
   getByRequestId: async (requestId: number) => {
