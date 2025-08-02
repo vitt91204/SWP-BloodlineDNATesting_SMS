@@ -13,8 +13,6 @@ public partial class Sample
 
     public DateTime? ReceivedTime { get; set; }
 
-    public string? Status { get; set; }
-
     public string? SampleType { get; set; }
 
     public virtual User CollectedByNavigation { get; set; } = null!;

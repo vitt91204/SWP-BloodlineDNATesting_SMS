@@ -35,13 +35,12 @@ namespace Services
                     {
                         SampleId = sample.SampleId,
                         RequestId = sample.RequestId,
-                    CollectedBy = sample.CollectedBy,
-                    ReceivedTime = sample.ReceivedTime,
-                    Status = sample.Status,
-                    SampleType = sample.SampleType,
-                    ServiceName = service.Name,
-                    UserFullName = user.FullName,
-                    UserPhoneNumber = user.Phone
+                        CollectedBy = sample.CollectedBy,
+                        ReceivedTime = sample.ReceivedTime,
+                        SampleType = sample.SampleType,
+                        ServiceName = service.Name,
+                        UserFullName = user.FullName,
+                        UserPhoneNumber = user.Phone
                 });
 
             }
@@ -74,7 +73,6 @@ namespace Services
                 RequestId = dto.RequestId,
                 CollectedBy = dto.CollectedBy,
                 ReceivedTime = dto.ReceivedTime,
-                Status = dto.Status,
                 SampleType = dto.SampleType,
             };
 
@@ -92,18 +90,8 @@ namespace Services
             entity.RequestId = dto.RequestId;
             entity.CollectedBy = dto.CollectedBy;
             entity.ReceivedTime = dto.ReceivedTime;
-            entity.Status = dto.Status;
             entity.SampleType = dto.SampleType;
 
-            await _repository.UpdateAsync(entity);
-            return true;
-        }
-
-        public async Task<bool> UpdateStatusAsync(int id, string status)
-        {
-            var entity = await _repository.GetByIdAsync(id);
-            if (entity == null) return false;
-            entity.Status = status;
             await _repository.UpdateAsync(entity);
             return true;
         }

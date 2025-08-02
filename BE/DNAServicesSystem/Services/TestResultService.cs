@@ -84,7 +84,6 @@ namespace Services
 
             // Update the request status to "Completed" and Sample status to "Tested"
             request.Status = "Completed";
-            sample.Status = "Tested";
             await _testRequestRepository.UpdateAsync(request);
             await _sampleRepository.UpdateAsync(sample);
 
@@ -135,7 +134,6 @@ namespace Services
             };
 
             request.Status = "Completed";
-            sample.Status = "Tested";
             await _testRequestRepository.UpdateAsync(request);
             await _sampleRepository.UpdateAsync(sample);
 

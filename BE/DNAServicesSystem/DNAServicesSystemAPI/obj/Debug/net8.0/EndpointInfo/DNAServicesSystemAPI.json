@@ -2631,7 +2631,7 @@
         "required": [
           "collectedBy",
           "requestId",
-          "status"
+          "sampleType"
         ],
         "type": "object",
         "properties": {
@@ -2648,14 +2648,10 @@
             "format": "date-time",
             "nullable": true
           },
-          "status": {
+          "sampleType": {
             "maxLength": 50,
             "minLength": 0,
             "type": "string"
-          },
-          "sampleType": {
-            "type": "string",
-            "nullable": true
           }
         },
         "additionalProperties": false

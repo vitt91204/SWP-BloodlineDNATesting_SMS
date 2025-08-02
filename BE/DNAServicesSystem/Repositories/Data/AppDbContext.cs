@@ -204,10 +204,6 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.SampleType)
                 .HasMaxLength(50)
                 .HasColumnName("sample_type");
-            entity.Property(e => e.Status)
-                .HasMaxLength(20)
-                .IsUnicode(false)
-                .HasColumnName("status");
 
             entity.HasOne(d => d.CollectedByNavigation).WithMany(p => p.Samples)
                 .HasForeignKey(d => d.CollectedBy)

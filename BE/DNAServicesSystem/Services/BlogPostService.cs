@@ -74,7 +74,7 @@ namespace Services
                 var imageBytes = ms.ToArray();
                 blogPost.PostImage = Convert.ToBase64String(imageBytes);
             }
-
+            await _repository.CreateAsync(blogPost);
 
             return blogPost;
         }
