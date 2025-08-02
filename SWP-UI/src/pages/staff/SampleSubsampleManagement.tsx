@@ -103,7 +103,6 @@ export default function SampleSubsampleManagement() {
   
   // Dialog states
   const [showCreateSampleDialog, setShowCreateSampleDialog] = useState(false);
-  const [showCreateSubSampleDialog, setShowCreateSubSampleDialog] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<TestRequest | null>(null);
   const [selectedSample, setSelectedSample] = useState<Sample | null>(null);
   
@@ -117,6 +116,10 @@ export default function SampleSubsampleManagement() {
     fullName: '',
     sampleType: ''
   });
+
+  // New state for form flow
+  const [isCreatingSubSample, setIsCreatingSubSample] = useState(false);
+  const [createdSampleId, setCreatedSampleId] = useState<number | null>(null);
 
 
 
@@ -198,7 +201,7 @@ export default function SampleSubsampleManagement() {
       // Fetch samples by staff ID using client-side filtering
       try {
         console.log('Fetching samples for staff ID:', staffId);
-        const samplesData = await sampleAPI.getByRequestIdOrCollectedBy(undefined, staffId);
+        const samplesData = await sampleAPI.getAll();
         console.log('Raw samples data from API:', samplesData);
         
         // Validate samples data structure
@@ -303,18 +306,16 @@ export default function SampleSubsampleManagement() {
       const response = await sampleAPI.create(sampleData);
       console.log('Sample creation response:', response);
       
+      // Store the created sample ID for subsample creation
+      const createdSample = response;
+      const sampleId = createdSample.sampleId || createdSample.id || createdSample.sample_id;
+      setCreatedSampleId(sampleId);
+      
       // Refresh data
       await fetchData();
       
-      // Close dialog and reset form
-      setShowCreateSampleDialog(false);
-      setSampleForm({
-        sampleType: '',
-        fullName: ''
-      });
-      setSelectedRequest(null);
-      
-      alert('Tạo mẫu thành công!');
+      // Transition to subsample creation
+      setIsCreatingSubSample(true);
       
     } catch (err: any) {
       let errorMessage = 'Lỗi tạo mẫu';
@@ -335,6 +336,26 @@ export default function SampleSubsampleManagement() {
       
       alert(errorMessage);
     }
+  };
+
+  const handleContinueToSubSample = () => {
+    setIsCreatingSubSample(true);
+  };
+
+  const handleFinishSampleCreation = () => {
+    // Close dialog and reset all forms
+    setShowCreateSampleDialog(false);
+    setSampleForm({
+      sampleType: '',
+      fullName: ''
+    });
+    setSubSampleForm({
+      fullName: '',
+      sampleType: ''
+    });
+    setIsCreatingSubSample(false);
+    setCreatedSampleId(null);
+    setSelectedRequest(null);
   };
 
      const handleUpdateStatus = async (requestId: number | undefined, newStatus: "Pending" | "On-going" | "Arrived" | "Collected" | "Testing" | "Completed") => {
@@ -360,7 +381,25 @@ export default function SampleSubsampleManagement() {
    };
 
    const handleCreateSubSample = async () => {
-     if (!selectedSample) return;
+     // Use createdSampleId if available, otherwise use selectedSample
+     let sampleId: number;
+     
+     if (createdSampleId) {
+       sampleId = createdSampleId;
+     } else if (selectedSample) {
+       // Handle different possible property names for sample ID (prioritize sampleId for backend)
+       if (selectedSample.sampleId) {
+         sampleId = selectedSample.sampleId;
+       } else if (selectedSample.id) {
+         sampleId = selectedSample.id;
+       } else if (selectedSample.sample_id) {
+         sampleId = selectedSample.sample_id;
+       } else {
+         throw new Error('Không tìm thấy ID của mẫu gốc');
+       }
+     } else {
+       throw new Error('Không tìm thấy mẫu gốc');
+     }
      
      // Validation
      if (!subSampleForm.fullName.trim()) {
@@ -374,20 +413,6 @@ export default function SampleSubsampleManagement() {
      }
     
     try {
-      // Verify that the sample exists and get the correct ID
-      let sampleId: number;
-      
-      // Handle different possible property names for sample ID (prioritize sampleId for backend)
-      if (selectedSample.sampleId) {
-        sampleId = selectedSample.sampleId;
-      } else if (selectedSample.id) {
-        sampleId = selectedSample.id;
-      } else if (selectedSample.sample_id) {
-        sampleId = selectedSample.sample_id;
-      } else {
-        throw new Error('Không tìm thấy ID của mẫu gốc');
-      }
-
       // Verify the sample exists by fetching it first
       try {
         await sampleAPI.getById(sampleId);
@@ -410,12 +435,13 @@ export default function SampleSubsampleManagement() {
       await fetchData();
       
       // Close dialog and reset form
-      setShowCreateSubSampleDialog(false);
       setSubSampleForm({ 
         fullName: '',
         sampleType: ''
       });
       setSelectedSample(null);
+      setIsCreatingSubSample(false);
+      setCreatedSampleId(null);
       
       alert('Tạo mẫu con thành công!');
     } catch (err: any) {
@@ -870,103 +896,109 @@ export default function SampleSubsampleManagement() {
       <Dialog open={showCreateSampleDialog} onOpenChange={setShowCreateSampleDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Tạo mẫu xét nghiệm</DialogTitle>
+            <DialogTitle>
+              {isCreatingSubSample ? 'Tạo mẫu con' : 'Tạo mẫu xét nghiệm'}
+            </DialogTitle>
             <DialogDescription>
-              Tạo mẫu cho yêu cầu xét nghiệm YC{selectedRequest?.requestId}
+              {isCreatingSubSample 
+                ? `Tạo mẫu con cho mẫu SP${createdSampleId}`
+                : `Tạo mẫu cho yêu cầu xét nghiệm YC${selectedRequest?.requestId}`
+              }
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Loại mẫu <span className="text-red-500">*</span></label>
-              <Select 
-                value={sampleForm.sampleType || ''} 
-                onValueChange={(value) => setSampleForm({...sampleForm, sampleType: value})}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Chọn loại mẫu" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Máu">Máu</SelectItem>
-                  <SelectItem value="Niêm mạc miệng">Niêm mạc miệng</SelectItem>
-                  <SelectItem value="Tóc">Tóc</SelectItem>
-                  <SelectItem value="Móng tay/móng chân">Móng tay/móng chân</SelectItem>
-                  <SelectItem value="Cuống rốn">Cuống rốn</SelectItem>
-                  <SelectItem value="Nước ối">Nước ối</SelectItem>
-                </SelectContent>
-              </Select>
+          {!isCreatingSubSample ? (
+            // Sample creation form
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Loại mẫu <span className="text-red-500">*</span></label>
+                <Select 
+                  value={sampleForm.sampleType || ''} 
+                  onValueChange={(value) => setSampleForm({...sampleForm, sampleType: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn loại mẫu" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Máu">Máu</SelectItem>
+                    <SelectItem value="Niêm mạc miệng">Niêm mạc miệng</SelectItem>
+                    <SelectItem value="Tóc">Tóc</SelectItem>
+                    <SelectItem value="Móng tay/móng chân">Móng tay/móng chân</SelectItem>
+                    <SelectItem value="Cuống rốn">Cuống rốn</SelectItem>
+                    <SelectItem value="Nước ối">Nước ối</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium">Tên mẫu <span className="text-red-500">*</span></label>
+                <Input
+                  type="text"
+                  value={sampleForm.fullName}
+                  onChange={e => setSampleForm({ ...sampleForm, fullName: e.target.value })}
+                  placeholder="Nhập tên mẫu..."
+                />
+              </div>
             </div>
-            
-            <div>
-              <label className="text-sm font-medium">Tên mẫu <span className="text-red-500">*</span></label>
-              <Input
-                type="text"
-                value={sampleForm.fullName}
-                onChange={e => setSampleForm({ ...sampleForm, fullName: e.target.value })}
-                placeholder="Nhập tên mẫu..."
-              />
+          ) : (
+            // SubSample creation form
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Loại mẫu con <span className="text-red-500">*</span></label>
+                <Select 
+                  value={subSampleForm.sampleType || ''} 
+                  onValueChange={(value) => setSubSampleForm({...subSampleForm, sampleType: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn loại mẫu con" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Máu">Máu</SelectItem>
+                    <SelectItem value="Niêm mạc miệng">Niêm mạc miệng</SelectItem>
+                    <SelectItem value="Tóc">Tóc</SelectItem>
+                    <SelectItem value="Móng tay/móng chân">Móng tay/móng chân</SelectItem>
+                    <SelectItem value="Cuống rốn">Cuống rốn</SelectItem>
+                    <SelectItem value="Nước ối">Nước ối</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium">Tên mẫu con <span className="text-red-500">*</span></label>
+                <Input
+                  type="text"
+                  value={subSampleForm.fullName}
+                  onChange={e => setSubSampleForm({ ...subSampleForm, fullName: e.target.value })}
+                  placeholder="Nhập tên mẫu con..."
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           <DialogFooter>
-            <Button onClick={handleCreateSample}>Tạo mẫu</Button>
-            <Button variant="outline" onClick={() => setShowCreateSampleDialog(false)}>
-              Hủy
-            </Button>
+            {!isCreatingSubSample ? (
+              <>
+                <Button onClick={handleCreateSample}>Tạo mẫu</Button>
+                <Button variant="outline" onClick={handleContinueToSubSample}>
+                  Tạo mẫu & Tiếp tục
+                </Button>
+                <Button variant="outline" onClick={() => setShowCreateSampleDialog(false)}>
+                  Hủy
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button onClick={handleCreateSubSample}>Tạo mẫu con</Button>
+                <Button variant="outline" onClick={handleFinishSampleCreation}>
+                  Hoàn thành
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Create SubSample Dialog */}
-      <Dialog open={showCreateSubSampleDialog} onOpenChange={setShowCreateSubSampleDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Tạo mẫu con</DialogTitle>
-            <DialogDescription>
-              Tạo mẫu con cho mẫu SP{selectedSample?.sampleId || selectedSample?.id || selectedSample?.sample_id}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Loại mẫu <span className="text-red-500">*</span></label>
-              <Select 
-                value={subSampleForm.sampleType || ''} 
-                onValueChange={(value) => setSubSampleForm({...subSampleForm, sampleType: value})}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Chọn loại mẫu" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Máu">Máu</SelectItem>
-                  <SelectItem value="Niêm mạc miệng">Niêm mạc miệng</SelectItem>
-                  <SelectItem value="Tóc">Tóc</SelectItem>
-                  <SelectItem value="Móng tay/móng chân">Móng tay/móng chân</SelectItem>
-                  <SelectItem value="Cuống rốn">Cuống rốn</SelectItem>
-                  <SelectItem value="Nước ối">Nước ối</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium">Tên mẫu con <span className="text-red-500">*</span></label>
-              <Input
-                type="text"
-                value={subSampleForm.fullName}
-                onChange={e => setSubSampleForm({ ...subSampleForm, fullName: e.target.value })}
-                placeholder="Nhập tên mẫu con..."
-              />
-            </div>
-          </div>
 
-          <DialogFooter>
-            <Button onClick={handleCreateSubSample}>Tạo mẫu con</Button>
-            <Button variant="outline" onClick={() => setShowCreateSubSampleDialog(false)}>
-              Hủy
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

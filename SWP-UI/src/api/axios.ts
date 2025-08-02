@@ -600,10 +600,7 @@ export const sampleAPI = {
   create: async (sampleData: {
     requestId: number;
     collectedBy: number;
-    collectionTime: string;
-    receivedTime: string | null;
-    status: string;
-    relationship: string;
+    receivedTime: string; // ISO date string (YYYY-MM-DDTHH:mm:ss.ssss)
     sampleType: string;
   }) => {
     console.log('Creating sample with data:', sampleData);
@@ -614,14 +611,16 @@ export const sampleAPI = {
       throw new Error('requestId and collectedBy are required fields');
     }
     
-    // Map fields to match database schema exactly
+    // Validate receivedTime format
+    if (!sampleData.receivedTime) {
+      throw new Error('receivedTime is required');
+    }
+    
+    // Map fields to match API specification exactly
     const mappedData = {
       requestId: sampleData.requestId,        // Maps to request_id in Sample table
       collectedBy: sampleData.collectedBy,    // Maps to collected_by in Sample table
-      collectionTime: sampleData.collectionTime,
-      receivedTime: sampleData.receivedTime,
-      status: sampleData.status,
-      relationship: sampleData.relationship,
+      receivedTime: sampleData.receivedTime,  // ISO date string
       sampleType: sampleData.sampleType
     };
     
@@ -647,44 +646,21 @@ export const sampleAPI = {
     return response.data;
   },
 
-  // Cập nhật trạng thái mẫu
-  updateStatus: async (id: number | string, status: string) => {
-    // Chấp nhận cả số và chuỗi, FE truyền gì cũng được
-    const response = await api.patch(`/api/Sample/${id}/status`, { status });
-    return response.data;
-  },
 
-  // Lấy mẫu theo request ID
-  // ⚠️ Note: This endpoint may not be implemented on the backend yet
-  // Use getAll() and filter by requestId as a fallback
+
+  // Lấy mẫu theo requestId với client-side filtering
   getByRequestId: async (requestId: number) => {
-    const response = await api.get(`/api/Sample/request/${requestId}`);
-    return response.data;
-  },
-
-  // Lấy mẫu theo requestId hoặc collectedBy với client-side filtering
-  getByRequestIdOrCollectedBy: async (requestId?: number, collectedBy?: number) => {
     // Lấy tất cả samples và filter ở client-side
     const allSamples = await sampleAPI.getAll();
     
     if (Array.isArray(allSamples)) {
       return allSamples.filter((sample: any) => {
         const sampleRequestId = sample.requestId || sample.request_id;
-        const sampleCollectedBy = sample.collectedBy || sample.collected_by;
-        
-        if (requestId && sampleRequestId === requestId) return true;
-        if (collectedBy && sampleCollectedBy === collectedBy) return true;
-        return false;
+        return sampleRequestId === requestId;
       });
     }
     
     return [];
-  },
-
-  // Lấy thống kê mẫu
-  getStats: async () => {
-    const response = await api.get('/api/Sample/stats');
-    return response.data;
   }
 };
 
@@ -795,50 +771,8 @@ export const testResultAPI = {
   }
 };
 
-// API cho Lab Management
-export const labAPI = {
-  // Lấy thống kê tổng quan phòng lab
-  getDashboardStats: async () => {
-    const response = await api.get('/api/Lab/dashboard');
-    return response.data;
-  },
 
-  // Lấy hoạt động gần đây
-  getRecentActivity: async () => {
-    const response = await api.get('/api/Lab/recent-activity');
-    return response.data;
-  },
 
-  // Lấy tiến độ xử lý mẫu
-  getSampleProgress: async () => {
-    const response = await api.get('/api/Lab/sample-progress');
-    return response.data;
-  },
-
-  // Lấy tiến độ kết quả
-  getResultProgress: async () => {
-    const response = await api.get('/api/Lab/result-progress');
-    return response.data;
-  },
-
-  // Cập nhật trạng thái mẫu hàng loạt
-  updateBatchSampleStatus: async (sampleIds: string[], status: string) => {
-    const response = await api.patch('/api/Lab/batch-update-samples', {
-      sampleIds,
-      status
-    });
-    return response.data;
-  },
-
-  // Cập nhật trạng thái kết quả hàng loạt
-  updateBatchResultStatus: async (resultIds: string[], status: string) => {
-    const response = await api.patch('/api/Lab/batch-update-results', {
-      resultIds,
-      status
-    });
-    return response.data;
-  }
-};
 
 // API cho TestRequest (Yêu cầu xét nghiệm)
 export const testRequestAPI = {
