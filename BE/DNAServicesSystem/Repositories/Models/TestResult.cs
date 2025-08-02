@@ -21,6 +21,8 @@ public partial class TestResult
 
     public int? StaffId { get; set; }
 
+    public bool IsMatch { get; set; }
+
     public virtual User? ApprovedByNavigation { get; set; }
 
     public virtual Sample? Sample { get; set; }

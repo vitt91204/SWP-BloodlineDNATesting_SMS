@@ -178,13 +178,13 @@ D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemA
 D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemAPI\obj\Debug\net8.0\staticwebassets.build.json.cache
 D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemAPI\obj\Debug\net8.0\staticwebassets.development.json
 D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemAPI\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemAPI\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemAPI\obj\Debug\net8.0\DNAServi.29D9A18D.Up2Date
 D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemAPI\obj\Debug\net8.0\DNAServicesSystemAPI.dll
 D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemAPI\obj\Debug\net8.0\refint\DNAServicesSystemAPI.dll
 D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemAPI\obj\Debug\net8.0\DNAServicesSystemAPI.pdb
 D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemAPI\obj\Debug\net8.0\DNAServicesSystemAPI.genruntimeconfig.cache
 D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemAPI\obj\Debug\net8.0\ref\DNAServicesSystemAPI.dll
+<<<<<<< Updated upstream
 C:\Users\Nguyen Ba Tuan Anh\Documents\GitHub\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemAPI\obj\Debug\net8.0\DNAServicesSystemAPI.csproj.AssemblyReference.cache
 C:\Users\Nguyen Ba Tuan Anh\Documents\GitHub\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemAPI\obj\Debug\net8.0\rpswa.dswa.cache.json
 C:\Users\Nguyen Ba Tuan Anh\Documents\GitHub\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemAPI\obj\Debug\net8.0\DNAServicesSystemAPI.GeneratedMSBuildEditorConfig.editorconfig
@@ -372,3 +372,6 @@ C:\Users\Nguyen Ba Tuan Anh\Documents\GitHub\SWP-DNAProjects\BE\DNAServicesSyste
 C:\Users\Nguyen Ba Tuan Anh\Documents\GitHub\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemAPI\obj\Debug\net8.0\DNAServi.29D9A18D.Up2Date
 C:\Users\Nguyen Ba Tuan Anh\Documents\GitHub\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemAPI\obj\Debug\net8.0\DNAServicesSystemAPI.genruntimeconfig.cache
 C:\Users\Nguyen Ba Tuan Anh\Documents\GitHub\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemAPI\obj\Debug\net8.0\ref\DNAServicesSystemAPI.dll
+=======
+D:\Projects\SWP-Projects\SWP-DNAProjects\BE\DNAServicesSystem\DNAServicesSystemAPI\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
+>>>>>>> Stashed changes

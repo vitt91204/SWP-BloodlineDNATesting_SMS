@@ -78,7 +78,8 @@ namespace Services
                 ApprovedBy = dto.ApprovedBy,
                 UploadedTime = dto.UploadedTime,
                 ApprovedTime = dto.ApprovedTime,
-                StaffId = dto.StaffId
+                StaffId = dto.StaffId,
+                IsMatch = dto.IsMatch
             };
 
             // Update the request status to "Completed" and Sample status to "Tested"

@@ -2582,11 +2582,6 @@
             "type": "integer",
             "format": "int32"
           },
-          "collectionTime": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
           "receivedTime": {
             "type": "string",
             "format": "date-time",
@@ -2596,10 +2591,6 @@
             "maxLength": 50,
             "minLength": 0,
             "type": "string"
-          },
-          "relationship": {
-            "type": "string",
-            "nullable": true
           },
           "sampleType": {
             "type": "string",
@@ -2682,6 +2673,7 @@
       },
       "TestResultDto": {
         "required": [
+          "isMatch",
           "sampleId"
         ],
         "type": "object",
@@ -2729,6 +2721,9 @@
             "type": "string",
             "format": "binary",
             "nullable": true
+          },
+          "isMatch": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false

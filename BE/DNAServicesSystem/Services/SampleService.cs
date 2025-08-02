@@ -19,7 +19,7 @@ namespace Services
             _testServiceRepository = new TestServiceRepository();
         }
 
-        public async Task<List<SampleDetailsDto>> GetAllAsync()
+        public async Task<IEnumerable<SampleDetailsDto>> GetAllAsync()
         {
             List<Sample> samples = await _repository.GetAllAsync();
 
@@ -33,13 +33,12 @@ namespace Services
                 sampleDetails.Add(
                     new SampleDetailsDto
                     {
-                    RequestId = sample.RequestId,
+                        SampleId = sample.SampleId,
+                        RequestId = sample.RequestId,
                     CollectedBy = sample.CollectedBy,
-                    CollectionTime = sample.CollectionTime,
                     ReceivedTime = sample.ReceivedTime,
                     Status = sample.Status,
                     SampleType = sample.SampleType,
-                    Relationship = sample.Relationship,
                     ServiceName = service.Name,
                     UserFullName = user.FullName,
                     UserPhoneNumber = user.Phone
@@ -74,11 +73,9 @@ namespace Services
             {
                 RequestId = dto.RequestId,
                 CollectedBy = dto.CollectedBy,
-                CollectionTime = dto.CollectionTime,
                 ReceivedTime = dto.ReceivedTime,
                 Status = dto.Status,
                 SampleType = dto.SampleType,
-                Relationship = dto.Relationship
             };
 
             request.Status = "Testing";
@@ -94,11 +91,9 @@ namespace Services
 
             entity.RequestId = dto.RequestId;
             entity.CollectedBy = dto.CollectedBy;
-            entity.CollectionTime = dto.CollectionTime;
             entity.ReceivedTime = dto.ReceivedTime;
             entity.Status = dto.Status;
             entity.SampleType = dto.SampleType;
-            entity.Relationship = dto.Relationship;
 
             await _repository.UpdateAsync(entity);
             return true;

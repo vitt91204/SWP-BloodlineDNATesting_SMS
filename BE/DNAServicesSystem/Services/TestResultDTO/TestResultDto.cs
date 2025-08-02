@@ -20,5 +20,7 @@ namespace Services.TestResultDTO
         public DateTime? ApprovedTime { get; set; }
         public int? StaffId { get; set; }
         public IFormFile? PdfFile { get; set; }
+        [Required]
+        public bool IsMatch { get; set; } = false; // Default value for IsMatch
     }
 }

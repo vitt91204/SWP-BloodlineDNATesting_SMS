@@ -103,13 +103,12 @@ public partial class AppDbContext : DbContext
 
             entity.Property(e => e.PostId).HasColumnName("post_id");
             entity.Property(e => e.AuthorId).HasColumnName("author_id");
-            entity.Property(e => e.Content)
-                .HasColumnType("text")
-                .HasColumnName("content");
+            entity.Property(e => e.Content).HasColumnName("content");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
                 .HasColumnName("created_at");
+            entity.Property(e => e.PostImage).HasColumnName("post_image");
             entity.Property(e => e.Title)
                 .HasMaxLength(200)
                 .HasColumnName("title");
@@ -198,13 +197,9 @@ public partial class AppDbContext : DbContext
 
             entity.Property(e => e.SampleId).HasColumnName("sample_id");
             entity.Property(e => e.CollectedBy).HasColumnName("collected_by");
-            entity.Property(e => e.CollectionTime)
-                .HasColumnType("datetime")
-                .HasColumnName("collection_time");
             entity.Property(e => e.ReceivedTime)
                 .HasColumnType("datetime")
                 .HasColumnName("received_time");
-            entity.Property(e => e.Relationship).HasMaxLength(50);
             entity.Property(e => e.RequestId).HasColumnName("request_id");
             entity.Property(e => e.SampleType)
                 .HasMaxLength(50)
@@ -330,6 +325,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.ApprovedTime)
                 .HasColumnType("datetime")
                 .HasColumnName("approved_time");
+            entity.Property(e => e.IsMatch).HasColumnName("isMatch");
             entity.Property(e => e.ResultData).HasColumnName("result_data");
             entity.Property(e => e.SampleId).HasColumnName("sample_id");
             entity.Property(e => e.StaffId).HasColumnName("staff_id");
