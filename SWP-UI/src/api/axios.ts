@@ -4,9 +4,6 @@ import axios from 'axios';
 const api = axios.create({
   baseURL: '', // Use relative URL, Vite proxy will handle routing
   timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 // Request interceptor
@@ -21,7 +18,8 @@ api.interceptors.request.use(
     // Don't override Content-Type for FormData (file uploads)
     // Let browser set multipart/form-data automatically
     if (config.data instanceof FormData) {
-      delete config.headers['Content-Type'];
+      // Explicitly unset Content-Type so axios/browser sets proper multipart/form-data boundary
+      config.headers['Content-Type'] = undefined;
     }
     
     return config;
@@ -468,6 +466,12 @@ export const blogAPI = {
     return response.data;
   },
 
+  // Lấy ảnh blog theo id
+  getImage: async (id: string | number) => {
+    const response = await api.get(`/api/BlogPost/${id}/image`, { responseType: 'blob' });
+    return response.data;
+  },
+
   // ✅ GET chi tiết 1 bài viết theo id
   getById: async (id: string | number) => {
     const response = await api.get(`/api/BlogPost/${id}`);
@@ -480,6 +484,7 @@ export const blogAPI = {
   },
 
   update: async (id: number, data: any) => {
+    // FormData and JSON both handled; interceptor sẽ loại bỏ header khi cần
     const response = await api.put(`/api/BlogPost/${id}`, data);
     return response.data;
   },

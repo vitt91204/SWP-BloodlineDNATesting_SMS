@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { feedbackAPI } from "@/api/axios";
-
 export default function Blogdetails() {
   const { id } = useParams();
   const [blog, setBlog] = useState(null);
@@ -17,18 +16,27 @@ export default function Blogdetails() {
   const [feedback, setFeedback] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const [imgUrl, setImgUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBlog = async () => {
       try {
         const data = await blogAPI.getById(id); 
         setBlog(data);
+        // Lấy ảnh
+        if (id) {
+          try {
+            const blob = await blogAPI.getImage(id);
+            setImgUrl(URL.createObjectURL(blob));
+          } catch {
+            setImgUrl(null);
+          }
+        }
       } catch (err) {
         setError("Không thể tải bài viết.");
         console.error(err);
       }
     };
-
     if (id) fetchBlog();
   }, [id]);
 
@@ -89,6 +97,9 @@ export default function Blogdetails() {
                 {(blog.createdAt || "").slice(0, 10)}
               </div>
             </div>
+            {imgUrl && (
+              <img src={imgUrl} alt="blog" className="w-full h-64 object-cover rounded mt-4" />
+            )}
           </CardHeader>
           <CardContent>
             <div className="text-gray-800 leading-relaxed whitespace-pre-line">
@@ -118,3 +129,4 @@ export default function Blogdetails() {
     </div>
   );
 }
+
