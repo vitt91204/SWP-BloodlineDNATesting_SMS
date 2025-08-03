@@ -51,6 +51,19 @@ interface TestHistory {
     dateOfBirth: string;
     sampleType: string;
   }>;
+  testResult?: {
+    resultId: number;
+    sampleId: number;
+    requestId: number;
+    resultData: string;
+    uploadedBy: number;
+    approvedBy: number;
+    uploadedTime: string;
+    approvedTime: string;
+    staffId: number;
+    isMatch?: boolean; // Thêm field isMatch từ API
+    pdfFile?: string;
+  };
 }
 
 type StatusType = "Hoàn thành" | "Đang xử lý" | "Đã lấy mẫu" | "Hủy" | "Pending" | "Completed" | "In Progress" | "Cancelled";
@@ -71,6 +84,7 @@ export default function TestHistory() {
       try {
         setLoading(true);
         setError(null);
+        
         // Lấy userId từ localStorage
         const userData = localStorage.getItem('userData');
         let userId = null;
@@ -87,8 +101,59 @@ export default function TestHistory() {
         const response = await testRequestAPI.getByUserId(Number(userId));
         let mapped: any[] = [];
         if (Array.isArray(response)) {
-          mapped = response.map((item: any) => {
-            return {
+          mapped = await Promise.all(response.map(async (item: any) => {
+            // Lấy thông tin test result từ API nếu có
+            let testResult = null;
+            try {
+              if (item.requestId || item.id) {
+                const requestId = item.requestId || item.id;
+                console.log('Fetching test results for requestId:', requestId);
+                const allTestResults = await testResultAPI.getAll();
+                
+                console.log('All test results from API:', allTestResults);
+                console.log('Number of test results:', Array.isArray(allTestResults) ? allTestResults.length : 'Not an array');
+                                 if (Array.isArray(allTestResults) && allTestResults.length > 0) {
+                   console.log('First test result structure:', allTestResults[0]);
+                   console.log('All test result fields:', Object.keys(allTestResults[0]));
+                   console.log('All test result requestIds:', allTestResults.map((r: any) => r.requestId || r.request_id || r.testRequestId));
+                 }
+                
+                                 if (Array.isArray(allTestResults) && allTestResults.length > 0) {
+                   console.log('Searching for requestId:', requestId, 'in', allTestResults.length, 'test results');
+                   
+                   // Tìm test result có requestId khớp - kiểm tra nhiều field khác nhau
+                   testResult = allTestResults.find((result: any) => {
+                     const resultRequestId = result.requestId || result.request_id || result.testRequestId;
+                     const match = resultRequestId === requestId;
+                     console.log('Checking result:', result, 'requestId:', resultRequestId, 'against:', requestId, 'match:', match);
+                     return match;
+                   });
+                   
+                   // Nếu không tìm thấy qua requestId, thử tìm qua sampleId
+                   if (!testResult && item.sample && item.sample.sampleId) {
+                     console.log('Trying to match via sampleId:', item.sample.sampleId);
+                     testResult = allTestResults.find((result: any) => {
+                       const match = result.sampleId === item.sample.sampleId;
+                       console.log('Checking result via sampleId:', result.sampleId, 'against:', item.sample.sampleId, 'match:', match);
+                       return match;
+                     });
+                   }
+                   
+                   console.log('Found test result for requestId', requestId, ':', testResult);
+                   if (testResult) {
+                     console.log('Test result isMatch value:', testResult.isMatch, 'type:', typeof testResult.isMatch);
+                   } else {
+                     console.log('No test result found for requestId:', requestId);
+                   }
+                 } else {
+                   console.log('No test results available in database yet');
+                 }
+              }
+            } catch (error) {
+              console.error('Error fetching test result for request:', item.requestId || item.id, error);
+            }
+            
+            const mappedItem = {
               id: String(item.requestId || item.id),
               requestId: item.requestId || item.id,
               testName: item.serviceName || item.service?.name || 'Chưa rõ',
@@ -104,8 +169,18 @@ export default function TestHistory() {
               payment: item.payment || null,
               sample: item.sample || null,
               subSamples: item.subSamples || [],
+              testResult: testResult ? {
+                ...testResult,
+                // Thêm fallback cho isMatch từ các field khác nhau
+                isMatch: testResult.isMatch !== undefined ? testResult.isMatch : 
+                         testResult.is_match !== undefined ? testResult.is_match :
+                         testResult.match !== undefined ? testResult.match :
+                         undefined
+              } : null, // Thêm thông tin test result từ API
             };
-          });
+            
+            return mappedItem;
+          }));
         }
         
         // Sắp xếp theo requestId giảm dần (lớn nhất lên đầu)
@@ -115,13 +190,32 @@ export default function TestHistory() {
           return requestIdB - requestIdA;
         });
         
+        console.log('Final sorted mapped data before setting state:', sortedMapped);
+        sortedMapped.forEach((item, index) => {
+          console.log(`Item ${index}:`, {
+            requestId: item.requestId,
+            testResult: item.testResult,
+            isMatch: item.testResult?.isMatch
+          });
+        });
+        
         setTestHistory(sortedMapped);
       } catch (err: any) {
-        setError('Không thể tải dữ liệu lịch sử xét nghiệm');
+        console.error('❌ MAIN ERROR in fetchTestHistory:', err);
+        console.error('Error details:', {
+          message: err.message,
+          status: err.response?.status,
+          data: err.response?.data,
+          stack: err.stack
+        });
+        setError('Không thể tải dữ liệu lịch sử xét nghiệm: ' + (err.message || 'Unknown error'));
       } finally {
+        console.log('Setting loading to false');
         setLoading(false);
       }
     };
+    
+    console.log('Calling fetchTestHistory...');
     fetchTestHistory();
   }, []);
 
@@ -148,6 +242,37 @@ export default function TestHistory() {
     };
     const config = resultConfig[result as ResultType] || { className: "bg-gray-100 text-gray-800" };
     return <Badge className={config.className}>{result}</Badge>;
+  };
+
+  // Hàm hiển thị badge cho isMatch
+  const getIsMatchBadge = (isMatch: boolean | undefined) => {
+    console.log('getIsMatchBadge called with:', isMatch, 'type:', typeof isMatch);
+    
+    if (isMatch === undefined || isMatch === null) {
+      console.log('isMatch is undefined or null, not showing badge');
+      return null; // Không hiển thị badge nếu không có thông tin
+    }
+    
+    // Chuyển đổi string thành boolean nếu cần
+    let booleanValue = isMatch;
+    if (typeof isMatch === 'string') {
+      booleanValue = isMatch === 'true' || isMatch === '1' || isMatch === 'True';
+      console.log('Converted string to boolean:', isMatch, '->', booleanValue);
+    } else if (typeof isMatch === 'number') {
+      booleanValue = isMatch === 1;
+      console.log('Converted number to boolean:', isMatch, '->', booleanValue);
+    }
+    
+    console.log('Final boolean value for badge:', booleanValue);
+    
+    if (booleanValue === true) {
+      return <Badge className="bg-green-100 text-green-800">Khớp</Badge>;
+    } else if (booleanValue === false) {
+      return <Badge className="bg-red-100 text-red-800">Không khớp</Badge>;
+    }
+    
+    console.log('No matching condition for isMatch value:', booleanValue);
+    return null;
   };
 
   // Thêm hàm xem PDF
@@ -208,7 +333,32 @@ export default function TestHistory() {
         const response = await testRequestAPI.getByUserId(Number(userId));
         let mapped: any[] = [];
         if (Array.isArray(response)) {
-          mapped = response.map((item: any) => {
+          mapped = await Promise.all(response.map(async (item: any) => {
+            // Lấy thông tin test result từ API nếu có
+            let testResult = null;
+            try {
+              if (item.requestId || item.id) {
+                const requestId = item.requestId || item.id;
+                const allTestResults = await testResultAPI.getAll();
+                
+                if (Array.isArray(allTestResults)) {
+                  // Tìm test result có requestId khớp
+                  testResult = allTestResults.find((result: any) => 
+                    result.requestId === requestId || result.request_id === requestId
+                  );
+                  
+                  // Nếu không tìm thấy qua requestId, thử tìm qua sampleId
+                  if (!testResult && item.sample && item.sample.sampleId) {
+                    testResult = allTestResults.find((result: any) => 
+                      result.sampleId === item.sample.sampleId
+                    );
+                  }
+                }
+              }
+            } catch (error) {
+              console.error('Error fetching test result for request:', item.requestId || item.id, error);
+            }
+            
             return {
               id: String(item.requestId || item.id),
               requestId: item.requestId || item.id,
@@ -225,8 +375,9 @@ export default function TestHistory() {
               payment: item.payment || null,
               sample: item.sample || null,
               subSamples: item.subSamples || [],
+              testResult: testResult, // Thêm thông tin test result từ API
             };
-          });
+          }));
         }
         
         // Sắp xếp theo requestId giảm dần
@@ -275,7 +426,32 @@ export default function TestHistory() {
         const response = await testRequestAPI.getByUserId(Number(userId));
         let mapped: any[] = [];
         if (Array.isArray(response)) {
-          mapped = response.map((item: any) => {
+          mapped = await Promise.all(response.map(async (item: any) => {
+            // Lấy thông tin test result từ API nếu có
+            let testResult = null;
+            try {
+              if (item.requestId || item.id) {
+                const requestId = item.requestId || item.id;
+                const allTestResults = await testResultAPI.getAll();
+                
+                if (Array.isArray(allTestResults)) {
+                  // Tìm test result có requestId khớp
+                  testResult = allTestResults.find((result: any) => 
+                    result.requestId === requestId || result.request_id === requestId
+                  );
+                  
+                  // Nếu không tìm thấy qua requestId, thử tìm qua sampleId
+                  if (!testResult && item.sample && item.sample.sampleId) {
+                    testResult = allTestResults.find((result: any) => 
+                      result.sampleId === item.sample.sampleId
+                    );
+                  }
+                }
+              }
+            } catch (error) {
+              console.error('Error fetching test result for request:', item.requestId || item.id, error);
+            }
+            
             return {
               id: String(item.requestId || item.id),
               requestId: item.requestId || item.id,
@@ -292,8 +468,9 @@ export default function TestHistory() {
               payment: item.payment || null,
               sample: item.sample || null,
               subSamples: item.subSamples || [],
+              testResult: testResult, // Thêm thông tin test result từ API
             };
-          });
+          }));
         }
         
         // Sắp xếp theo requestId giảm dần
@@ -474,9 +651,23 @@ export default function TestHistory() {
                     )}
                     
                     <div className="flex justify-between items-center">
-                      <div className="flex gap-3">
+                      <div className="flex gap-3 flex-wrap">
                         {getStatusBadge(test.status)}
                         {getResultBadge(test.result)}
+                                                 {test.testResult ? (
+                           <>
+                             {console.log('Rendering test result for', test.id, ':', test.testResult)}
+                             {console.log('isMatch value:', test.testResult.isMatch, 'type:', typeof test.testResult.isMatch)}
+                             {getIsMatchBadge(test.testResult.isMatch)}
+                           </>
+                         ) : (
+                           // Hiển thị thông báo khi chưa có kết quả xét nghiệm
+                           test.status === 'Hoàn thành' || test.status === 'Completed' ? (
+                             <Badge className="bg-gray-100 text-gray-600 text-xs">
+                               Chưa có kết quả
+                             </Badge>
+                           ) : null
+                         )}
                       </div>
                       
                       <div className="flex gap-2">

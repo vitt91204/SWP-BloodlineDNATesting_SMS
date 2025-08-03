@@ -376,6 +376,31 @@ export interface TestRequestResponse extends TestRequest {
   userPhoneNumber?: string; // Số điện thoại của user từ response body
 }
 
+// Interface for TestResult
+export interface TestResult {
+  resultId: number;
+  sampleId: number;
+  requestId: number;
+  resultData: string;
+  approvedBy: number;
+  uploadedBy: number;
+  uploadedTime: string;
+  approvedTime: string;
+  staffId: number;
+  isMatch: boolean; // true hoặc false
+}
+
+export interface TestResultResponse extends TestResult {
+  id?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  sample?: any;
+  request?: any;
+  staff?: any;
+  approvedByStaff?: any;
+  uploadedByStaff?: any;
+}
+
 // Thêm API cho TestService
 export interface TestServiceUpdatePayload {
   name: string;
@@ -722,16 +747,9 @@ export const testResultAPI = {
   },
 
   // Tạo kết quả mới
-  create: async (resultData: {
-    resultId: number;
-    sampleId: number;
-    requestId: number;
-    resultData: string;
-    approvedBy: number;
-    uploadedBy: number;
-    uploadedTime: string;
-    approvedTime: string;
-    staffId: number;
+  create: async (resultData: Omit<TestResult, 'resultId'> & { 
+    resultId?: number;
+    isMatch: boolean; // Bắt buộc true hoặc false
   }) => {
     const response = await api.post('/api/TestResult', resultData);
     return response.data;
@@ -756,7 +774,7 @@ export const testResultAPI = {
   },
 
   // Cập nhật kết quả
-  update: async (id: number, resultData: any) => {
+  update: async (id: number, resultData: Partial<TestResult>) => {
     const response = await api.put(`/api/TestResult/${id}`, resultData);
     return response.data;
   },
