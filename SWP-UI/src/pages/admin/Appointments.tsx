@@ -40,12 +40,60 @@ import {
 import { testRequestAPI, TestRequestResponse, userAPI, paymentAPI } from "@/api/axios";
 import { useToast } from "@/components/ui/use-toast";
 
+// Mapping function to convert English status to Vietnamese
+const convertStatusToVietnamese = (status: string): string => {
+  const statusLower = status?.toLowerCase();
+  switch (statusLower) {
+    case "pending":
+      return "Chờ xác nhận";
+    case "sending":
+      return "Đang gửi bộ kit";
+    case "returning":
+      return "Đang gửi về";
+    case "collected":
+      return "Đã thu lại kit";
+    case "arrived":
+      return "Đã nhận được";
+    case "testing":
+      return "Đang xét nghiệm";
+    case "completed":
+      return "Hoàn thành";
+    default:
+      return status || "Không xác định";
+  }
+};
+
+// Mapping function to convert Vietnamese status back to English
+const getEnglishStatus = (vietnameseStatus: string): string => {
+  switch (vietnameseStatus) {
+    case "Chờ xác nhận":
+      return "pending";
+    case "Đang gửi bộ kit":
+      return "sending";
+    case "Đang gửi về":
+      return "returning";
+    case "Đã thu lại kit":
+      return "collected";
+    case "Đã nhận được":
+      return "arrived";
+    case "Đang xét nghiệm":
+      return "testing";
+    case "Hoàn thành":
+      return "completed";
+    default:
+      return vietnameseStatus;
+  }
+};
+
 const statusOptions = [
   { value: "all", label: "Tất cả" },
-  { value: "Pending", label: "Chờ xác nhận" },
-  { value: "Confirmed", label: "Đã xác nhận" },
-  { value: "Completed", label: "Hoàn thành" },
-  { value: "Cancelled", label: "Đã hủy" }
+  { value: "Chờ xác nhận", label: "Chờ xác nhận" },
+  { value: "Đang gửi bộ kit", label: "Đang gửi bộ kit" },
+  { value: "Đang gửi về", label: "Đang gửi về" },
+  { value: "Đã thu lại kit", label: "Đã thu lại kit" },
+  { value: "Đã nhận được", label: "Đã nhận được" },
+  { value: "Đang xét nghiệm", label: "Đang xét nghiệm" },
+  { value: "Hoàn thành", label: "Hoàn thành" }
 ];
 
 const filterOptions = [
@@ -278,40 +326,63 @@ export const AppointmentsPage = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    const statusLower = status?.toLowerCase();
-    switch (statusLower) {
-      case "confirmed":
-        return (
-          <Badge className="bg-blue-100 text-blue-700">
-            <CheckCircle className="w-3 h-3 mr-1" />
-            Đã xác nhận
-          </Badge>
-        );
-      case "completed":
-        return (
-          <Badge className="bg-green-100 text-green-700">
-            <CheckCircle className="w-3 h-3 mr-1" />
-            Hoàn thành
-          </Badge>
-        );
-      case "pending":
+    // Convert English status to Vietnamese for display
+    const vietnameseStatus = convertStatusToVietnamese(status);
+    
+    switch (vietnameseStatus) {
+      case "Chờ xác nhận":
         return (
           <Badge className="bg-yellow-100 text-yellow-700">
             <AlertCircle className="w-3 h-3 mr-1" />
             Chờ xác nhận
           </Badge>
         );
-      case "cancelled":
+      case "Đang gửi bộ kit":
         return (
-          <Badge className="bg-red-100 text-red-700">
-            <XCircle className="w-3 h-3 mr-1" />
-            Đã hủy
+          <Badge className="bg-blue-100 text-blue-700">
+            <TestTube className="w-3 h-3 mr-1" />
+            Đang gửi bộ kit
+          </Badge>
+        );
+      case "Đang gửi về":
+        return (
+          <Badge className="bg-purple-100 text-purple-700">
+            <RefreshCw className="w-3 h-3 mr-1" />
+            Đang gửi về
+          </Badge>
+        );
+      case "Đã thu lại kit":
+        return (
+          <Badge className="bg-indigo-100 text-indigo-700">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Đã thu lại kit
+          </Badge>
+        );
+      case "Đã nhận được":
+        return (
+          <Badge className="bg-cyan-100 text-cyan-700">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Đã nhận được
+          </Badge>
+        );
+      case "Đang xét nghiệm":
+        return (
+          <Badge className="bg-orange-100 text-orange-700">
+            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+            Đang xét nghiệm
+          </Badge>
+        );
+      case "Hoàn thành":
+        return (
+          <Badge className="bg-green-100 text-green-700">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Hoàn thành
           </Badge>
         );
       default:
         return (
           <Badge variant="outline">
-            {status || 'Không xác định'}
+            {vietnameseStatus || 'Không xác định'}
           </Badge>
         );
     }
@@ -347,7 +418,7 @@ export const AppointmentsPage = () => {
         (appointment.userId?.toString().includes(searchTerm))
       : true;
 
-    const matchesStatus = statusFilter === "all" || appointment.status === statusFilter;
+    const matchesStatus = statusFilter === "all" || convertStatusToVietnamese(appointment.status) === statusFilter;
     
     const matchesDate = dateFilter
       ? new Date(appointment.appointmentDate).toISOString().split('T')[0] === dateFilter
@@ -388,17 +459,18 @@ export const AppointmentsPage = () => {
 
   const getAppointmentStats = () => {
     const total = appointments.length;
-    const pending = appointments.filter(a => a.status === "Pending").length;
-    const confirmed = appointments.filter(a => a.status === "Confirmed").length;
+    const pending = appointments.filter(a => convertStatusToVietnamese(a.status) === "Chờ xác nhận").length;
+    const completed = appointments.filter(a => convertStatusToVietnamese(a.status) === "Hoàn thành").length;
+    const testing = appointments.filter(a => convertStatusToVietnamese(a.status) === "Đang xét nghiệm").length;
     const today = new Date().toISOString().split('T')[0];
     const todayAppointments = appointments.filter(a => new Date(a.appointmentDate).toISOString().split('T')[0] === today).length;
     
-    return { total, pending, confirmed, todayAppointments };
+    return { total, pending, completed, testing, todayAppointments };
   };
 
   const getTodayAppointments = () => {
     const today = new Date().toISOString().split('T')[0];
-    return appointments.filter(a => new Date(a.appointmentDate).toISOString().split('T')[0] === today && a.status !== "Cancelled");
+    return appointments.filter(a => new Date(a.appointmentDate).toISOString().split('T')[0] === today);
   };
 
   const stats = getAppointmentStats();
@@ -743,17 +815,22 @@ export const AppointmentsPage = () => {
               <div>
                 <h4 className="font-medium text-gray-900 mb-2">Cập nhật trạng thái</h4>
                 <select
-                  value={selectedAppointment.status}
+                  value={convertStatusToVietnamese(selectedAppointment.status)}
                   onChange={(e) => {
-                    updateAppointmentStatus(selectedAppointment.requestId, e.target.value);
-                    setSelectedAppointment({...selectedAppointment, status: e.target.value});
+                    // Convert Vietnamese status back to English for API
+                    const englishStatus = getEnglishStatus(e.target.value);
+                    updateAppointmentStatus(selectedAppointment.requestId, englishStatus);
+                    setSelectedAppointment({...selectedAppointment, status: englishStatus});
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="Pending">Chờ xác nhận</option>
-                  <option value="Confirmed">Đã xác nhận</option>
-                  <option value="Completed">Hoàn thành</option>
-                  <option value="Cancelled">Đã hủy</option>
+                  <option value="Chờ xác nhận">Chờ xác nhận</option>
+                  <option value="Đang gửi bộ kit">Đang gửi bộ kit</option>
+                  <option value="Đang gửi về">Đang gửi về</option>
+                  <option value="Đã thu lại kit">Đã thu lại kit</option>
+                  <option value="Đã nhận được">Đã nhận được</option>
+                  <option value="Đang xét nghiệm">Đang xét nghiệm</option>
+                  <option value="Hoàn thành">Hoàn thành</option>
                 </select>
               </div>
 
