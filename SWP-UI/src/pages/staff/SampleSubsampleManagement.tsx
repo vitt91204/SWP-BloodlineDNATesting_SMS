@@ -20,7 +20,8 @@ import {
   FlaskConical,
   Loader2,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  UserCheck
 } from 'lucide-react';
 import { testRequestAPI, sampleAPI, subSampleAPI, userAPI } from '@/api/axios';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -108,6 +109,7 @@ export default function SampleSubsampleManagement() {
   
   // Dialog states
   const [showCreateSampleDialog, setShowCreateSampleDialog] = useState(false);
+  const [showSampleDetailsDialog, setShowSampleDetailsDialog] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<TestRequest | null>(null);
   const [selectedSample, setSelectedSample] = useState<Sample | null>(null);
   
@@ -692,6 +694,11 @@ export default function SampleSubsampleManagement() {
     }
   };
 
+  const handleViewSampleDetails = (request: TestRequest) => {
+    setSelectedRequest(request);
+    setShowSampleDetailsDialog(true);
+  };
+
   const filteredRequests = testRequests.filter(request => {
     const matchesSearch = 
       request.userFullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -706,6 +713,8 @@ export default function SampleSubsampleManagement() {
       matchesCollectionType = request.collectionType?.toLowerCase() === 'at home';
     } else if (activeTab === 'at-clinic') {
       matchesCollectionType = request.collectionType?.toLowerCase() === 'at clinic';
+    } else if (activeTab === 'self-collection') {
+      matchesCollectionType = request.collectionType?.toLowerCase() === 'self';
     }
     
     return matchesSearch && matchesStatus && matchesCollectionType;
@@ -803,6 +812,8 @@ export default function SampleSubsampleManagement() {
         return 'Tại cơ sở';
       case 'at home':
         return 'Thu mẫu tại nhà';
+      case 'self':
+        return 'Tự thu mẫu';
       default:
         return type || 'Không xác định';
     }
@@ -890,7 +901,7 @@ export default function SampleSubsampleManagement() {
 
                      {/* Tabs */}
            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-             <TabsList className="grid w-full grid-cols-2">
+             <TabsList className="grid w-full grid-cols-3">
                <TabsTrigger value="at-home" className="flex items-center gap-2">
                  <Package className="w-4 h-4" />
                  Thu mẫu tại nhà
@@ -898,6 +909,10 @@ export default function SampleSubsampleManagement() {
                <TabsTrigger value="at-clinic" className="flex items-center gap-2">
                  <TestTube className="w-4 h-4" />
                  Tại cơ sở
+               </TabsTrigger>
+               <TabsTrigger value="self-collection" className="flex items-center gap-2">
+                 <UserCheck className="w-4 h-4" />
+                 Thu mẫu tự nhận
                </TabsTrigger>
              </TabsList>
 
@@ -1056,6 +1071,63 @@ export default function SampleSubsampleManagement() {
                 {filteredRequests.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
                     Không có yêu cầu xét nghiệm tại cơ sở nào
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="self-collection" className="mt-6">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Mã yêu cầu</TableHead>
+                        <TableHead>Khách hàng</TableHead>
+                        <TableHead>Dịch vụ</TableHead>
+                        <TableHead>Loại thu mẫu</TableHead>
+                        <TableHead>Ngày hẹn</TableHead>
+                        <TableHead>Trạng thái</TableHead>
+                        <TableHead className="text-right">Thao tác</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredRequests.map((request, index) => (
+                        <TableRow key={request.requestId || `request-${index}`}>
+                          <TableCell className="font-medium">YC{request.requestId}</TableCell>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{request.userFullName}</div>
+                              <div className="text-xs text-gray-500">
+                                User ID: {request.userId}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>{request.serviceName}</TableCell>
+                          <TableCell>{getCollectionTypeVN(request.collectionType)}</TableCell>
+                          <TableCell>
+                            <div className="text-sm">
+                              <div>{request.appointmentDate}</div>
+                              <div className="text-gray-500">{request.slotTime}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>{getStatusBadge(request.status)}</TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleViewSampleDetails(request)}
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              Xem chi tiết
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                {filteredRequests.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    Không có yêu cầu xét nghiệm thu mẫu tự nhận nào
                   </div>
                 )}
               </TabsContent>
@@ -1251,6 +1323,168 @@ export default function SampleSubsampleManagement() {
                 </Button>
               </>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Sample Details Dialog */}
+      <Dialog open={showSampleDetailsDialog} onOpenChange={setShowSampleDetailsDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="w-5 h-5" />
+              Chi tiết mẫu và mẫu con
+            </DialogTitle>
+            <DialogDescription>
+              Thông tin chi tiết về mẫu và mẫu con cho yêu cầu xét nghiệm YC{selectedRequest?.requestId}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedRequest && (
+            <div className="space-y-6">
+              {/* Test Request Information */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="font-medium text-blue-900 mb-3">Thông tin yêu cầu xét nghiệm</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium">Mã yêu cầu:</span>
+                    <span className="ml-2 text-blue-700">YC{selectedRequest.requestId}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium">Khách hàng:</span>
+                    <span className="ml-2 text-blue-700">{selectedRequest.userFullName}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium">Dịch vụ:</span>
+                    <span className="ml-2 text-blue-700">{selectedRequest.serviceName}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium">Loại thu mẫu:</span>
+                    <span className="ml-2 text-blue-700">{getCollectionTypeVN(selectedRequest.collectionType)}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium">Ngày hẹn:</span>
+                    <span className="ml-2 text-blue-700">{selectedRequest.appointmentDate}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium">Giờ hẹn:</span>
+                    <span className="ml-2 text-blue-700">{selectedRequest.slotTime}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium">Trạng thái:</span>
+                    <span className="ml-2">{getStatusBadge(selectedRequest.status)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Sample Information */}
+              {selectedRequest.sample ? (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <h4 className="font-medium text-green-900 mb-3 flex items-center gap-2">
+                    <TestTube className="w-4 h-4" />
+                    Thông tin mẫu chính
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="font-medium">Loại mẫu:</span>
+                      <span className="ml-2 text-green-700">{selectedRequest.sample.sampleType || 'Chưa xác định'}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium">Trạng thái:</span>
+                      <span className="ml-2">{getStatusBadge(selectedRequest.sample.status || 'Unknown')}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium">Thời gian thu mẫu:</span>
+                      <span className="ml-2 text-green-700">
+                        {selectedRequest.sample.collectionTime ? 
+                          new Date(selectedRequest.sample.collectionTime).toLocaleString('vi-VN') : 
+                          'Chưa có thông tin'
+                        }
+                      </span>
+                    </div>
+                    <div>
+                      <span className="font-medium">Thời gian nhận mẫu:</span>
+                      <span className="ml-2 text-green-700">
+                        {selectedRequest.sample.receivedTime ? 
+                          new Date(selectedRequest.sample.receivedTime).toLocaleString('vi-VN') : 
+                          'Chưa có thông tin'
+                        }
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <h4 className="font-medium text-yellow-900 mb-2 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4" />
+                    Chưa có mẫu
+                  </h4>
+                  <p className="text-sm text-yellow-700">Chưa có thông tin mẫu cho yêu cầu xét nghiệm này.</p>
+                </div>
+              )}
+
+              {/* SubSamples Information */}
+              {selectedRequest.subSamples && selectedRequest.subSamples.length > 0 ? (
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                  <h4 className="font-medium text-purple-900 mb-3 flex items-center gap-2">
+                    <FlaskConical className="w-4 h-4" />
+                    Thông tin mẫu con ({selectedRequest.subSamples.length} mẫu)
+                  </h4>
+                  <div className="space-y-3">
+                    {selectedRequest.subSamples.map((subSample, index) => (
+                      <div key={index} className="bg-white border border-purple-100 rounded-lg p-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <span className="font-medium">Tên:</span>
+                            <span className="ml-2 text-purple-700">{subSample.fullName || 'Chưa xác định'}</span>
+                          </div>
+                          <div>
+                            <span className="font-medium">Ngày sinh:</span>
+                            <span className="ml-2 text-purple-700">{subSample.dateOfBirth || 'Chưa xác định'}</span>
+                          </div>
+                          <div>
+                            <span className="font-medium">Loại mẫu:</span>
+                            <span className="ml-2 text-purple-700">{subSample.sampleType || 'Chưa xác định'}</span>
+                          </div>
+                          <div>
+                            <span className="font-medium">Ngày tạo:</span>
+                            <span className="ml-2 text-purple-700">
+                              {subSample.createdAt ? 
+                                new Date(subSample.createdAt).toLocaleString('vi-VN') : 
+                                'Chưa có thông tin'
+                              }
+                            </span>
+                          </div>
+                          {subSample.description && (
+                            <div className="col-span-2">
+                              <span className="font-medium">Mô tả:</span>
+                              <span className="ml-2 text-purple-700">{subSample.description}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    Mẫu con
+                  </h4>
+                  <p className="text-sm text-gray-700">Chưa có mẫu con cho yêu cầu xét nghiệm này.</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowSampleDetailsDialog(false)}
+            >
+              Đóng
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

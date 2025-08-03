@@ -53,7 +53,7 @@ interface TestHistory {
   }>;
 }
 
-type StatusType = "Hoàn thành" | "Đang xử lý" | "Đã lấy mẫu" | "Hủy" | "Pending" | "Completed" | "In Progress" | "Cancelled";
+type StatusType = "Chờ xác nhận" | "Đang gửi bộ kit" | "Đang gửi về" | "Đã thu lại kit" | "Đã nhận được" | "Đang xét nghiệm" | "Hoàn thành";
 type ResultType = "Có kết quả" | "Chờ kết quả" | "Đang phân tích";
 
 export default function TestHistory() {
@@ -65,6 +65,35 @@ export default function TestHistory() {
   const [selectedRequestId, setSelectedRequestId] = useState<number | null>(null);
   const [confirmingKit, setConfirmingKit] = useState<number | null>(null);
   const [sendingKit, setSendingKit] = useState<number | null>(null);
+
+  // Hàm chuyển đổi status từ tiếng Anh sang tiếng Việt
+  const translateStatus = (status: string): string => {
+    const statusLower = status?.toLowerCase();
+    switch (statusLower) {
+      case "pending":
+        return "Chờ xác nhận";
+      case "sending":
+        return "Đang gửi bộ kit";
+      case "returning":
+        return "Đang gửi về";
+      case "collected":
+        return "Đã thu lại kit";
+      case "arrived":
+        return "Đã nhận được";
+      case "testing":
+        return "Đang xét nghiệm";
+      case "completed":
+        return "Hoàn thành";
+      default:
+        return status || "Không xác định";
+    }
+  };
+
+  // Hàm kiểm tra xem test đã hoàn thành chưa
+  const isTestCompleted = (status: string): boolean => {
+    const statusLower = status?.toLowerCase();
+    return statusLower === 'completed' || statusLower === 'hoàn thành';
+  };
 
   useEffect(() => {
     const fetchTestHistory = async () => {
@@ -93,7 +122,7 @@ export default function TestHistory() {
               requestId: item.requestId || item.id,
               testName: item.serviceName || item.service?.name || 'Chưa rõ',
               date: item.appointmentDate || '',
-              status: item.status || '',
+              status: translateStatus(item.status || ''),
               result: item.resultStatus || (item.status === 'Completed' || item.status === 'Hoàn thành' ? 'Có kết quả' : 'Chờ kết quả'),
               price: item.payment?.amount ? item.payment.amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) : '',
               userFullName: item.userFullName || '',
@@ -127,14 +156,13 @@ export default function TestHistory() {
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<StatusType, { variant: string; className: string }> = {
-      "Hoàn thành": { variant: "default", className: "bg-green-100 text-green-800" },
-      "Đang xử lý": { variant: "secondary", className: "bg-yellow-100 text-yellow-800" },
-      "Đã lấy mẫu": { variant: "outline", className: "bg-blue-100 text-blue-800" },
-      "Hủy": { variant: "destructive", className: "bg-red-100 text-red-800" },
-      "Pending": { variant: "secondary", className: "bg-yellow-100 text-yellow-800" },
-      "Completed": { variant: "default", className: "bg-green-100 text-green-800" },
-      "In Progress": { variant: "outline", className: "bg-blue-100 text-blue-800" },
-      "Cancelled": { variant: "destructive", className: "bg-red-100 text-red-800" }
+      "Chờ xác nhận": { variant: "secondary", className: "bg-yellow-100 text-yellow-800" },
+      "Đang gửi bộ kit": { variant: "outline", className: "bg-blue-100 text-blue-800" },
+      "Đang gửi về": { variant: "outline", className: "bg-purple-100 text-purple-800" },
+      "Đã thu lại kit": { variant: "outline", className: "bg-indigo-100 text-indigo-800" },
+      "Đã nhận được": { variant: "outline", className: "bg-cyan-100 text-cyan-800" },
+      "Đang xét nghiệm": { variant: "outline", className: "bg-orange-100 text-orange-800" },
+      "Hoàn thành": { variant: "default", className: "bg-green-100 text-green-800" }
     };
     const config = statusConfig[status as StatusType] || { variant: "default", className: "bg-gray-100 text-gray-800" };
     return <Badge className={config.className}>{status}</Badge>;
@@ -214,7 +242,7 @@ export default function TestHistory() {
               requestId: item.requestId || item.id,
               testName: item.serviceName || item.service?.name || 'Chưa rõ',
               date: item.appointmentDate || '',
-              status: item.status || '',
+              status: translateStatus(item.status || ''),
               result: item.resultStatus || (item.status === 'Completed' || item.status === 'Hoàn thành' ? 'Có kết quả' : 'Chờ kết quả'),
               price: item.payment?.amount ? item.payment.amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) : '',
               userFullName: item.userFullName || '',
@@ -281,7 +309,7 @@ export default function TestHistory() {
               requestId: item.requestId || item.id,
               testName: item.serviceName || item.service?.name || 'Chưa rõ',
               date: item.appointmentDate || '',
-              status: item.status || '',
+              status: translateStatus(item.status || ''),
               result: item.resultStatus || (item.status === 'Completed' || item.status === 'Hoàn thành' ? 'Có kết quả' : 'Chờ kết quả'),
               price: item.payment?.amount ? item.payment.amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) : '',
               userFullName: item.userFullName || '',
@@ -481,7 +509,7 @@ export default function TestHistory() {
                       
                       <div className="flex gap-2">
                         {/* Nút xác nhận nhận kit - chỉ hiển thị cho các trạng thái phù hợp */}
-                        {(test.status === 'Sending') && 
+                        {(test.status === 'Đang gửi bộ kit') && 
                          test.collectionType === 'Self' && (
                           <Button 
                             variant="outline" 
@@ -505,7 +533,7 @@ export default function TestHistory() {
                         )}
                         
                         {/* Nút xác nhận đã gửi kit về trung tâm */}
-                        {(test.status === 'Arrived') && 
+                        {(test.status === 'Đã nhận được') && 
                          test.collectionType === 'Self' && (
                           <Button 
                             variant="outline" 
