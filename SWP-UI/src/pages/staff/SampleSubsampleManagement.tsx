@@ -142,21 +142,7 @@ export default function SampleSubsampleManagement() {
     { value: "Nước ối", label: "Nước ối" },
   ];
 
-  const genderOptions = [
-    { value: "Male", label: "Nam" },
-    { value: "Female", label: "Nữ" },
-    { value: "Other", label: "Khác" },
-  ];
-
-  const relationshipOptions = [
-    { value: "Self", label: "Bản thân" },
-    { value: "Father", label: "Cha" },
-    { value: "Mother", label: "Mẹ" },
-    { value: "Child", label: "Con" },
-    { value: "Sibling", label: "Anh/Chị/Em" },
-    { value: "Spouse", label: "Vợ/Chồng" },
-    { value: "Other", label: "Khác" },
-  ];
+ 
 
   // Get staff ID from localStorage (ưu tiên userId, sau đó id)
   let staffId: number | null = null;
@@ -173,11 +159,6 @@ export default function SampleSubsampleManagement() {
     console.error('Error parsing userData:', e);
     staffId = null;
   }
-
-
-
-
-
   // Fetch data
   useEffect(() => {
     fetchData();
@@ -497,9 +478,7 @@ export default function SampleSubsampleManagement() {
     }
   };
 
-  const handleContinueToSubSample = () => {
-    setIsCreatingSubSample(true);
-  };
+ 
 
   const handleFinishSampleCreation = () => {
     // Close dialog and reset all forms
@@ -642,14 +621,6 @@ export default function SampleSubsampleManagement() {
     }
   };
 
-  const handleSkipSubSample = () => {
-    // Close dialog and reset forms
-    handleFinishSampleCreation();
-    toast({
-      title: "Thành công",
-      description: "Đã tạo mẫu chính thành công",
-    });
-  };
 
   // Function to populate sample form with user info from test request
   const populateSampleFormFromRequest = (request: TestRequest) => {
@@ -664,7 +635,7 @@ export default function SampleSubsampleManagement() {
     });
   };
 
-  const handleUpdateStatus = async (requestId: number | undefined, newStatus: "Pending" | "On-going" | "Arrived" | "Collected" | "Testing" | "Completed") => {
+  const handleUpdateStatus = async (requestId: number | undefined, newStatus: "Pending" | "Arrived" | "Collected" | "Testing" | "Completed") => {
     if (!requestId) return;
     
     try {
@@ -889,7 +860,7 @@ export default function SampleSubsampleManagement() {
                 <SelectContent>
                   <SelectItem value="all">Tất cả</SelectItem>
                   <SelectItem value="Pending">Chờ xử lý</SelectItem>
-                  <SelectItem value="On-going">Đang xử lý</SelectItem>
+                  <SelectItem value="On-going">Đang tới</SelectItem>
                   <SelectItem value="Arrived">Đã đến</SelectItem>
                   <SelectItem value="Collected">Đã thu mẫu</SelectItem>
                   <SelectItem value="Testing">Đang xét nghiệm</SelectItem>
@@ -957,7 +928,6 @@ export default function SampleSubsampleManagement() {
                             {request.sample ? (
                               <div className="text-sm">
                                 <div className="font-medium">Loại mẫu: {request.sample.sampleType || 'Chưa xác định'}</div>
-                                <div className="text-gray-500">Tên mẫu: {request.sample.fullName || 'Chưa xác định'}</div>
                                 {request.status === 'Testing' && (
                                   <Button
                                     variant="outline"
@@ -1274,19 +1244,6 @@ export default function SampleSubsampleManagement() {
                 </Button>
                 <Button 
                   variant="outline" 
-                  onClick={handleContinueToSubSample}
-                  disabled={isSubmitting}
-                  className="flex items-center gap-2"
-                >
-                  {isSubmitting ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Plus className="w-4 h-4" />
-                  )}
-                  Tạo mẫu & Tiếp tục
-                </Button>
-                <Button 
-                  variant="outline" 
                   onClick={() => setShowCreateSampleDialog(false)}
                   disabled={isSubmitting}
                 >
@@ -1306,13 +1263,6 @@ export default function SampleSubsampleManagement() {
                     <CheckCircle className="w-4 h-4" />
                   )}
                   {isSubmitting ? "Đang xử lý..." : "Tạo mẫu con"}
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={handleSkipSubSample}
-                  disabled={isSubmitting}
-                >
-                  Bỏ qua mẫu con
                 </Button>
                 <Button 
                   variant="outline" 
@@ -1351,14 +1301,6 @@ export default function SampleSubsampleManagement() {
                     <span className="ml-2 text-blue-700">YC{selectedRequest.requestId}</span>
                   </div>
                   <div>
-                    <span className="font-medium">Khách hàng:</span>
-                    <span className="ml-2 text-blue-700">{selectedRequest.userFullName}</span>
-                  </div>
-                  <div>
-                    <span className="font-medium">Dịch vụ:</span>
-                    <span className="ml-2 text-blue-700">{selectedRequest.serviceName}</span>
-                  </div>
-                  <div>
                     <span className="font-medium">Loại thu mẫu:</span>
                     <span className="ml-2 text-blue-700">{getCollectionTypeVN(selectedRequest.collectionType)}</span>
                   </div>
@@ -1378,7 +1320,7 @@ export default function SampleSubsampleManagement() {
               </div>
 
               {/* Sample Information */}
-              {selectedRequest.sample ? (
+              {selectedRequest.sample && selectedRequest.sample.sampleId ? (
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                   <h4 className="font-medium text-green-900 mb-3 flex items-center gap-2">
                     <TestTube className="w-4 h-4" />
@@ -1386,21 +1328,16 @@ export default function SampleSubsampleManagement() {
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div>
+                      <span className="font-medium">Khách hàng:</span>
+                      <span className="ml-2 text-green-700">{selectedRequest.userFullName}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium">Dịch vụ:</span>
+                      <span className="ml-2 text-green-700">{selectedRequest.serviceName}</span>
+                    </div>
+                    <div>
                       <span className="font-medium">Loại mẫu:</span>
                       <span className="ml-2 text-green-700">{selectedRequest.sample.sampleType || 'Chưa xác định'}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium">Trạng thái:</span>
-                      <span className="ml-2">{getStatusBadge(selectedRequest.sample.status || 'Unknown')}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium">Thời gian thu mẫu:</span>
-                      <span className="ml-2 text-green-700">
-                        {selectedRequest.sample.collectionTime ? 
-                          new Date(selectedRequest.sample.collectionTime).toLocaleString('vi-VN') : 
-                          'Chưa có thông tin'
-                        }
-                      </span>
                     </div>
                     <div>
                       <span className="font-medium">Thời gian nhận mẫu:</span>

@@ -178,22 +178,51 @@ export default function HomeCollections() {
     });
   };
 
+  const translateStatus = (status: string): string => {
+    const statusLower = status?.toLowerCase();
+    switch (statusLower) {
+      case "pending":
+        return "Chờ xác nhận";
+      case "sending":
+        return "Đang gửi bộ kit";
+      case "returning":
+        return "Đang gửi về";
+      case "collected":
+        return "Đã nhận mẫu";
+      case "arrived":
+        return "Đã nhận được";
+      case "on-going":
+        return "Đang tới";
+      case "testing":
+        return "Đang xét nghiệm";
+      case "completed":
+        return "Hoàn thành";
+      default:
+        return status || "Không xác định";
+    }
+  };
+
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'Pending':
+    const statusLower = status?.toLowerCase();
+    switch (statusLower) {
+      case 'pending':
         return <Badge className="bg-yellow-100 text-yellow-800">Chờ xác nhận</Badge>;
-      case 'Confirmed':
-        return <Badge className="bg-blue-100 text-blue-800">Đã xác nhận</Badge>;
-      case 'Sending':
-        return <Badge className="bg-orange-100 text-orange-800">Đang gửi kit</Badge>;
-      case 'Returning':
+      case 'arrived':
+        return <Badge className="bg-blue-100 text-blue-800">Đã nhận được</Badge>;
+      case 'on-going':
+        return <Badge className="bg-orange-100 text-orange-800">Đang tới</Badge>;
+      case 'sending':
+        return <Badge className="bg-orange-100 text-orange-800">Đang gửi bộ kit</Badge>;
+      case 'returning':
         return <Badge className="bg-indigo-100 text-indigo-800">Đang gửi về</Badge>;
-      case 'Collected':
-        return <Badge className="bg-purple-100 text-purple-800">Đã thu lại kit</Badge>;
-      case 'Completed':
+      case 'collected':
+        return <Badge className="bg-purple-100 text-purple-800">Đã nhận mẫu</Badge>;
+      case 'testing':
+        return <Badge className="bg-cyan-100 text-cyan-800">Đang xét nghiệm</Badge>;
+      case 'completed':
         return <Badge className="bg-green-100 text-green-800">Hoàn thành</Badge>;
       default:
-        return <Badge>{status}</Badge>;
+        return <Badge>{status || "Không xác định"}</Badge>;
     }
   };
 
@@ -220,37 +249,17 @@ export default function HomeCollections() {
     return collection.address;
   };
 
-  const handleStatusUpdate = async (id: string, newStatus: 'Pending' | 'Confirmed' | 'Completed' | 'Sending' | 'Collected' | 'Returning') => {
+  const handleStatusUpdate = async (id: string, newStatus: 'Pending' | 'Arrived' | 'On-going' | 'Collected' | 'Testing' | 'Completed' | 'Sending' | 'Returning') => {
     try {
       console.log(`Updating status for request ${id} to: ${newStatus}`);
+      console.log('ID type:', typeof id, 'ID value:', id);
+      console.log('Status type:', typeof newStatus, 'Status value:', newStatus);
       
       // Set loading state
       setUpdatingIds(prev => new Set(prev).add(id));
       
-      // Map UI status to API status
-      let apiStatus: 'Pending' | 'On-going' | 'Arrived' | 'Collected' | 'Testing' | 'Completed' | 'Sending' | 'Returning';
-      switch (newStatus) {
-        case 'Confirmed':
-          apiStatus = 'Arrived';
-          break;
-        case 'Sending':
-          apiStatus = 'Sending';
-          break;
-        case 'Completed':
-          apiStatus = 'Completed';
-          break;
-        case 'Collected':
-          apiStatus = 'Collected';
-          break;
-        case 'Returning':
-          apiStatus = 'Returning';
-          break;
-        default:
-          apiStatus = 'Pending';
-      }
-      
       // Gọi API để cập nhật status
-      const response = await testRequestAPI.updateStatus(Number(id), apiStatus);
+      const response = await testRequestAPI.updateStatus(Number(id), newStatus);
       console.log('API response:', response);
       
       // Cập nhật UI nếu API call thành công
@@ -261,26 +270,7 @@ export default function HomeCollections() {
           )
         );
         
-        let statusMessage = '';
-        switch (newStatus) {
-          case 'Confirmed':
-            statusMessage = 'Đã xác nhận';
-            break;
-          case 'Sending':
-            statusMessage = 'Đang gửi kit';
-            break;
-          case 'Completed':
-            statusMessage = 'Hoàn thành';
-            break;
-          case 'Collected':
-            statusMessage = 'Đã thu lại kit';
-            break;
-          case 'Returning':
-            statusMessage = 'Đang gửi về';
-            break;
-          default:
-            statusMessage = newStatus;
-        }
+        const statusMessage = translateStatus(newStatus);
         
         toast({
           title: "Cập nhật thành công",
@@ -289,10 +279,29 @@ export default function HomeCollections() {
       }
     } catch (error) {
       console.error('Error updating status:', error);
+      
+      // Log detailed error information
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        console.error('Error status:', error.response.status);
+        console.error('Error headers:', error.response.headers);
+      }
+      
+      let errorMessage = "Không thể cập nhật trạng thái lịch hẹn. Vui lòng thử lại.";
+      
+      // Try to extract more specific error message
+      if (error.response?.data?.errors) {
+        const validationErrors = error.response.data.errors;
+        const errorDetails = Object.values(validationErrors).flat().join(', ');
+        errorMessage = `Lỗi validation: ${errorDetails}`;
+      } else if (error.response?.data?.title) {
+        errorMessage = error.response.data.title;
+      }
+      
       toast({
         variant: "destructive",
         title: "Lỗi cập nhật",
-        description: "Không thể cập nhật trạng thái lịch hẹn. Vui lòng thử lại.",
+        description: errorMessage,
       });
     } finally {
       // Clear loading state
@@ -393,7 +402,7 @@ export default function HomeCollections() {
                               <Button 
                                 size="sm" 
                                 variant="outline"
-                                onClick={() => handleStatusUpdate(collection.id, 'Confirmed')}
+                                onClick={() => handleStatusUpdate(collection.id, 'On-going')}
                                 disabled={updatingIds.has(collection.id)}
                               >
                                 {updatingIds.has(collection.id) ? (
@@ -401,13 +410,13 @@ export default function HomeCollections() {
                                 ) : (
                                   <CheckCircle className="w-4 h-4 mr-1" />
                                 )}
-                                {updatingIds.has(collection.id) ? 'Đang cập nhật...' : 'Xác nhận'}
+                                {updatingIds.has(collection.id) ? 'Đang cập nhật...' : 'Xác nhận đang tới'}
                               </Button>
                             )}
-                            {collection.status === 'Confirmed' && (
+                            {collection.status === 'On-going' && (
                               <Button 
                                 size="sm"
-                                onClick={() => handleStatusUpdate(collection.id, 'Completed')}
+                                onClick={() => handleStatusUpdate(collection.id, 'Arrived')}
                                 disabled={updatingIds.has(collection.id)}
                               >
                                 {updatingIds.has(collection.id) ? (
@@ -415,9 +424,10 @@ export default function HomeCollections() {
                                 ) : (
                                   <CheckCircle className="w-4 h-4 mr-1" />
                                 )}
-                                {updatingIds.has(collection.id) ? 'Đang cập nhật...' : 'Hoàn thành'}
+                                {updatingIds.has(collection.id) ? 'Đang cập nhật...' : 'Xác nhận đã đến nhà'}
                               </Button>
                             )}
+                            
                           </div>
                         </div>
                       </div>
@@ -506,24 +516,10 @@ export default function HomeCollections() {
                                 {updatingIds.has(collection.id) ? 'Đang cập nhật...' : 'Xác nhận đã thu lại kit'}
                               </Button>
                             )}
-                            {collection.status === 'Collected' && (
-                              <Button 
-                                size="sm"
-                                onClick={() => handleStatusUpdate(collection.id, 'Returning')}
-                                disabled={updatingIds.has(collection.id)}
-                              >
-                                {updatingIds.has(collection.id) ? (
-                                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                                ) : (
-                                  <Clipboard className="w-4 h-4 mr-1" />
-                                )}
-                                {updatingIds.has(collection.id) ? 'Đang cập nhật...' : 'Xác nhận đã thu lại kit'}
-                              </Button>
-                            )}
                             {collection.status === 'Returning' && (
                               <Button 
                                 size="sm"
-                                onClick={() => handleStatusUpdate(collection.id, 'Collected')}
+                                onClick={() => handleStatusUpdate(collection.id, 'Collected')}  
                                 disabled={updatingIds.has(collection.id)}
                               >
                                 {updatingIds.has(collection.id) ? (

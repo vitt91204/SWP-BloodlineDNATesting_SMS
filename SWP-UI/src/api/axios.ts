@@ -376,30 +376,7 @@ export interface TestRequestResponse extends TestRequest {
   userPhoneNumber?: string; // Số điện thoại của user từ response body
 }
 
-// Interface for TestResult
-export interface TestResult {
-  resultId: number;
-  sampleId: number;
-  requestId: number;
-  resultData: string;
-  approvedBy: number;
-  uploadedBy: number;
-  uploadedTime: string;
-  approvedTime: string;
-  staffId: number;
-  isMatch: boolean; // true hoặc false
-}
 
-export interface TestResultResponse extends TestResult {
-  id?: number;
-  createdAt?: string;
-  updatedAt?: string;
-  sample?: any;
-  request?: any;
-  staff?: any;
-  approvedByStaff?: any;
-  uploadedByStaff?: any;
-}
 
 // Thêm API cho TestService
 export interface TestServiceUpdatePayload {
@@ -747,9 +724,16 @@ export const testResultAPI = {
   },
 
   // Tạo kết quả mới
-  create: async (resultData: Omit<TestResult, 'resultId'> & { 
-    resultId?: number;
-    isMatch: boolean; // Bắt buộc true hoặc false
+  create: async (resultData: {
+    resultId: number;
+    sampleId: number;
+    requestId: number;
+    resultData: string;
+    approvedBy: number;
+    uploadedBy: number;
+    uploadedTime: string;
+    approvedTime: string;
+    staffId: number;
   }) => {
     const response = await api.post('/api/TestResult', resultData);
     return response.data;
@@ -774,7 +758,7 @@ export const testResultAPI = {
   },
 
   // Cập nhật kết quả
-  update: async (id: number, resultData: Partial<TestResult>) => {
+  update: async (id: number, resultData: any) => {
     const response = await api.put(`/api/TestResult/${id}`, resultData);
     return response.data;
   },
@@ -846,8 +830,12 @@ export const testRequestAPI = {
   },
 
   // Cập nhật trạng thái yêu cầu
-  updateStatus: async (id: number, status: 'Pending' | 'On-going' | 'Arrived' | 'Collected' | 'Testing' | 'Completed' | 'Sending' | 'Returning') => {
-    const response = await api.put(`/api/TestRequest/update-status/${id}`, status);
+  updateStatus: async (id: number, status: 'Pending' | 'Arrived' | 'Collected' | 'Testing' | 'Completed' | 'Sending' | 'Returning'| 'On-going') => {
+    const response = await api.put(`/api/TestRequest/update-status/${id}`, JSON.stringify(status), {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
     return response.data;
   },
 

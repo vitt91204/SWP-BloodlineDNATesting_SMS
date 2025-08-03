@@ -4,7 +4,7 @@ import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+
 import { 
   FileText, 
 
@@ -37,7 +37,7 @@ interface TestResult {
   approvedTime?: string;
   staffId?: number;
   pdfFile?: string;
-  isMatch?: boolean; // Thêm field isMatch
+  
   // Thông tin chi tiết
   sampleInfo?: any;
   staffInfo?: any;
@@ -76,7 +76,7 @@ export default function ResultsDelivery() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentStaffInfo, setCurrentStaffInfo] = useState<any>(null);
-  const [isMatch, setIsMatch] = useState<string>('true'); // Thay đổi thành string cho dropdown
+  const [isMatch, setIsMatch] = useState(true); // Thêm state cho checkbox IsMatch
 
   // Helper function to get current staff ID from localStorage
   const getCurrentStaffId = (): number | null => {
@@ -120,15 +120,6 @@ export default function ResultsDelivery() {
           data = await testRequestAPI.getByStaffId(currentStaffId);
         } catch (error) {
           setError(`Không thể tải dữ liệu lịch hẹn cho nhân viên ID ${currentStaffId}. Vui lòng kiểm tra kết nối và thử lại.`);
-          setLoading(false);
-          return;
-        }
-      } else {
-        // Fallback: lấy tất cả nếu không có staff ID (có thể là admin)
-        try {
-          data = await testRequestAPI.getAll();
-        } catch (error) {
-          setError('Không thể tải dữ liệu lịch hẹn. Vui lòng kiểm tra kết nối và thử lại.');
           setLoading(false);
           return;
         }
@@ -460,7 +451,7 @@ export default function ResultsDelivery() {
       formData.append('SampleId', sampleId);
       formData.append('UploadedBy', currentStaffId.toString());
       formData.append('StaffId', currentStaffId.toString());
-      formData.append('IsMatch', isMatch); // Sử dụng giá trị string từ dropdown
+      formData.append('IsMatch', isMatch.toString()); // Sử dụng giá trị string từ dropdown
       formData.append('PdfFile', selectedFile);
       
 
@@ -548,7 +539,6 @@ export default function ResultsDelivery() {
                 approvedTime: response?.approvedTime || null,
                 staffId: response?.staffId || currentStaffId,
                 pdfFile: typeof response?.pdfFile === 'string' ? response.pdfFile : selectedFile.name,
-                isMatch: response?.isMatch !== undefined ? response.isMatch : (isMatch === 'true'), // Lưu giá trị isMatch từ response hoặc từ dropdown
                 sampleInfo,
                 staffInfo
               }
@@ -559,10 +549,10 @@ export default function ResultsDelivery() {
       setSelectedFile(null);
       setIsUploadMode(false);
       setUploadingResultId(null);
-      setIsMatch('true'); // Reset về true khi upload thành công
+      setIsMatch(true); // Reset về true khi upload thành công
       
       // Hiển thị thông báo thành công
-      alert(`✅ Upload thành công!\n\nFile: ${selectedFile.name}\nResult ID: ${response?.resultId || response?.id || 'N/A'}\nSample ID: ${response?.sampleId || sampleId}\nStaff ID: ${response?.staffId || currentStaffId}\nIsMatch: ${isMatch === 'true' ? 'Khớp' : 'Không khớp'} (${isMatch})`);
+      alert(`✅ Upload thành công!\n\nFile: ${selectedFile.name}\nResult ID: ${response?.resultId || response?.id || 'N/A'}\nSample ID: ${response?.sampleId || sampleId}\nStaff ID: ${response?.staffId || currentStaffId}`);
       
     } catch (error: any) {
       // Hiển thị thông báo lỗi cho user
@@ -588,15 +578,6 @@ export default function ResultsDelivery() {
     );
   };
 
-  const handleDownloadResult = (testId: string) => {
-    // Logic để tải xuống file kết quả
-    // TODO: Implement download functionality
-  };
-
-  const handleViewResult = (testId: string) => {
-    // Logic để xem trước kết quả
-    // TODO: Implement view functionality
-  };
 
   return (
     <Card>
@@ -676,36 +657,23 @@ export default function ResultsDelivery() {
                                          )}
                      
                      {/* Dropdown cho IsMatch */}
-                     <div className="space-y-2 p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                       <Label htmlFor="isMatch" className="text-sm font-medium text-gray-700">
-                         Kết quả khớp với mẫu xét nghiệm
-                       </Label>
-                       <Select 
-                         value={isMatch} 
-                         onValueChange={setIsMatch}
+                      {/* Checkbox cho IsMatch */}
+                      <div className="flex items-center space-x-2 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                       <button
+                         type="button"
+                         onClick={() => setIsMatch(!isMatch)}
+                         className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded transition-colors"
                          disabled={isUploading}
                        >
-                         <SelectTrigger className="w-full">
-                           <SelectValue placeholder="Chọn trạng thái khớp" />
-                         </SelectTrigger>
-                         <SelectContent>
-                           <SelectItem value="true">
-                             <div className="flex items-center space-x-2">
-                               <CheckSquare className="w-4 h-4 text-green-600" />
-                               <span>Khớp (True)</span>
-                             </div>
-                           </SelectItem>
-                           <SelectItem value="false">
-                             <div className="flex items-center space-x-2">
-                               <Square className="w-4 h-4 text-red-600" />
-                               <span>Không khớp (False)</span>
-                             </div>
-                           </SelectItem>
-                         </SelectContent>
-                       </Select>
-                       <p className="text-xs text-gray-500">
-                         Chọn "Khớp" nếu kết quả xét nghiệm phù hợp với mẫu, "Không khớp" nếu có bất thường
-                       </p>
+                        {isMatch ? (
+                           <CheckSquare className="w-5 h-5 text-blue-600" />
+                         ) : (
+                           <Square className="w-5 h-5 text-gray-400" />
+                         )}
+                         <span className="text-sm font-medium text-gray-700">
+                           Chung huyết thống
+                         </span>
+                       </button>
                      </div>
                      
                      <div className="flex gap-2">
@@ -738,7 +706,7 @@ export default function ResultsDelivery() {
                            setIsUploadMode(false);
                            setSelectedFile(null);
                            setUploadingResultId(null);
-                           setIsMatch('true'); // Reset về true khi hủy
+                           setIsMatch(true); // Reset về true khi hủy
                          }}
                          disabled={isUploading}
                        >
@@ -828,26 +796,7 @@ export default function ResultsDelivery() {
                                   </Badge>
                                 </div>
                               )}
-                              
-                              {result.isMatch !== undefined && (
-                                <div className="flex items-center gap-2">
-                                  <div className={`w-2 h-2 rounded-full ${result.isMatch ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                                  <span className="text-sm font-medium text-gray-700">Kết quả khớp:</span>
-                                  <Badge className={result.isMatch ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                                    {result.isMatch ? (
-                                      <span className="flex items-center gap-1">
-                                        <CheckSquare className="w-3 h-3" />
-                                        Khớp
-                                      </span>
-                                    ) : (
-                                      <span className="flex items-center gap-1">
-                                        <Square className="w-3 h-3" />
-                                        Không khớp
-                                      </span>
-                                    )}
-                                  </Badge>
-                                </div>
-                              )}
+                            
                               
                               {result.sampleInfo && result.sampleInfo.status && (
                                 <div className="flex items-center gap-2">
@@ -1004,22 +953,69 @@ export default function ResultsDelivery() {
                         
                         {/* Hiển thị thông tin từ response body */}
                         {result.resultId && (
-                          <div className="text-xs bg-green-50 border border-green-200 p-2 rounded">
-                            <p className="font-medium text-green-800 mb-1">✅ Kết quả đã upload</p>
-                            <p className="text-green-700">Result ID: {result.resultId}</p>
-                            <p className="text-green-700">Sample ID: {result.sampleId}</p>
-                            {result.uploadedTime && (
-                              <p className="text-green-700">
-                                Uploaded: {new Date(result.uploadedTime).toLocaleDateString('vi-VN')} {new Date(result.uploadedTime).toLocaleTimeString('vi-VN')}
-                              </p>
-                            )}
-                            {result.approvedTime && (
-                              <p className="text-green-700">
-                                Approved: {new Date(result.approvedTime).toLocaleDateString('vi-VN')} {new Date(result.approvedTime).toLocaleTimeString('vi-VN')}
-                              </p>
-                            )}
+                          <div className="bg-green-50 border border-green-200 rounded-lg p-4 shadow-sm">
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                <FileText className="w-4 h-4 text-green-600" />
+                              </div>
+                              <h4 className="font-semibold text-green-900">✅ Kết quả đã upload thành công</h4>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                              <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <span className="font-medium text-gray-700">Result ID:</span>
+                                <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">
+                                  #{result.resultId}
+                                </Badge>
+                              </div>
+                              
+                              <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                <span className="font-medium text-gray-700">Sample ID:</span>
+                                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
+                                  #{result.sampleId}
+                                </Badge>
+                              </div>
+                              
+                              {result.uploadedTime && (
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                                  <span className="font-medium text-gray-700">Thời gian upload:</span>
+                                  <span className="text-gray-600">
+                                    {new Date(result.uploadedTime).toLocaleDateString('vi-VN')} {new Date(result.uploadedTime).toLocaleTimeString('vi-VN')}
+                                  </span>
+                                </div>
+                              )}
+                              
+                              {result.approvedTime && (
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                  <span className="font-medium text-gray-700">Thời gian duyệt:</span>
+                                  <span className="text-gray-600">
+                                    {new Date(result.approvedTime).toLocaleDateString('vi-VN')} {new Date(result.approvedTime).toLocaleTimeString('vi-VN')}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Hiển thị tên file PDF nổi bật */}
                             {result.pdfFile && (
-                              <p className="text-green-700">File: {result.pdfFile}</p>
+                              <div className="mt-4 pt-3 border-t border-green-200">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
+                                  <span className="font-medium text-green-800">File PDF đã upload:</span>
+                                </div>
+                                <div className="bg-white border border-green-300 rounded-lg p-3">
+                                  <div className="flex items-center gap-2">
+                                    <FileText className="w-4 h-4 text-green-600" />
+                                    <span className="font-medium text-gray-900">{result.pdfFile}</span>
+                                    <Badge className="bg-green-100 text-green-800 text-xs">
+                                      PDF
+                                    </Badge>
+                                  </div>
+                                </div>
+                              </div>
                             )}
                           </div>
                         )}
@@ -1060,9 +1056,8 @@ export default function ResultsDelivery() {
                       </div>
                     </div>
                     
-                                        <div className="flex gap-2 flex-wrap">
-                      
-                      {result.status === 'Pending Upload' && (
+                    <div className="flex gap-2 flex-wrap">
+                      {!result.resultId && (
                         <Button 
                           size="sm" 
                           variant="outline"
@@ -1075,37 +1070,6 @@ export default function ResultsDelivery() {
                         >
                           <Upload className="w-4 h-4 mr-1" />
                           Tải lên kết quả
-                        </Button>
-                      )}
-                      
-                      {result.status === 'Ready' && (
-                        <>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleViewResult(result.id)}
-                          >
-                            <Eye className="w-4 h-4 mr-1" />
-                            Xem trước
-                          </Button>
-                          <Button 
-                            size="sm"
-                            onClick={() => handleDeliverResult(result.id)}
-                          >
-                            <Send className="w-4 h-4 mr-1" />
-                            Gửi cho khách hàng
-                          </Button>
-                        </>
-                      )}
-                      
-                      {result.status === 'Delivered' && result.resultFile && (
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleDownloadResult(result.id)}
-                        >
-                          <Download className="w-4 h-4 mr-1" />
-                          Tải xuống
                         </Button>
                       )}
                     </div>
