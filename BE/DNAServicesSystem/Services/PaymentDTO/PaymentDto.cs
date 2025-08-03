@@ -11,22 +11,9 @@ namespace Services.PaymentDTO
     {
 
         [Required]
-        public int PaymentId { get; set; }
-
-        [Required]
         public int RequestId { get; set; }
-
-        [Required]
-        [StringLength(50)]
-        public string Method { get; set; } = string.Empty;
-
         [Required]
         [Range(0.01, double.MaxValue, ErrorMessage = "Amount must be positive.")]
         public decimal Amount { get; set; }
-
-        [StringLength(20)]
-        public string? Status { get; set; }
-
-        public DateTime? PaidAt { get; set; }
     }
 }

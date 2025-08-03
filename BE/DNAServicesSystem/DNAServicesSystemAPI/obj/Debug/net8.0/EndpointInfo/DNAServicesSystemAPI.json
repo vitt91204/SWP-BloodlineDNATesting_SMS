@@ -2,7 +2,7 @@
   "openapi": "3.0.1",
   "info": {
     "title": "DNAServicesSystemAPI",
-    "version": "1.0"
+    "version": "v1"
   },
   "paths": {
     "/api/Address/{userId}": {
@@ -201,6 +201,68 @@
         }
       }
     },
+    "/api/Auth/sendotp": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Auth/verify-otp": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OtpVerifyRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OtpVerifyRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/OtpVerifyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/BlogPost": {
       "get": {
         "tags": [
@@ -218,19 +280,52 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/BlogPostDto"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/BlogPostDto"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/BlogPostDto"
+                "required": [
+                  "Content",
+                  "Title"
+                ],
+                "type": "object",
+                "properties": {
+                  "Title": {
+                    "maxLength": 200,
+                    "minLength": 0,
+                    "type": "string"
+                  },
+                  "Content": {
+                    "type": "string"
+                  },
+                  "CreatedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "UpdatedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "ImageFile": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "Title": {
+                  "style": "form"
+                },
+                "Content": {
+                  "style": "form"
+                },
+                "CreatedAt": {
+                  "style": "form"
+                },
+                "UpdatedAt": {
+                  "style": "form"
+                },
+                "ImageFile": {
+                  "style": "form"
+                }
               }
             }
           }
@@ -298,6 +393,50 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "BlogPost"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/BlogPost/{id}/image": {
+      "get": {
+        "tags": [
+          "BlogPost"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -392,17 +531,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/FeedbackDto"
+                "$ref": "#/components/schemas/CreateFeedbackRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/FeedbackDto"
+                "$ref": "#/components/schemas/CreateFeedbackRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/FeedbackDto"
+                "$ref": "#/components/schemas/CreateFeedbackRequest"
               }
             }
           }
@@ -444,17 +583,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/FeedbackDto"
+                "$ref": "#/components/schemas/CreateFeedbackRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/FeedbackDto"
+                "$ref": "#/components/schemas/CreateFeedbackRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/FeedbackDto"
+                "$ref": "#/components/schemas/CreateFeedbackRequest"
               }
             }
           }
@@ -466,7 +605,49 @@
         }
       }
     },
-    "/api/Payment": {
+    "/api/Feedback/{feedbackId}/respond": {
+      "post": {
+        "tags": [
+          "Feedback"
+        ],
+        "parameters": [
+          {
+            "name": "feedbackId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResponseFeedback"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResponseFeedback"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResponseFeedback"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Payment/all-payments": {
       "get": {
         "tags": [
           "Payment"
@@ -478,7 +659,7 @@
         }
       }
     },
-    "/api/Payment/payment/{paymentId}": {
+    "/api/Payment/{paymentId}": {
       "get": {
         "tags": [
           "Payment"
@@ -501,7 +682,7 @@
         }
       }
     },
-    "/api/Payment/create": {
+    "/api/Payment/create-payment-url": {
       "post": {
         "tags": [
           "Payment"
@@ -532,41 +713,11 @@
         }
       }
     },
-    "/api/Payment/update/{paymentId}": {
-      "put": {
+    "/api/Payment/payment-callback-vnpay": {
+      "get": {
         "tags": [
           "Payment"
         ],
-        "parameters": [
-          {
-            "name": "paymentId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateStatusRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateStatusRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateStatusRequest"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "OK"
@@ -574,62 +725,29 @@
         }
       }
     },
-    "/api/Profile/{userId}": {
+    "/api/Reports/monthly-revenue": {
       "get": {
         "tags": [
-          "Profile"
+          "Reports"
         ],
         "parameters": [
           {
-            "name": "userId",
-            "in": "path",
-            "required": true,
+            "name": "year",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
             "schema": {
               "type": "integer",
               "format": "int32"
             }
           }
         ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Profile"
-        ],
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateProfileRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateProfileRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateProfileRequest"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "OK"
@@ -637,30 +755,127 @@
         }
       }
     },
-    "/api/Profile": {
-      "post": {
+    "/api/Reports/this-month-payments": {
+      "get": {
         "tags": [
-          "Profile"
+          "Reports"
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateProfileRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateProfileRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateProfileRequest"
-              }
+        "parameters": [
+          {
+            "name": "year",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
-        },
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Reports/this-month-requests": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "parameters": [
+          {
+            "name": "year",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Reports/monthly-requests": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "parameters": [
+          {
+            "name": "year",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Reports/daily-requests": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "parameters": [
+          {
+            "name": "year",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "day",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -770,6 +985,78 @@
             "description": "OK"
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "Sample"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Sample/GetSampleByName": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "parameters": [
+          {
+            "name": "serviceName",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userFullName",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Sample/{sampleId}/result-pdf": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "parameters": [
+          {
+            "name": "sampleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
       }
     },
     "/api/SubSample": {
@@ -874,20 +1161,19 @@
             "description": "OK"
           }
         }
-      }
-    },
-    "/api/TestKit/{name}": {
-      "get": {
+      },
+      "delete": {
         "tags": [
-          "TestKit"
+          "SubSample"
         ],
         "parameters": [
           {
-            "name": "name",
+            "name": "id",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -1023,6 +1309,37 @@
         }
       }
     },
+    "/api/TestKit/{kitId}/updatequantity": {
+      "put": {
+        "tags": [
+          "TestKit"
+        ],
+        "parameters": [
+          {
+            "name": "kitId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "newQuantity",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/TestRequest/{requestId}": {
       "get": {
         "tags": [
@@ -1085,17 +1402,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TestRequestDto"
+                "$ref": "#/components/schemas/AppointmentTestRequestDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/TestRequestDto"
+                "$ref": "#/components/schemas/AppointmentTestRequestDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/TestRequestDto"
+                "$ref": "#/components/schemas/AppointmentTestRequestDto"
               }
             }
           }
@@ -1142,14 +1459,14 @@
         }
       }
     },
-    "/api/TestRequest/service/{serviceId}": {
+    "/api/TestRequest/staff/{staffId}": {
       "get": {
         "tags": [
           "TestRequest"
         ],
         "parameters": [
           {
-            "name": "serviceId",
+            "name": "staffId",
             "in": "path",
             "required": true,
             "schema": {
@@ -1174,21 +1491,148 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TestRequestDto"
+                "$ref": "#/components/schemas/AppointmentTestRequestDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/TestRequestDto"
+                "$ref": "#/components/schemas/AppointmentTestRequestDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/TestRequestDto"
+                "$ref": "#/components/schemas/AppointmentTestRequestDto"
               }
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TestRequest/self-request": {
+      "post": {
+        "tags": [
+          "TestRequest"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestTestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestTestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestTestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TestRequest/assign/{requestId}": {
+      "put": {
+        "tags": [
+          "TestRequest"
+        ],
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "staffId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TestRequest/update-status/{requestId}": {
+      "put": {
+        "tags": [
+          "TestRequest"
+        ],
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TestRequest/{requestId}/pdf-result": {
+      "get": {
+        "tags": [
+          "TestRequest"
+        ],
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -1300,6 +1744,128 @@
         }
       }
     },
+    "/api/TestResult/{id}/upload-pdf": {
+      "post": {
+        "tags": [
+          "TestResult"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "file": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TestResult/{id}/view-pdf": {
+      "get": {
+        "tags": [
+          "TestResult"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TestResult/create-with-pdf": {
+      "post": {
+        "tags": [
+          "TestResult"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "SampleId"
+                ],
+                "type": "object",
+                "properties": {
+                  "SampleId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "UploadedBy": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "StaffId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "PdfFile": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "SampleId": {
+                  "style": "form"
+                },
+                "UploadedBy": {
+                  "style": "form"
+                },
+                "StaffId": {
+                  "style": "form"
+                },
+                "PdfFile": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/TestService": {
       "get": {
         "tags": [
@@ -1311,29 +1877,27 @@
           }
         }
       },
-      "post": {
+      "put": {
         "tags": [
           "TestService"
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TestServiceDto"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TestServiceDto"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/TestServiceDto"
-              }
+        "parameters": [
+          {
+            "name": "serviceId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "isActive",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
             }
           }
-        },
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -1390,6 +1954,14 @@
         ],
         "parameters": [
           {
+            "name": "kitId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
             "name": "serviceId",
             "in": "path",
             "required": true,
@@ -1425,21 +1997,41 @@
         }
       }
     },
-    "/api/TestService/name/{name}": {
-      "get": {
+    "/api/TestService/kit/{kitId}": {
+      "post": {
         "tags": [
           "TestService"
         ],
         "parameters": [
           {
-            "name": "name",
+            "name": "kitId",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestServiceDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestServiceDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestServiceDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK"
@@ -1459,38 +2051,28 @@
         }
       }
     },
-    "/api/User/register": {
-      "post": {
+    "/api/User/{userId}": {
+      "get": {
         "tags": [
           "User"
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUserRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUserRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUserRequest"
-              }
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
-        },
+        ],
         "responses": {
           "200": {
             "description": "OK"
           }
         }
-      }
-    },
-    "/api/User/{userId}": {
+      },
       "delete": {
         "tags": [
           "User"
@@ -1542,6 +2124,37 @@
             "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/UpdateUserRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/User/register": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserRequest"
               }
             }
           }
@@ -1659,18 +2272,58 @@
   },
   "components": {
     "schemas": {
+      "AppointmentTestRequestDto": {
+        "required": [
+          "appointmentDate",
+          "collectionType",
+          "serviceId",
+          "slotTime",
+          "status",
+          "userId"
+        ],
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "serviceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "collectionType": {
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
+          },
+          "status": {
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
+          },
+          "staffId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "appointmentDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "slotTime": {
+            "type": "string",
+            "format": "time"
+          }
+        },
+        "additionalProperties": false
+      },
       "BlogPostDto": {
         "required": [
-          "authorId",
           "content",
           "title"
         ],
         "type": "object",
         "properties": {
-          "authorId": {
-            "type": "integer",
-            "format": "int32"
-          },
           "title": {
             "maxLength": 200,
             "minLength": 0,
@@ -1687,6 +2340,11 @@
           "updatedAt": {
             "type": "string",
             "format": "date-time",
+            "nullable": true
+          },
+          "imageFile": {
+            "type": "string",
+            "format": "binary",
             "nullable": true
           }
         },
@@ -1766,28 +2424,39 @@
         },
         "additionalProperties": false
       },
-      "CreateProfileRequest": {
+      "CreateFeedbackRequest": {
+        "required": [
+          "requestId",
+          "userId"
+        ],
         "type": "object",
         "properties": {
           "userId": {
             "type": "integer",
             "format": "int32"
           },
-          "fullName": {
+          "requestId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "rating": {
+            "maximum": 5,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "comment": {
+            "maxLength": 1000,
+            "minLength": 0,
             "type": "string",
             "nullable": true
           },
-          "dateOfBirth": {
+          "createdAt": {
+            "maxLength": 1000,
+            "minLength": 0,
             "type": "string",
-            "format": "date",
-            "nullable": true
-          },
-          "gender": {
-            "type": "string",
-            "nullable": true
-          },
-          "address": {
-            "type": "string",
+            "format": "date-time",
             "nullable": true
           }
         },
@@ -1834,57 +2503,18 @@
             "minLength": 0,
             "type": "string",
             "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "FeedbackDto": {
-        "required": [
-          "feedbackId",
-          "requestId",
-          "userId"
-        ],
-        "type": "object",
-        "properties": {
-          "feedbackId": {
-            "type": "integer",
-            "format": "int32"
           },
-          "userId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "requestId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "rating": {
-            "maximum": 5,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "comment": {
-            "maxLength": 1000,
-            "minLength": 0,
+          "gender": {
             "type": "string",
             "nullable": true
           },
-          "response": {
-            "maxLength": 1000,
-            "minLength": 0,
+          "dateOfBirth": {
             "type": "string",
+            "format": "date",
             "nullable": true
           },
-          "createdAt": {
+          "fullname": {
             "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "respondedAt": {
-            "type": "string",
-            "format": "date-time",
             "nullable": true
           }
         },
@@ -1904,40 +2534,92 @@
         },
         "additionalProperties": false
       },
+      "OtpVerifyRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "otp": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "PaymentDto": {
         "required": [
           "amount",
-          "method",
-          "paymentId",
           "requestId"
         ],
         "type": "object",
         "properties": {
-          "paymentId": {
-            "type": "integer",
-            "format": "int32"
-          },
           "requestId": {
             "type": "integer",
             "format": "int32"
-          },
-          "method": {
-            "maxLength": 50,
-            "minLength": 0,
-            "type": "string"
           },
           "amount": {
             "minimum": 0.01,
             "type": "number",
             "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RequestTestDto": {
+        "required": [
+          "collectionType",
+          "serviceId",
+          "status",
+          "userId"
+        ],
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "serviceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "collectionType": {
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
           },
           "status": {
-            "maxLength": 20,
+            "maxLength": 50,
             "minLength": 0,
+            "type": "string"
+          },
+          "staffId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ResponseFeedback": {
+        "type": "object",
+        "properties": {
+          "response": {
             "type": "string",
             "nullable": true
           },
-          "paidAt": {
+          "responseAt": {
             "type": "string",
             "format": "date-time",
             "nullable": true
@@ -1949,7 +2631,7 @@
         "required": [
           "collectedBy",
           "requestId",
-          "status"
+          "sampleType"
         ],
         "type": "object",
         "properties": {
@@ -1961,17 +2643,12 @@
             "type": "integer",
             "format": "int32"
           },
-          "collectionTime": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
           "receivedTime": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "status": {
+          "sampleType": {
             "maxLength": 50,
             "minLength": 0,
             "type": "string"
@@ -1999,6 +2676,18 @@
             "type": "string",
             "format": "date-time",
             "nullable": true
+          },
+          "fullName": {
+            "type": "string",
+            "nullable": true
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date"
+          },
+          "sampleType": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -2007,6 +2696,7 @@
         "required": [
           "isActive",
           "name",
+          "serviceType",
           "stockQuantity"
         ],
         "type": "object",
@@ -2030,58 +2720,17 @@
           },
           "isActive": {
             "type": "boolean"
-          }
-        },
-        "additionalProperties": false
-      },
-      "TestRequestDto": {
-        "required": [
-          "appointmentDate",
-          "collectionType",
-          "serviceId",
-          "slotTime",
-          "status",
-          "userId"
-        ],
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "integer",
-            "format": "int32"
           },
-          "serviceId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "collectionType": {
-            "maxLength": 50,
-            "minLength": 0,
+          "serviceType": {
+            "minLength": 1,
             "type": "string"
-          },
-          "status": {
-            "maxLength": 50,
-            "minLength": 0,
-            "type": "string"
-          },
-          "appointmentDate": {
-            "type": "string",
-            "format": "date"
-          },
-          "slotTime": {
-            "type": "string",
-            "format": "time"
-          },
-          "staffId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
           }
         },
         "additionalProperties": false
       },
       "TestResultDto": {
         "required": [
-          "requestId",
+          "isMatch",
           "sampleId"
         ],
         "type": "object",
@@ -2091,10 +2740,6 @@
             "format": "int32"
           },
           "sampleId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "requestId": {
             "type": "integer",
             "format": "int32"
           },
@@ -2128,13 +2773,20 @@
             "type": "integer",
             "format": "int32",
             "nullable": true
+          },
+          "pdfFile": {
+            "type": "string",
+            "format": "binary",
+            "nullable": true
+          },
+          "isMatch": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
       },
       "TestServiceDto": {
         "required": [
-          "kitId",
           "name"
         ],
         "type": "object",
@@ -2159,47 +2811,6 @@
           "isActive": {
             "type": "boolean",
             "nullable": true
-          },
-          "kitId": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "UpdateProfileRequest": {
-        "type": "object",
-        "properties": {
-          "fullName": {
-            "type": "string",
-            "nullable": true
-          },
-          "dateOfBirth": {
-            "type": "string",
-            "format": "date",
-            "nullable": true
-          },
-          "gender": {
-            "type": "string",
-            "nullable": true
-          },
-          "address": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "UpdateStatusRequest": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "string",
-            "nullable": true
-          },
-          "paidAt": {
-            "type": "string",
-            "format": "date-time"
           }
         },
         "additionalProperties": false
@@ -2233,6 +2844,21 @@
             "maxLength": 20,
             "minLength": 0,
             "type": "string",
+            "nullable": true
+          },
+          "fullname": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "gender": {
+            "type": "string",
+            "nullable": true
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date",
             "nullable": true
           }
         },

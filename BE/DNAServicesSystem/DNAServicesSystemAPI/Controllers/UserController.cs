@@ -22,6 +22,18 @@ namespace DNAServicesSystemAPI.Controllers
             return Ok(users);
         }
 
+        [HttpGet]
+        [Route("{userId:int}")]
+        public async Task<IActionResult> GetUserById(int userId)
+        {
+            var user = await userService.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound($"User with ID {userId} not found.");
+            }
+            return Ok(user);
+        }
+
         [HttpPost]
         [Route("register")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest createUserRequest)

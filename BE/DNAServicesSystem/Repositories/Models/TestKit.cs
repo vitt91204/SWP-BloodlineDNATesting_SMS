@@ -15,5 +15,7 @@ public partial class TestKit
 
     public bool? IsActive { get; set; }
 
+    public string? ServiceType { get; set; }
+
     public virtual ICollection<TestService> TestServices { get; set; } = new List<TestService>();
 }

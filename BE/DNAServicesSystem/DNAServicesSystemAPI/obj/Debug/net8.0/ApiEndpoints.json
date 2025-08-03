@@ -142,6 +142,38 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "AuthController",
+    "Method": "Register",
+    "RelativePath": "api/Auth/sendotp",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "RegisterRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "AuthController",
+    "Method": "VerifyOtp",
+    "RelativePath": "api/Auth/verify-otp",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "OtpVerifyRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "DNAServicesSystemAPI.Controllers.BlogPostController",
     "Method": "GetAll",
     "RelativePath": "api/BlogPost",
@@ -153,16 +185,36 @@
   },
   {
     "ContainingType": "DNAServicesSystemAPI.Controllers.BlogPostController",
-    "Method": "Create",
+    "Method": "CreateBlogPost",
     "RelativePath": "api/BlogPost",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "dto",
-        "Type": "Services.BlogPostDTO.BlogPostDto",
-        "IsRequired": true
+        "Name": "Title",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Content",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "CreatedAt",
+        "Type": "System.DateTime",
+        "IsRequired": false
+      },
+      {
+        "Name": "UpdatedAt",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "ImageFile",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
@@ -205,6 +257,38 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.BlogPostController",
+    "Method": "Delete",
+    "RelativePath": "api/BlogPost/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.BlogPostController",
+    "Method": "GetImage",
+    "RelativePath": "api/BlogPost/{id}/image",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "DNAServicesSystemAPI.Controllers.FeedbackController",
     "Method": "CreateFeedback",
     "RelativePath": "api/Feedback",
@@ -214,7 +298,7 @@
     "Parameters": [
       {
         "Name": "feedbackDto",
-        "Type": "Services.FeedbackDTO.FeedbackDto",
+        "Type": "Services.FeedbackDTO.CreateFeedbackRequest",
         "IsRequired": true
       }
     ],
@@ -251,7 +335,7 @@
       },
       {
         "Name": "feedbackDto",
-        "Type": "Services.FeedbackDTO.FeedbackDto",
+        "Type": "Services.FeedbackDTO.CreateFeedbackRequest",
         "IsRequired": true
       }
     ],
@@ -268,6 +352,27 @@
       {
         "Name": "feedbackId",
         "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.FeedbackController",
+    "Method": "RespondToFeedback",
+    "RelativePath": "api/Feedback/{feedbackId}/respond",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "feedbackId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "responseDto",
+        "Type": "Services.FeedbackDTO.ResponseFeedback",
         "IsRequired": true
       }
     ],
@@ -307,8 +412,24 @@
   },
   {
     "ContainingType": "DNAServicesSystemAPI.Controllers.PaymentController",
-    "Method": "GetAllPayment",
-    "RelativePath": "api/Payment",
+    "Method": "GetPaymentById",
+    "RelativePath": "api/Payment/{paymentId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "paymentId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.PaymentController",
+    "Method": "GetAllPayments",
+    "RelativePath": "api/Payment/all-payments",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -317,14 +438,14 @@
   },
   {
     "ContainingType": "DNAServicesSystemAPI.Controllers.PaymentController",
-    "Method": "CreatePayment",
-    "RelativePath": "api/Payment/create",
+    "Method": "CreatePaymentUrl",
+    "RelativePath": "api/Payment/create-payment-url",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "paymentDTO",
+        "Name": "model",
         "Type": "Services.PaymentDTO.PaymentDto",
         "IsRequired": true
       }
@@ -333,90 +454,120 @@
   },
   {
     "ContainingType": "DNAServicesSystemAPI.Controllers.PaymentController",
-    "Method": "GetPayment",
-    "RelativePath": "api/Payment/payment/{paymentId}",
+    "Method": "PaymentCallbackVnpay",
+    "RelativePath": "api/Payment/payment-callback-vnpay",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.ReportsController",
+    "Method": "GetDailyRequests",
+    "RelativePath": "api/Reports/daily-requests",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "paymentId",
+        "Name": "year",
         "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DNAServicesSystemAPI.Controllers.PaymentController",
-    "Method": "UpdatePaymentStatus",
-    "RelativePath": "api/Payment/update/{paymentId}",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "paymentId",
-        "Type": "System.Int32",
-        "IsRequired": true
+        "IsRequired": false
       },
       {
-        "Name": "updateStatusRequest",
-        "Type": "Services.PaymentDTO.UpdateStatusRequest",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DNAServicesSystemAPI.Controllers.ProfileController",
-    "Method": "CreateProfile",
-    "RelativePath": "api/Profile",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
+        "Name": "month",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
       {
-        "Name": "request",
-        "Type": "Services.ProfileDTO.CreateProfileRequest",
-        "IsRequired": true
+        "Name": "day",
+        "Type": "System.Int32",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
   },
   {
-    "ContainingType": "DNAServicesSystemAPI.Controllers.ProfileController",
-    "Method": "GetProfile",
-    "RelativePath": "api/Profile/{userId}",
+    "ContainingType": "DNAServicesSystemAPI.Controllers.ReportsController",
+    "Method": "GetMonthlyRequests",
+    "RelativePath": "api/Reports/monthly-requests",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "userId",
+        "Name": "year",
         "Type": "System.Int32",
-        "IsRequired": true
+        "IsRequired": false
+      },
+      {
+        "Name": "month",
+        "Type": "System.Int32",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
   },
   {
-    "ContainingType": "DNAServicesSystemAPI.Controllers.ProfileController",
-    "Method": "UpdateProfile",
-    "RelativePath": "api/Profile/{userId}",
-    "HttpMethod": "PUT",
+    "ContainingType": "DNAServicesSystemAPI.Controllers.ReportsController",
+    "Method": "GetMonthlyRevenue",
+    "RelativePath": "api/Reports/monthly-revenue",
+    "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "userId",
+        "Name": "year",
         "Type": "System.Int32",
-        "IsRequired": true
+        "IsRequired": false
       },
       {
-        "Name": "updateProfileRequest",
-        "Type": "Services.ProfileDTO.UpdateProfileRequest",
-        "IsRequired": true
+        "Name": "month",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.ReportsController",
+    "Method": "GetThisMonthPayments",
+    "RelativePath": "api/Reports/this-month-payments",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "year",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "month",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.ReportsController",
+    "Method": "GetThisMonthRequests",
+    "RelativePath": "api/Reports/this-month-requests",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "year",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "month",
+        "Type": "System.Int32",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
@@ -485,6 +636,59 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.SampleController",
+    "Method": "Delete",
+    "RelativePath": "api/Sample/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.SampleController",
+    "Method": "GetSampleResultPdf",
+    "RelativePath": "api/Sample/{sampleId}/result-pdf",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "sampleId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.SampleController",
+    "Method": "SearchSamplesAsync",
+    "RelativePath": "api/Sample/GetSampleByName",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "serviceName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "userFullName",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "DNAServicesSystemAPI.Controllers.SubSampleController",
     "Method": "GetAll",
     "RelativePath": "api/SubSample",
@@ -542,6 +746,22 @@
       {
         "Name": "dto",
         "Type": "Services.SubSampleDTO.SubSampleDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.SubSampleController",
+    "Method": "Delete",
+    "RelativePath": "api/SubSample/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
         "IsRequired": true
       }
     ],
@@ -628,16 +848,21 @@
   },
   {
     "ContainingType": "DNAServicesSystemAPI.Controllers.TestKitController",
-    "Method": "GetTestKitByName",
-    "RelativePath": "api/TestKit/{name}",
-    "HttpMethod": "GET",
+    "Method": "UpdateQuantity",
+    "RelativePath": "api/TestKit/{kitId}/updatequantity",
+    "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "name",
-        "Type": "System.String",
+        "Name": "kitId",
+        "Type": "System.Int32",
         "IsRequired": true
+      },
+      {
+        "Name": "newQuantity",
+        "Type": "System.Int32",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
@@ -699,7 +924,23 @@
       },
       {
         "Name": "updateTestRequestDto",
-        "Type": "Services.TestRequestDTO.TestRequestDto",
+        "Type": "Services.TestRequestDTO.AppointmentTestRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
+    "Method": "GetRequestPdfResult",
+    "RelativePath": "api/TestRequest/{requestId}/pdf-result",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.Int32",
         "IsRequired": true
       }
     ],
@@ -715,7 +956,7 @@
     "Parameters": [
       {
         "Name": "testRequestDto",
-        "Type": "Services.TestRequestDTO.TestRequestDto",
+        "Type": "Services.TestRequestDTO.AppointmentTestRequestDto",
         "IsRequired": true
       }
     ],
@@ -723,15 +964,73 @@
   },
   {
     "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
-    "Method": "GetTestRequestsByServiceId",
-    "RelativePath": "api/TestRequest/service/{serviceId}",
+    "Method": "AssignStaff",
+    "RelativePath": "api/TestRequest/assign/{requestId}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "staffId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
+    "Method": "CreateSelfTestRequest",
+    "RelativePath": "api/TestRequest/self-request",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "testRequestDto",
+        "Type": "Services.TestRequestDTO.RequestTestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
+    "Method": "GetTestRequestsByStaffId",
+    "RelativePath": "api/TestRequest/staff/{staffId}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "serviceId",
+        "Name": "staffId",
         "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
+    "Method": "UpdateRequestStatus",
+    "RelativePath": "api/TestRequest/update-status/{requestId}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "status",
+        "Type": "System.String",
         "IsRequired": true
       }
     ],
@@ -817,6 +1116,74 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.TestResultController",
+    "Method": "UploadPdf",
+    "RelativePath": "api/TestResult/{id}/upload-pdf",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "file",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.TestResultController",
+    "Method": "ViewPdf",
+    "RelativePath": "api/TestResult/{id}/view-pdf",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.TestResultController",
+    "Method": "CreateWithPdf",
+    "RelativePath": "api/TestResult/create-with-pdf",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "SampleId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "UploadedBy",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "StaffId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "PdfFile",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "DNAServicesSystemAPI.Controllers.TestServiceController",
     "Method": "GetTestingServices",
     "RelativePath": "api/TestService",
@@ -828,16 +1195,21 @@
   },
   {
     "ContainingType": "DNAServicesSystemAPI.Controllers.TestServiceController",
-    "Method": "CreateTestingService",
+    "Method": "UpdateTestingServiceStatus",
     "RelativePath": "api/TestService",
-    "HttpMethod": "POST",
+    "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "testServiceDto",
-        "Type": "Services.TestServiceDTO.TestServiceDto",
-        "IsRequired": true
+        "Name": "serviceId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "isActive",
+        "Type": "System.Boolean",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
@@ -883,6 +1255,11 @@
     "Order": 0,
     "Parameters": [
       {
+        "Name": "kitId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
         "Name": "serviceId",
         "Type": "System.Int32",
         "IsRequired": true
@@ -897,15 +1274,20 @@
   },
   {
     "ContainingType": "DNAServicesSystemAPI.Controllers.TestServiceController",
-    "Method": "GetTestingServiceByName",
-    "RelativePath": "api/TestService/name/{name}",
-    "HttpMethod": "GET",
+    "Method": "CreateTestingService",
+    "RelativePath": "api/TestService/kit/{kitId}",
+    "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "name",
-        "Type": "System.String",
+        "Name": "kitId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "testServiceDto",
+        "Type": "Services.TestServiceDTO.TestServiceDto",
         "IsRequired": true
       }
     ],
@@ -919,6 +1301,22 @@
     "IsController": true,
     "Order": 0,
     "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.UserController",
+    "Method": "GetUserById",
+    "RelativePath": "api/User/{userId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": []
   },
   {

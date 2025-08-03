@@ -25,5 +25,7 @@ public partial class Address
 
     public DateTime? CreatedAt { get; set; }
 
+    public virtual ICollection<TestRequest> TestRequests { get; set; } = new List<TestRequest>();
+
     public virtual User User { get; set; } = null!;
 }

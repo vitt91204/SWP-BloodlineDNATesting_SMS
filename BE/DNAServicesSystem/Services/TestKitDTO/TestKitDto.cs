@@ -9,7 +9,6 @@ namespace Services.TestKitDTO
 {
     public class TestKitDto
     {
-        // KitId is typically not set by the client for create/update, so it's omitted
 
         [Required(AllowEmptyStrings = false)]
         [StringLength(100, MinimumLength = 2)]
@@ -24,5 +23,8 @@ namespace Services.TestKitDTO
 
         [Required]
         public bool IsActive { get; set; }
+
+        [Required]
+        public string? ServiceType { get; set; }
     }
 }

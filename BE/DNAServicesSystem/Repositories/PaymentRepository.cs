@@ -13,11 +13,15 @@ namespace Repositories
     {
         public PaymentRepository() { }
 
-        public async Task<List<Payment>> GetPaymentByStatusAsync(string status)
+
+    public async Task<Payment?> GetPaymentByRequestIdAsync(int requestId)
         {
+            if (requestId <= 0)
+            {
+                throw new ArgumentException("Request ID must be a valid positive integer", nameof(requestId));
+            }
             return await context.Payments
-                .Where(p => p.Status == status)
-                .ToListAsync();
+                .FirstOrDefaultAsync(p => p.RequestId == requestId);
         }
     }
 }

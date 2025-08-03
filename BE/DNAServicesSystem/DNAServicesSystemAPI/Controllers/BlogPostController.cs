@@ -30,12 +30,12 @@ namespace DNAServicesSystemAPI.Controllers
             return Ok(post);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] BlogPostDto dto)
-        {
-            var id = await _service.CreateAsync(dto);
-            return CreatedAtAction(nameof(GetById), new { id }, dto);
-        }
+        //[HttpPost]
+        //public async Task<IActionResult> Create([FromBody] BlogPostDto dto)
+        //{
+        //    var id = await _service.CreateAsync(dto);
+        //    return CreatedAtAction(nameof(GetById), new { id }, dto);
+        //}
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] BlogPostDto dto)
@@ -45,6 +45,32 @@ namespace DNAServicesSystemAPI.Controllers
                 return NotFound();
 
             return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var deleted = await _service.DeleteAsync(id);
+            if (!deleted) return NotFound();
+            return NoContent();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateBlogPost([FromForm] BlogPostDto dto)
+        {
+            var blogPost = await _service.CreateBlogPostAsync(dto);
+            return Ok(blogPost);
+        }
+
+        [HttpGet("{id}/image")]
+        public async Task<IActionResult> GetImage(int id)
+        {
+            var post = await _service.GetByIdAsync(id);
+            if (post == null || string.IsNullOrEmpty(post.PostImage))
+                return NotFound();
+
+            byte[] imageBytes = Convert.FromBase64String(post.PostImage);
+            return File(imageBytes, "image/jpeg");
         }
     }
 }

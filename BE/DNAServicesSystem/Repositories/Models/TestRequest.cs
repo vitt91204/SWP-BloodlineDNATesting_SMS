@@ -23,6 +23,10 @@ public partial class TestRequest
 
     public int? StaffId { get; set; }
 
+    public int? AddressId { get; set; }
+
+    public virtual Address? Address { get; set; }
+
     public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
 
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
@@ -32,8 +36,6 @@ public partial class TestRequest
     public virtual TestService Service { get; set; } = null!;
 
     public virtual User? Staff { get; set; }
-
-    public virtual ICollection<TestResult> TestResults { get; set; } = new List<TestResult>();
 
     public virtual User User { get; set; } = null!;
 }

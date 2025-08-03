@@ -21,7 +21,6 @@ namespace Services.TestServiceDTO
         public decimal? Price { get; set; }
 
         public bool? IsActive { get; set; }
-        [Required]
-        public int KitId { get; set; }
+        
     }
 }

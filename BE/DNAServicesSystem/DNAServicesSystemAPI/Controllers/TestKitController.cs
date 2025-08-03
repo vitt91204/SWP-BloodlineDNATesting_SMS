@@ -14,20 +14,12 @@ namespace DNAServicesSystemAPI.Controllers
         {
             this.testKitService = testKitService;
         }
-        [HttpGet("{name}")]
-        public async Task<IActionResult> GetTestKitByName(string name)
-        {
-            var testKit = await testKitService.GetTestKitByNameAsync(name);
-            if (testKit == null)
-            {
-                return NotFound($"Test kit with name '{name}' not found.");
-            }
-            return Ok(testKit);
-        }
+
         [HttpGet("{kitId:int}")]
         public async Task<IActionResult> GetTestKitById(int kitId)
         {
             var testKit = await testKitService.GetTestKitByIdAsync(kitId);
+
             if (testKit == null)
             {
                 return NotFound($"Test kit with ID '{kitId}' not found.");
@@ -76,6 +68,22 @@ namespace DNAServicesSystemAPI.Controllers
             {
                 return NotFound(ex.Message);
             }
+        }
+
+        [HttpPut]
+        [Route("{kitId:int}/updatequantity")]
+        public  async Task<IActionResult> UpdateQuantity(int kitId, int newQuantity)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var updatedTestKit = await testKitService.UpdateQuantityAsync(kitId, newQuantity);
+            if (updatedTestKit == null)
+            {
+                return NotFound($"Test kit with ID '{kitId}' not found.");
+            }
+            return Ok(updatedTestKit);
         }
     }
 }

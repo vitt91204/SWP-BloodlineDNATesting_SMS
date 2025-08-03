@@ -42,7 +42,7 @@ namespace DNAServicesSystemAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateFeedback([FromBody] FeedbackDto feedbackDto)
+        public async Task<IActionResult> CreateFeedback([FromBody] CreateFeedbackRequest feedbackDto)
         {
             if (feedbackDto == null)
             {
@@ -52,7 +52,7 @@ namespace DNAServicesSystemAPI.Controllers
             return CreatedAtAction(nameof(GetFeedbackById), new { feedbackId = feedback.FeedbackId }, feedback);
         }
         [HttpPut("{feedbackId}")]
-        public async Task<IActionResult> UpdateFeedback(int feedbackId, [FromBody] FeedbackDto feedbackDto)
+        public async Task<IActionResult> UpdateFeedback(int feedbackId, [FromBody] CreateFeedbackRequest feedbackDto)
         {
             if (feedbackDto == null)
             {
@@ -68,6 +68,25 @@ namespace DNAServicesSystemAPI.Controllers
                 return NotFound(ex.Message);
             }
         }
+
+        [HttpPost("{feedbackId}/respond")]
+        public async Task<IActionResult> RespondToFeedback(int feedbackId, [FromBody] ResponseFeedback responseDto)
+        {
+            if (responseDto == null)
+            {
+                return BadRequest("Response data is required.");
+            }
+            try
+            {
+                await feedbackService.RespondToFeedbackAsync(feedbackId, responseDto);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
         [HttpDelete("{feedbackId}")]
         public async Task<IActionResult> DeleteFeedback(int feedbackId)
         {

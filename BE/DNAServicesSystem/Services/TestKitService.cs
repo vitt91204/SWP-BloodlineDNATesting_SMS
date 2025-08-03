@@ -18,14 +18,6 @@ namespace Services
             testKitRepository = new TestKitRepository();
         }
 
-        public async Task<TestKit?> GetTestKitByNameAsync(string name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("Name cannot be null or empty.", nameof(name));
-            }
-            return await testKitRepository.GetTestKitByNameAsync(name);
-        }
         public async Task<TestKit?> GetTestKitByIdAsync(int kitId)
         {
             if (kitId <= 0)
@@ -33,6 +25,7 @@ namespace Services
                 throw new ArgumentException("KitId must be a positive integer.", nameof(kitId));
             }
             return await testKitRepository.GetByIdAsync(kitId);
+            
         }
 
         public async Task<IEnumerable<TestKit>> GetAllTestKitsAsync()
@@ -46,12 +39,15 @@ namespace Services
             {
                 throw new ArgumentNullException(nameof(testKitDTO), "TestKitDto cannot be null.");
             }
+
+
             var testKit = new TestKit
             {
                 Name = testKitDTO.Name,
                 Description = testKitDTO.Description,
                 StockQuantity = testKitDTO.StockQuantity,
                 IsActive = testKitDTO.IsActive,
+                ServiceType = testKitDTO.ServiceType,
             };
             await testKitRepository.CreateAsync(testKit);
             return testKit;
@@ -77,6 +73,7 @@ namespace Services
             existingTestKit.Description = testKitDTO.Description;
             existingTestKit.StockQuantity = testKitDTO.StockQuantity;
             existingTestKit.IsActive = testKitDTO.IsActive;
+            existingTestKit.ServiceType = testKitDTO.ServiceType;
             await testKitRepository.UpdateAsync(existingTestKit);
             return existingTestKit;
         }
@@ -92,7 +89,54 @@ namespace Services
                 throw new KeyNotFoundException($"TestKit with ID {kitId} not found.");
             }
             testKit.IsActive = false;
-            await testKitRepository.UpdateAsync(testKit);// Soft delete by marking as inactive
+            await testKitRepository.UpdateAsync(testKit);
+        }
+
+        public async Task<TestKit> UpdateQuantityAsync(int kitId, int newQuantity)
+        {
+            if (kitId <= 0)
+            {
+                throw new ArgumentException("KitId must be a positive integer.", nameof(kitId));
+            }
+
+            var testKit = await testKitRepository.GetByIdAsync(kitId);
+            if (testKit == null)
+            {
+                throw new KeyNotFoundException($"TestKit with ID {kitId} not found.");
+            }
+
+            testKit.StockQuantity = newQuantity;
+
+            if (testKit.StockQuantity <= 0)
+            {
+                testKit.StockQuantity = 0;
+                testKit.IsActive = false;
+            }
+
+            await testKitRepository.UpdateAsync(testKit);
+            return testKit;
+        }
+
+        public void ChangeQuantiy (int kitId, int changeQuantity)
+        {
+            if (kitId <= 0)
+            {
+                throw new ArgumentException("KitId must be a positive integer.", nameof(kitId));
+            }
+            var testKit = testKitRepository.GetById(kitId);
+            if (testKit == null)
+            {
+                throw new KeyNotFoundException($"TestKit with ID {kitId} not found.");
+            }
+
+            testKit.StockQuantity += changeQuantity;
+
+            if (testKit.StockQuantity <= 0)
+            {
+                testKit.StockQuantity = 0;
+                testKit.IsActive = false;
+            }
+            testKitRepository.Update(testKit);
         }
     }
 }

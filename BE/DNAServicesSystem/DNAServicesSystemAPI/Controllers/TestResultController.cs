@@ -1,6 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using Services;
 using Services.TestResultDTO;
+using Repositories;
+using Repositories.Models;
+using System.IO;
+using System.Threading.Tasks;
+using Repositories.Base;
 
 namespace DNAServicesSystemAPI.Controllers
 {
@@ -9,7 +15,13 @@ namespace DNAServicesSystemAPI.Controllers
     public class TestResultController : ControllerBase
     {
         private readonly TestResultService _service;
-        public TestResultController(TestResultService service) { _service = service; }
+        private readonly TestResultRepository _testResultRepository;
+
+        public TestResultController(TestResultService service, TestResultRepository testResultRepository)
+        {
+            _service = service;
+            _testResultRepository = testResultRepository;
+        }
 
         [HttpGet]
         public async Task<IActionResult> GetAll() => Ok(await _service.GetAllAsync());
@@ -36,5 +48,56 @@ namespace DNAServicesSystemAPI.Controllers
             if (!updated) return NotFound();
             return NoContent();
         }
+
+        [HttpPost("{id}/upload-pdf")]
+        public async Task<IActionResult> UploadPdf(int id, IFormFile file)
+        {
+            if (file == null)
+                return BadRequest("No file uploaded.");
+
+            var result = await _service.UploadPdfAsync(id, file);
+            if (!result)
+                return BadRequest("Failed to upload or save PDF.");
+
+            return Ok("PDF uploaded and saved successfully.");
+        }
+
+        [HttpGet("{id}/view-pdf")]
+        public async Task<IActionResult> ViewPdf(int id)
+        {
+            // Get the TestResult entity
+            var entity = await _testResultRepository.GetByIdAsync(id);
+            if (entity == null || string.IsNullOrEmpty(entity.ResultData))
+                return NotFound("PDF not found for this result.");
+
+            try
+            {
+                // Decode the Base64 string to byte array
+                var pdfBytes = Convert.FromBase64String(entity.ResultData);
+
+                // Return the PDF file (browser will try to open it)
+                return File(pdfBytes, "application/pdf");
+            }
+            catch
+            {
+                return BadRequest("Stored data is not a valid PDF file.");
+            }
+        }
+
+        [HttpPost("create-with-pdf")]
+        public async Task<IActionResult> CreateWithPdf([FromForm] ResultUploadRequest dto)
+        {
+            var id = await _service.CreateWithPdfAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id }, dto);
+        }
+    }
+}
+
+// Dependency injection configuration
+public static class ServiceExtensions
+{
+    public static void AddRepositories(this IServiceCollection services)
+    {
+        services.AddScoped<TestResultRepository>();
     }
 }

@@ -1,3 +1,5 @@
+using System.IO;
+using System.Threading.Tasks;
 using Repositories;
 using Services.BlogPostDTO;
 using Repositories.Models;
@@ -13,42 +15,27 @@ namespace Services
             _repository = repository;
         }
 
-        public async Task<List<BlogPostDto>> GetAllAsync()
+        public async Task<List<BlogPost>> GetAllAsync()
         {
             var posts = await _repository.GetAllAsync();
-            return posts.Select(p => new BlogPostDto
-            {
-                AuthorId = p.AuthorId ?? 0, // Explicitly handle nullable value
-                Title = p.Title,
-                Content = p.Content,
-                CreatedAt = p.CreatedAt ?? DateTime.MinValue
-            }).ToList();
+            return posts;
         }
 
-        public async Task<BlogPostDto?> GetByIdAsync(int id)
+        public async Task<BlogPost?> GetByIdAsync(int id)
         {
-            var post = await _repository.GetByIdAsync(id);
-            if (post == null) return null;
-            return new BlogPostDto
-            {
-                AuthorId = post.AuthorId ?? 0, // Explicitly handle nullable value
-                Title = post.Title,
-                Content = post.Content,
-                CreatedAt = post.CreatedAt ?? DateTime.MinValue
-            };
+            return await _repository.GetByIdAsync(id);
         }
 
-        public async Task<int> CreateAsync(BlogPostDto dto)
-        {
-            var post = new BlogPost
-            {
-                AuthorId = dto.AuthorId,
-                Title = dto.Title,
-                Content = dto.Content,
-                CreatedAt = DateTime.UtcNow
-            };
-            return await _repository.CreateAsync(post);
-        }
+        //public async Task<int> CreateAsync(BlogPostDto dto)
+        //{
+        //    var post = new BlogPost
+        //    {
+        //        Title = dto.Title,
+        //        Content = dto.Content,
+        //        CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"))
+        //    };
+        //    return await _repository.CreateAsync(post);
+        //}
 
         public async Task<bool> UpdateAsync(int id, BlogPostDto dto)
         {
@@ -57,11 +44,39 @@ namespace Services
 
             post.Title = dto.Title;
             post.Content = dto.Content;
-            post.AuthorId = dto.AuthorId;
-            post.UpdatedAt = DateTime.UtcNow;
+            post.UpdatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
 
             await _repository.UpdateAsync(post);
             return true;
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var post = await _repository.GetByIdAsync(id);
+            if (post == null) return false;
+            await _repository.DeleteAsync(post);
+            return true;
+        }
+
+        public async Task<BlogPost> CreateBlogPostAsync(BlogPostDto dto)
+        {
+            var blogPost = new BlogPost
+            {
+                Title = dto.Title,
+                Content = dto.Content,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            if (dto.ImageFile != null)
+            {
+                using var ms = new MemoryStream();
+                await dto.ImageFile.CopyToAsync(ms);
+                var imageBytes = ms.ToArray();
+                blogPost.PostImage = Convert.ToBase64String(imageBytes);
+            }
+            await _repository.CreateAsync(blogPost);
+
+            return blogPost;
         }
     }
 }

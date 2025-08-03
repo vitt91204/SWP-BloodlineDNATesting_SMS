@@ -33,25 +33,15 @@ namespace DNAServicesSystemAPI.Controllers
             return Ok(service);
         }
 
-        [HttpGet("name/{name}")]
-        public async Task<IActionResult> GetTestingServiceByName(string name)
-        {
-            var service = await testServiceService.GetTestingServiceByNameAsync(name);
-            if (service == null)
-            {
-                return NotFound($"Testing service with name '{name}' not found.");
-            }
-            return Ok(service);
-        }
-
         [HttpPost]
-        public async Task<IActionResult> CreateTestingService([FromBody] TestServiceDto testServiceDto)
+        [Route("kit/{kitId:int}")]
+        public async Task<IActionResult> CreateTestingService(int kitId, [FromBody] TestServiceDto testServiceDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var createdService = await testServiceService.CreateTestingServiceAsync(testServiceDto);
+            var createdService = await testServiceService.CreateTestingServiceAsync(kitId, testServiceDto);
             return CreatedAtAction(nameof(GetTestingServiceById), new { serviceId = createdService.ServiceId }, createdService);
         }
 
@@ -69,18 +59,36 @@ namespace DNAServicesSystemAPI.Controllers
             }
         }
         [HttpPut("{serviceId:int}")]
-        public async Task<IActionResult> UpdateTestingService(int serviceId, [FromBody] TestServiceDto testServiceDto)
+        public async Task<IActionResult> UpdateTestingService(int kitId, int serviceId, [FromBody] TestServiceDto testServiceDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var updatedService = await testServiceService.UpdateTestingServiceAsync(serviceId, testServiceDto);
+            var updatedService = await testServiceService.UpdateTestingServiceAsync(kitId, serviceId, testServiceDto);
             if (updatedService == null)
             {
                 return NotFound($"Testing service with ID {serviceId} not found.");
             }
             return Ok(updatedService);
         }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateTestingServiceStatus(int serviceId, bool isActive)
+        {
+            try
+            {
+                var updatedService = await testServiceService.UpdateStatusAsync(serviceId, isActive);
+                return Ok(updatedService);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
-    }
+}

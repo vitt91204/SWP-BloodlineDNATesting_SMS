@@ -30,7 +30,7 @@ namespace Services
                 PostalCode = createAddressRequest.PostalCode,
                 Country = createAddressRequest.Country,
                 IsPrimary = createAddressRequest.IsPrimary,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"))
             };
             await addressRepository.CreateAsync(address);
             return address;

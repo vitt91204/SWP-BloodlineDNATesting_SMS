@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Services;
 using Services.PaymentDTO;
+using Services.VNPayService;
+using System.Threading.Tasks;
 
 namespace DNAServicesSystemAPI.Controllers
 {
@@ -9,21 +11,27 @@ namespace DNAServicesSystemAPI.Controllers
     [ApiController]
     public class PaymentController : ControllerBase
     {
-        private readonly PaymentService paymentService;
-        public PaymentController(PaymentService paymentService)
+       private readonly IVnPayService vnPayService;
+       private readonly PaymentService paymentService;
+        public PaymentController(IVnPayService vnPayService, PaymentService paymentService)
         {
+
+            this.vnPayService = vnPayService;
             this.paymentService = paymentService;
         }
+
+
         [HttpGet]
-        public async Task<IActionResult> GetAllPayment()
+        [Route("all-payments")]
+        public async Task<IActionResult> GetAllPayments()
         {
             var payments = await paymentService.GetAllPaymentsAsync();
             return Ok(payments);
-
         }
+
         [HttpGet]
-        [Route("payment/{paymentId:int}")]
-        public async Task<IActionResult> GetPayment(int paymentId)
+        [Route("{paymentId:int}")]
+        public async Task<IActionResult> GetPaymentById(int paymentId)
         {
             try
             {
@@ -35,35 +43,47 @@ namespace DNAServicesSystemAPI.Controllers
                 return NotFound(ex.Message);
             }
         }
-        [HttpPost]
-        [Route("create")]
-        public async Task<IActionResult> CreatePayment([FromBody] PaymentDto paymentDTO)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            var payment = await paymentService.CreatePaymentAsync(paymentDTO);
-            return CreatedAtAction(nameof(GetPayment), new { paymentId = payment.PaymentId }, payment);
-        }
 
-        [HttpPut]
-        [Route("update/{paymentId:int}")]
-        public async Task<IActionResult> UpdatePaymentStatus(int paymentId, [FromBody] UpdateStatusRequest updateStatusRequest)
+        [HttpPost]
+        [Route("create-payment-url")]
+        public IActionResult CreatePaymentUrl(PaymentDto model)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
             try
             {
-                var updatedPayment = await paymentService.UpdateStatusAsync(paymentId, updateStatusRequest);
-                return Ok(updatedPayment);
+                var paymentUrl = vnPayService.CreatePaymentUrl(model , HttpContext);
+                return Ok(paymentUrl);
             }
-            catch (KeyNotFoundException ex)
+            catch (Exception ex)
             {
-                return NotFound(ex.Message);
+                return BadRequest($"Error creating payment URL: {ex.Message}");
             }
         }
+
+        [HttpGet]
+        [Route("payment-callback-vnpay")]
+        public async Task<IActionResult> PaymentCallbackVnpay()
+        {
+            var response = vnPayService.PaymentExecute(Request.Query);
+            if (response.ResponseCode == "00")
+            {
+                int paymentId = int.Parse(response.OrderId);
+                var updatePayment = new UpdateStatusRequest
+                {
+                    Status = "Paid",
+                    PaidAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time")),
+                    Token = response.PaymentMethod + " - " + response.TransactionId
+                };
+                await paymentService.UpdatePaymentAsync(paymentId, updatePayment);
+            }
+
+
+
+            //var successDirectUrl = "http://10.87.48.38:8080/payment-success";
+            var successDirectUrl = "http://192.168.2.100:8080/payment-success";
+            return Redirect(successDirectUrl);
+
+        }
+
     }
+
 }

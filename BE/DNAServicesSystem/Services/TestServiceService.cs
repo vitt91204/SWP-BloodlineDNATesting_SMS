@@ -12,19 +12,12 @@ namespace Services
     public class TestServiceService
     {
         private readonly TestServiceRepository testServiceRepository;   
+        private readonly TestKitRepository testKitRepository;
 
         public TestServiceService()
         {
             testServiceRepository = new TestServiceRepository();
-        }
-
-        public async Task<TestService?> GetTestingServiceByNameAsync(string name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("Name cannot be null or empty.", nameof(name));
-            }
-            return await testServiceRepository.GetTestingServiceByNameAsync(name);
+            testKitRepository = new TestKitRepository();
         }
 
         public async Task<TestService?> GetTestingServiceByIdAsync(int serviceId)
@@ -41,28 +34,40 @@ namespace Services
             return await testServiceRepository.GetAllAsync();
         }
 
-        public async Task<TestService?> CreateTestingServiceAsync(TestServiceDto testServiceDTO)
+        public async Task<TestService?> CreateTestingServiceAsync(int kitId, TestServiceDto testServiceDTO)
         {
             if (testServiceDTO == null)
             {
                 throw new ArgumentNullException(nameof(testServiceDTO), "TestServiceDto cannot be null.");
             }
+            
+            var testKit = await testKitRepository.GetByIdAsync(kitId);
+            if (testKit == null)
+            {
+                throw new KeyNotFoundException($"TestKit {kitId} Not Found!");
+            }
+
             var testService = new TestService
             {
                 Name = testServiceDTO.Name,
                 Description = testServiceDTO.Description,
                 Price = testServiceDTO.Price,
-                IsActive = testServiceDTO.IsActive,
-                KitId = testServiceDTO.KitId,
+                IsActive = true,
+                KitId = testKit.KitId,
             };
             await testServiceRepository.CreateAsync(testService);
             return testService;
         }
 
-        public async Task<TestService?> UpdateTestingServiceAsync(int serviceId, TestServiceDto testServiceDTO)
+        public async Task<TestService?> UpdateTestingServiceAsync(int kitId ,int serviceId, TestServiceDto testServiceDTO)
         {
 
             var existingService = await testServiceRepository.GetByIdAsync(serviceId);
+            var testKit = await testKitRepository.GetByIdAsync(kitId);
+            if (testKit == null)
+            {
+                throw new KeyNotFoundException($"TestKit {kitId} Not Found!");
+            }
             if (existingService == null)
             {
                 throw new KeyNotFoundException($"No service found with ServiceId {serviceId}.");
@@ -71,7 +76,7 @@ namespace Services
             existingService.Description = testServiceDTO.Description;
             existingService.Price = testServiceDTO.Price;
             existingService.IsActive = testServiceDTO.IsActive;
-            existingService.KitId = testServiceDTO.KitId;
+            existingService.KitId = testKit.KitId;
             await testServiceRepository.UpdateAsync(existingService);
             return existingService;
         }
@@ -89,6 +94,22 @@ namespace Services
             }
             existingService.IsActive = false;
             await testServiceRepository.UpdateAsync(existingService);
+        }
+
+        public async Task<bool> UpdateStatusAsync(int serviceId, bool isActive)
+        {
+            if (serviceId <= 0)
+            {
+                throw new ArgumentException("ServiceId must be a positive integer.", nameof(serviceId));
+            }
+            var existingService = await testServiceRepository.GetByIdAsync(serviceId);
+            if (existingService == null)
+            {
+                throw new KeyNotFoundException($"No service found with ServiceId {serviceId}.");
+            }
+            existingService.IsActive = isActive;
+            await testServiceRepository.UpdateAsync(existingService);
+            return true;
         }
 
     }

@@ -21,6 +21,7 @@ namespace Services
         public async Task<User> CreateUserAsynce(CreateUserRequest createUserRequest)
         {
             var role = string.IsNullOrWhiteSpace(createUserRequest.Role) ? "Customer" : createUserRequest.Role.Trim();
+            var gender = string.IsNullOrWhiteSpace(createUserRequest.Gender) ? "Other" : createUserRequest.Gender.Trim();
 
             var user = new User
             {
@@ -29,8 +30,11 @@ namespace Services
                 Email = createUserRequest.Email,
                 Phone = createUserRequest.Phone,
                 Role = role,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                FullName = createUserRequest.Fullname,
+                Gender = gender,
+                DateOfBirth = createUserRequest.DateOfBirth,
+                CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time")),
+                UpdatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"))
             };
             await userRepository.CreateAsync(user);
 
@@ -72,7 +76,10 @@ namespace Services
             user.Email = updateUserRequest.Email ?? user.Email;
             user.Phone = updateUserRequest.Phone ?? user.Phone;
             user.Role = updateUserRequest.Role ?? user.Role;
-            user.UpdatedAt = DateTime.UtcNow;
+            user.FullName = updateUserRequest.Fullname ?? user.FullName;
+            user.Gender = updateUserRequest.Gender ?? user.Gender;
+            user.DateOfBirth = updateUserRequest.DateOfBirth ?? user.DateOfBirth;
+            user.UpdatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
             await userRepository.UpdateAsync(user);
             return user;
         }
@@ -114,7 +121,7 @@ namespace Services
                 throw new ArgumentException("Passwords do not match.");
             }
             user.Password = newPassword;
-            user.UpdatedAt = DateTime.UtcNow;
+            user.UpdatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
             await userRepository.UpdateAsync(user);
             return user;
         }

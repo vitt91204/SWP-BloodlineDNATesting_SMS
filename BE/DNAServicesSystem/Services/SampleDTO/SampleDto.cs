@@ -9,11 +9,10 @@ namespace Services.SampleDTO
         public int RequestId { get; set; }
         [Required]
         public int CollectedBy { get; set; }
-        public DateTime? CollectionTime { get; set; }
         public DateTime? ReceivedTime { get; set; }
 
         [Required(AllowEmptyStrings = false)]
         [StringLength(50)]
-        public string Status { get; set; } = string.Empty;
+        public string ? SampleType { get; set; }  
     }
 }

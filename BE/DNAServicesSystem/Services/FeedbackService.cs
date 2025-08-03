@@ -27,7 +27,7 @@ namespace Services
         {
             return await feedbackRepository.GetByIdAsync(feedbackId);
         }
-        public async Task<Feedback> CreateFeedbackAsync(FeedbackDto feedbackDto)
+        public async Task<Feedback> CreateFeedbackAsync(CreateFeedbackRequest feedbackDto)
         {
             var feedback = new Feedback
             {
@@ -35,22 +35,33 @@ namespace Services
                 RequestId = feedbackDto.RequestId,
                 Rating = feedbackDto.Rating,
                 Comment = feedbackDto.Comment,
-                CreatedAt = DateTime.UtcNow
             };
             await feedbackRepository.CreateAsync(feedback);
             return feedback;
         }
-        public async Task UpdateFeedbackAsync(int feedbackId, FeedbackDto feedbackDto)
+        public async Task UpdateFeedbackAsync(int feedbackId, CreateFeedbackRequest feedbackDto)
         {
             var feedback = await feedbackRepository.GetByIdAsync(feedbackId);
             if (feedback == null)
             {
                 throw new KeyNotFoundException($"Feedback with ID {feedbackId} not found.");
             }
+            feedback.UserId = feedback.UserId;
+            feedback.RequestId = feedback.RequestId;
             feedback.Rating = feedbackDto.Rating;
             feedback.Comment = feedbackDto.Comment;
-            feedback.Response = feedbackDto.Response;
-            feedback.RespondedAt = DateTime.UtcNow;
+            await feedbackRepository.UpdateAsync(feedback);
+        }
+
+        public async Task RespondToFeedbackAsync(int feedbackId, ResponseFeedback responseDto)
+        {
+            var feedback = await feedbackRepository.GetByIdAsync(feedbackId);
+            if (feedback == null)
+            {
+                throw new KeyNotFoundException($"Feedback with ID {feedbackId} not found.");
+            }
+            feedback.Response = responseDto.Response;
+            feedback.RespondedAt = responseDto.ResponseAt ?? TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
             await feedbackRepository.UpdateAsync(feedback);
         }
 

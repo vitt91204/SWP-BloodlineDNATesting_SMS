@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -10,9 +11,6 @@ namespace Services.TestResultDTO
         [Required]
         public int SampleId { get; set; }
 
-        [Required]
-        public int RequestId { get; set; }
-
         [StringLength(500)]
         public string? ResultData { get; set; }
 
@@ -21,5 +19,8 @@ namespace Services.TestResultDTO
         public DateTime? UploadedTime { get; set; }
         public DateTime? ApprovedTime { get; set; }
         public int? StaffId { get; set; }
+        public IFormFile? PdfFile { get; set; }
+        [Required]
+        public bool IsMatch { get; set; } = false; // Default value for IsMatch
     }
 }

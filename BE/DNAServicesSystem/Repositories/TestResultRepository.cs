@@ -1,6 +1,7 @@
 using Repositories.Base;
 using Repositories.Models;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,6 +12,12 @@ namespace Repositories
         public TestResultRepository() : base() { }
 
         public async Task<TestResult?> GetByIdAsync(int id) => await context.TestResults.FindAsync(id);
-        public async Task<List<TestResult>> GetAllAsync() => await context.TestResults.ToListAsync();
+
+        public async Task<List<TestResult>> GetBySampleIdAsync(int sampleId)
+        {
+            return await context.TestResults
+                .Where(tr => tr.SampleId == sampleId)
+                .ToListAsync();
+        }
     }
 }

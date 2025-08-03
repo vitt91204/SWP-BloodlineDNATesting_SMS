@@ -25,5 +25,11 @@ namespace Repositories
             context.BlogPosts.Update(post);
             await context.SaveChangesAsync();
         }
+
+        public async Task DeleteAsync(BlogPost post)
+        {
+            context.BlogPosts.Remove(post);
+            await context.SaveChangesAsync();
+        }
     }
 }

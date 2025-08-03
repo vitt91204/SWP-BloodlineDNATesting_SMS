@@ -12,5 +12,13 @@ namespace Repositories
 
         public async Task<SubSample?> GetByIdAsync(int id) => await context.SubSamples.FindAsync(id);
         public async Task<List<SubSample>> GetAllAsync() => await context.SubSamples.ToListAsync();
+
+        public async Task<List<SubSample>> GetSubSamplesBySampleIdAsync(int sampleId)
+        {
+            var subSamples = await context.SubSamples
+                .Where(ss => ss.SampleId == sampleId)
+                .ToListAsync();
+            return subSamples;
+        }
     }
 }
