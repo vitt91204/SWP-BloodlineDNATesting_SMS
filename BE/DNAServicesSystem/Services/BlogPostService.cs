@@ -64,17 +64,9 @@ namespace Services
             {
                 Title = dto.Title,
                 Content = dto.Content,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                PostImage = dto.PostImage
             };
-
-            if (dto.ImageFile != null)
-            {
-                using var ms = new MemoryStream();
-                await dto.ImageFile.CopyToAsync(ms);
-                var imageBytes = ms.ToArray();
-                blogPost.PostImage = Convert.ToBase64String(imageBytes);
-            }
-            await _repository.CreateAsync(blogPost);
 
             return blogPost;
         }
