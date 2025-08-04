@@ -45,7 +45,7 @@ namespace Services
             post.Title = dto.Title;
             post.Content = dto.Content;
             post.UpdatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
-
+            post.PostImage = dto.PostImage;
             await _repository.UpdateAsync(post);
             return true;
         }
@@ -65,7 +65,7 @@ namespace Services
                 Title = dto.Title,
                 Content = dto.Content,
                 CreatedAt = DateTime.UtcNow,
-                PostImage = dto.PostImage
+                PostImage = dto.PostImage,
             };
 
             return blogPost;

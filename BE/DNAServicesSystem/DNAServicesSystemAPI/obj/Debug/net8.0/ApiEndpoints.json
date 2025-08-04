@@ -212,8 +212,8 @@
         "IsRequired": false
       },
       {
-        "Name": "ImageFile",
-        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "Name": "PostImage",
+        "Type": "System.String",
         "IsRequired": false
       }
     ],
@@ -669,6 +669,22 @@
   },
   {
     "ContainingType": "DNAServicesSystemAPI.Controllers.SampleController",
+    "Method": "UserCreate",
+    "RelativePath": "api/Sample/customer",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "Services.SampleDTO.SampleDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.SampleController",
     "Method": "SearchSamplesAsync",
     "RelativePath": "api/Sample/GetSampleByName",
     "HttpMethod": "GET",
@@ -948,6 +964,22 @@
   },
   {
     "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
+    "Method": "GetRequestResult",
+    "RelativePath": "api/TestRequest/{requestId}/result",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DNAServicesSystemAPI.Controllers.TestRequestController",
     "Method": "CreateTestRequest",
     "RelativePath": "api/TestRequest/api/testrequest",
     "HttpMethod": "POST",
@@ -1173,6 +1205,11 @@
       {
         "Name": "StaffId",
         "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "IsMatch",
+        "Type": "System.Boolean",
         "IsRequired": false
       },
       {

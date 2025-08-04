@@ -304,9 +304,8 @@
                     "type": "string",
                     "format": "date-time"
                   },
-                  "ImageFile": {
-                    "type": "string",
-                    "format": "binary"
+                  "PostImage": {
+                    "type": "string"
                   }
                 }
               },
@@ -323,7 +322,7 @@
                 "UpdatedAt": {
                   "style": "form"
                 },
-                "ImageFile": {
+                "PostImage": {
                   "style": "form"
                 }
               }
@@ -1008,6 +1007,37 @@
         }
       }
     },
+    "/api/Sample/customer": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SampleDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SampleDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SampleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Sample/GetSampleByName": {
       "get": {
         "tags": [
@@ -1640,6 +1670,29 @@
         }
       }
     },
+    "/api/TestRequest/{requestId}/result": {
+      "get": {
+        "tags": [
+          "TestRequest"
+        ],
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/TestResult": {
       "get": {
         "tags": [
@@ -1836,6 +1889,9 @@
                     "type": "integer",
                     "format": "int32"
                   },
+                  "IsMatch": {
+                    "type": "boolean"
+                  },
                   "PdfFile": {
                     "type": "string",
                     "format": "binary"
@@ -1850,6 +1906,9 @@
                   "style": "form"
                 },
                 "StaffId": {
+                  "style": "form"
+                },
+                "IsMatch": {
                   "style": "form"
                 },
                 "PdfFile": {
@@ -2342,9 +2401,8 @@
             "format": "date-time",
             "nullable": true
           },
-          "imageFile": {
+          "postImage": {
             "type": "string",
-            "format": "binary",
             "nullable": true
           }
         },
