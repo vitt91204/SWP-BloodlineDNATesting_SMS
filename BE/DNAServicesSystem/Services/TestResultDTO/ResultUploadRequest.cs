@@ -16,6 +16,7 @@ namespace Services.TestResultDTO
 
         public int? UploadedBy { get; set; }
         public int? StaffId { get; set; }
+        public bool IsMatch { get; set; }
         public IFormFile? PdfFile { get; set; }
 
     }

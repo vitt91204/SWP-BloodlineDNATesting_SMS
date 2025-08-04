@@ -7,7 +7,7 @@ public class EmailService
     private readonly string _smtpServer = "smtp.gmail.com";
     private readonly int _smtpPort = 587;
     private readonly string _smtpUser = "nguyenbatuananh05@gmail.com"; //Use your Gmail address
-    private readonly string _smtpPass = "rlvh owwq qxwj rruz"; // Use App Password, not your Gmail password
+    private readonly string _smtpPass = "e"; // Use App Password, not your Gmail password
 
     public async Task SendOtpAsync(string toEmail, string otp)
     {

@@ -169,17 +169,36 @@ namespace DNAServicesSystemAPI.Controllers
             int requestId,
             [FromServices] SampleService sampleService,
             [FromServices] SampleRepository sampleRepository,
-            [FromServices] TestResultService testResultService) 
+            [FromServices] TestResultService testResultService)
         {
             var sample = await sampleRepository.GetSampleByRequestidAsync(requestId);
             if (sample == null)
                 return NotFound("No sample found for this request.");
 
-            var pdfBytes = await testResultService.GetSampleResultPdfAsync(sample.SampleId); 
+            var pdfBytes = await testResultService.GetSampleResultPdfAsync(sample.SampleId);
             if (pdfBytes == null)
                 return NotFound("PDF result not found for this request.");
 
             return File(pdfBytes, "application/pdf", $"Request_{requestId}_Result.pdf");
+        }
+        [HttpGet("{requestId}/result")]
+        public async Task<IActionResult> GetRequestResult(
+            int requestId,
+            [FromServices] SampleService sampleService,
+            [FromServices] SampleRepository sampleRepository,
+            [FromServices] TestResultService testResultService)
+        {
+            var sample = await sampleRepository.GetSampleByRequestidAsync(requestId);
+            if (sample == null)
+            {
+                return NotFound("No Sample for this Request");
+            }
+            var testResult = await testResultService.GetTestResultAsync(sample.SampleId);
+            if (testResult == null)
+            {
+                return NotFound("No result found for this request");
+            }
+            return Ok(testResult.IsMatch);
         }
     }
 }

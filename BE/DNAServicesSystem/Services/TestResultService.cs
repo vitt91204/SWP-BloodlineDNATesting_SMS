@@ -12,9 +12,9 @@ namespace Services
         private readonly TestResultRepository _repository;
         private readonly TestRequestRepository _testRequestRepository;
         private readonly SampleRepository _sampleRepository;
-        public TestResultService(TestResultRepository repository) 
-        { 
-            _repository = repository; 
+        public TestResultService(TestResultRepository repository)
+        {
+            _repository = repository;
             _testRequestRepository = new TestRequestRepository();
             _sampleRepository = new SampleRepository();
         }
@@ -31,7 +31,7 @@ namespace Services
                 UploadedTime = r.UploadedTime,
                 ApprovedTime = r.ApprovedTime,
                 StaffId = r.StaffId,
-                ResultData = r.ResultData
+                IsMatch = r.IsMatch
             }).ToList();
         }
 
@@ -47,13 +47,14 @@ namespace Services
                 ApprovedBy = r.ApprovedBy,
                 UploadedTime = r.UploadedTime,
                 ApprovedTime = r.ApprovedTime,
-                StaffId = r.StaffId
+                StaffId = r.StaffId,
+                IsMatch = r.IsMatch
             };
         }
 
         public async Task<int> CreateAsync(TestResultDto dto)
         {
-            var existingResult = await _repository.GetBySampleIdAsync(dto.SampleId);
+            var existingResult = await _repository.GetBySampleIdAsyncToList(dto.SampleId);
             if (existingResult != null && existingResult.Any())
             {
                 throw new InvalidOperationException($"A test result for SampleId {dto.SampleId} already exists.");
@@ -82,7 +83,7 @@ namespace Services
                 IsMatch = dto.IsMatch
             };
 
-            // Update the request status to "Completed" and Sample status to "Tested"
+            // Update the request status to "Completed"
             request.Status = "Completed";
             await _testRequestRepository.UpdateAsync(request);
             await _sampleRepository.UpdateAsync(sample);
@@ -103,7 +104,7 @@ namespace Services
                 base64String = Convert.ToBase64String(ms.ToArray());
             }
 
-            var existingResult = await _repository.GetBySampleIdAsync(dto.SampleId);
+            var existingResult = await _repository.GetBySampleIdAsyncToList(dto.SampleId);
             if (existingResult != null && existingResult.Any())
             {
                 throw new InvalidOperationException($"A test result for SampleId {dto.SampleId} already exists.");
@@ -130,7 +131,8 @@ namespace Services
                 UploadedTime = DateTime.UtcNow,
                 ApprovedTime = DateTime.UtcNow,
                 StaffId = dto.StaffId,
-                ResultData = base64String
+                ResultData = base64String,
+                IsMatch = dto.IsMatch
             };
 
             request.Status = "Completed";
@@ -181,7 +183,7 @@ namespace Services
 
         public async Task<byte[]?> GetSampleResultPdfAsync(int sampleId)
         {
-            var testResults = await _repository.GetBySampleIdAsync(sampleId);
+            var testResults = await _repository.GetBySampleIdAsyncToList(sampleId);
             if (testResults == null || !testResults.Any())
                 return null;
 
@@ -197,6 +199,17 @@ namespace Services
             {
                 return null;
             }
+        }
+        public async Task<TestResult?> GetTestResultAsync(int sampleId)
+        {
+            var testResults = await _repository.GetBySampleIdAsyncToList(sampleId);
+            if (testResults == null || !testResults.Any())
+                return null;
+
+            var testResult = testResults.FirstOrDefault(tr => !string.IsNullOrEmpty(tr.ResultData));
+            if (testResult == null)
+                return null;
+            return testResult;
         }
     }
 }
