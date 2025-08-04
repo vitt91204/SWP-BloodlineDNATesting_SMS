@@ -68,8 +68,8 @@ namespace Services
                 ServiceId = testRequestDTO.ServiceId,
                 CollectionType = testRequestDTO.CollectionType,
                 Status = testRequestDTO.Status,
-                AppointmentDate = DateOnly.FromDateTime(DateTime.Now),
-                SlotTime = TimeOnly.FromDateTime(DateTime.Now),
+                AppointmentDate = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"))),
+                SlotTime = TimeOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"))),
                 StaffId = testRequestDTO.StaffId
             };
             await testRequestReposity.CreateAsync(testRequest);
