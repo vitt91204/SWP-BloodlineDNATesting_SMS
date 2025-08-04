@@ -23,6 +23,7 @@ interface TestHistory {
   collectionType: string;
   slotTime: string;
   staffId: number;
+  isMatch?: boolean; // Thêm trường isMatch
   payment?: {
     paymentId: number;
     requestId: number;
@@ -129,6 +130,7 @@ export default function TestHistory() {
         const response = await testRequestAPI.getByUserId(Number(userId));
         let mapped: any[] = [];
         if (Array.isArray(response)) {
+          // Map các test request cơ bản trước
           mapped = response.map((item: any) => {
             return {
               id: String(item.requestId || item.id),
@@ -143,11 +145,37 @@ export default function TestHistory() {
               collectionType: item.collectionType || '',
               slotTime: item.slotTime || '',
               staffId: item.staffId || null,
+              isMatch: item.isMatch, // Giữ lại isMatch từ API response ban đầu
               payment: item.payment || null,
               sample: item.sample || null,
               subSamples: item.subSamples || [],
-              // Thêm thông tin test result từ API
             };
+          });
+
+          // Fetch isMatch cho các test đã hoàn thành
+          const fetchIsMatchPromises = mapped
+            .filter(test => test.status === 'Hoàn thành')
+            .map(async (test) => {
+              try {
+                const isMatchResult = await testRequestAPI.getResult(test.requestId);
+                console.log(`isMatch for requestId ${test.requestId}:`, isMatchResult);
+                return {
+                  ...test,
+                  isMatch: isMatchResult // Cập nhật isMatch từ endpoint mới
+                };
+              } catch (error) {
+                console.error(`Error fetching isMatch for requestId ${test.requestId}:`, error);
+                return test; // Giữ nguyên test nếu có lỗi
+              }
+            });
+
+          // Chờ tất cả các promise hoàn thành
+          const updatedTests = await Promise.all(fetchIsMatchPromises);
+          
+          // Cập nhật lại mapped với isMatch mới
+          mapped = mapped.map(test => {
+            const updatedTest = updatedTests.find(updated => updated.requestId === test.requestId);
+            return updatedTest || test;
           });
         }
         
@@ -157,8 +185,6 @@ export default function TestHistory() {
           const requestIdB = b.requestId || 0;
           return requestIdB - requestIdA;
         });
-        
-        
         
         setTestHistory(sortedMapped);
       } catch (err: any) {
@@ -200,7 +226,20 @@ export default function TestHistory() {
   };
 
   // Hàm hiển thị badge cho isMatch
- 
+  const getIsMatchBadge = (isMatch: boolean | undefined, status: string) => {
+    // Chỉ hiển thị badge khi status là "Hoàn thành" và có dữ liệu isMatch
+    if (status !== 'Hoàn thành' || isMatch === undefined) {
+      return null;
+    }
+    
+    const className = isMatch 
+      ? "bg-green-100 text-green-800" 
+      : "bg-red-100 text-red-800";
+    
+    const text = isMatch ? "Chung huyết thống" : "Không chung huyết thống";
+    
+    return <Badge className={className}>{text}</Badge>;
+  };
 
   // Thêm hàm xem PDF
   const handleViewPdf = async (requestId: number, event?: React.MouseEvent) => {
@@ -260,8 +299,8 @@ export default function TestHistory() {
         const response = await testRequestAPI.getByUserId(Number(userId));
         let mapped: any[] = [];
         if (Array.isArray(response)) {
+          // Map các test request cơ bản trước
           mapped = response.map((item: any) => {
-            
             return {
               id: String(item.requestId || item.id),
               requestId: item.requestId || item.id,
@@ -275,10 +314,37 @@ export default function TestHistory() {
               collectionType: item.collectionType || '',
               slotTime: item.slotTime || '',
               staffId: item.staffId || null,
+              isMatch: item.isMatch, // Giữ lại isMatch từ API response ban đầu
               payment: item.payment || null,
               sample: item.sample || null,
               subSamples: item.subSamples || [],
             };
+          });
+
+          // Fetch isMatch cho các test đã hoàn thành
+          const fetchIsMatchPromises = mapped
+            .filter(test => test.status === 'Hoàn thành')
+            .map(async (test) => {
+              try {
+                const isMatchResult = await testRequestAPI.getResult(test.requestId);
+                console.log(`isMatch for requestId ${test.requestId}:`, isMatchResult);
+                return {
+                  ...test,
+                  isMatch: isMatchResult // Cập nhật isMatch từ endpoint mới
+                };
+              } catch (error) {
+                console.error(`Error fetching isMatch for requestId ${test.requestId}:`, error);
+                return test; // Giữ nguyên test nếu có lỗi
+              }
+            });
+
+          // Chờ tất cả các promise hoàn thành
+          const updatedTests = await Promise.all(fetchIsMatchPromises);
+          
+          // Cập nhật lại mapped với isMatch mới
+          mapped = mapped.map(test => {
+            const updatedTest = updatedTests.find(updated => updated.requestId === test.requestId);
+            return updatedTest || test;
           });
         }
         
@@ -328,6 +394,7 @@ export default function TestHistory() {
         const response = await testRequestAPI.getByUserId(Number(userId));
         let mapped: any[] = [];
         if (Array.isArray(response)) {
+          // Map các test request cơ bản trước
           mapped = response.map((item: any) => {
             return {
               id: String(item.requestId || item.id),
@@ -342,10 +409,37 @@ export default function TestHistory() {
               collectionType: item.collectionType || '',
               slotTime: item.slotTime || '',
               staffId: item.staffId || null,
+              isMatch: item.isMatch, // Giữ lại isMatch từ API response ban đầu
               payment: item.payment || null,
               sample: item.sample || null,
               subSamples: item.subSamples || [],
             };
+          });
+
+          // Fetch isMatch cho các test đã hoàn thành
+          const fetchIsMatchPromises = mapped
+            .filter(test => test.status === 'Hoàn thành')
+            .map(async (test) => {
+              try {
+                const isMatchResult = await testRequestAPI.getResult(test.requestId);
+                console.log(`isMatch for requestId ${test.requestId}:`, isMatchResult);
+                return {
+                  ...test,
+                  isMatch: isMatchResult // Cập nhật isMatch từ endpoint mới
+                };
+              } catch (error) {
+                console.error(`Error fetching isMatch for requestId ${test.requestId}:`, error);
+                return test; // Giữ nguyên test nếu có lỗi
+              }
+            });
+
+          // Chờ tất cả các promise hoàn thành
+          const updatedTests = await Promise.all(fetchIsMatchPromises);
+          
+          // Cập nhật lại mapped với isMatch mới
+          mapped = mapped.map(test => {
+            const updatedTest = updatedTests.find(updated => updated.requestId === test.requestId);
+            return updatedTest || test;
           });
         }
         
@@ -518,39 +612,46 @@ export default function TestHistory() {
                       </div>
                     )}
                     
-                                         <div className="flex justify-between items-center">
-                       <div className="flex gap-3 flex-wrap">
-                         {/* Hiển thị status của test request */}
-                         <div className="flex items-center gap-2">
-                           <span className="text-sm font-medium text-gray-700">Trạng thái:</span>
-                           {getStatusBadge(test.status)}
-                         </div>
-                         {getResultBadge(test.result)}
-                       </div>
+                    <div className="flex justify-between items-center">
+                      <div className="flex gap-3 flex-wrap">
+                        {/* Hiển thị status của test request */}
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-gray-700">Trạng thái:</span>
+                          {getStatusBadge(test.status)}
+                        </div>
+                        {getResultBadge(test.result)}
+                        {/* Hiển thị badge isMatch nếu có dữ liệu */}
+                        {getIsMatchBadge(test.isMatch, test.status)}
+                      </div>
                       
                       <div className="flex gap-2">
                         {/* Nút xác nhận nhận kit - chỉ hiển thị cho các trạng thái phù hợp */}
                         {(test.status === 'Đang gửi bộ kit') && 
                          test.collectionType === 'Self' && (
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={(e) => handleConfirmKitReceived(test.requestId, e)}
-                            disabled={confirmingKit === test.requestId}
-                            className="flex items-center gap-2"
-                          >
-                            {confirmingKit === test.requestId ? (
-                              <>
-                                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                                Đang xác nhận...
-                              </>
-                            ) : (
-                              <>
-                                <Package className="w-4 h-4" />
-                                Xác nhận nhận kit
-                              </>
-                            )}
-                          </Button>
+                          <>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={(e) => handleConfirmKitReceived(test.requestId, e)}
+                              disabled={confirmingKit === test.requestId}
+                              className="flex items-center gap-2"
+                            >
+                              {confirmingKit === test.requestId ? (
+                                <>
+                                  <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                  Đang xác nhận...
+                                </>
+                              ) : (
+                                <>
+                                  <Package className="w-4 h-4" />
+                                  Xác nhận nhận kit
+                                </>
+                              )}
+                            </Button>
+                            <div className="text-sm text-amber-600 bg-amber-50 px-3 py-2 rounded-md border border-amber-200">
+                              <span className="font-medium">⚠️ Lưu ý:</span> Xin vui lòng đọc kỹ hướng dẫn sử dụng bộ kit
+                            </div>
+                          </>
                         )}
                         
                         {/* Nút xác nhận đã gửi kit về trung tâm */}

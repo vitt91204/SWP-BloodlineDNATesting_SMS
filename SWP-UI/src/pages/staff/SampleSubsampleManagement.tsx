@@ -1240,7 +1240,7 @@ export default function SampleSubsampleManagement() {
                   ) : (
                     <CheckCircle className="w-4 h-4" />
                   )}
-                  {isSubmitting ? "Đang xử lý..." : "Tạo mẫu"}
+                  {isSubmitting ? "Đang xử lý..." : "Tạo mẫu & Gửi cho phòng thí nghiệm"}
                 </Button>
                 <Button 
                   variant="outline" 

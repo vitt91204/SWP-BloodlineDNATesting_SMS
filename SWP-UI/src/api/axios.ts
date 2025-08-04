@@ -374,6 +374,7 @@ export interface TestRequestResponse extends TestRequest {
   serviceName?: string; // Tên dịch vụ từ response body
   userFullName?: string; // Tên đầy đủ của user từ response body
   userPhoneNumber?: string; // Số điện thoại của user từ response body
+  isMatch?: boolean; // Thêm trường isMatch từ API response
 }
 
 
@@ -770,18 +771,6 @@ export const testResultAPI = {
   },
 
 
-  // Lấy kết quả theo sample ID
-  getBySampleId: async (sampleId: number) => {
-    const response = await api.get(`/api/TestResult/sample/${sampleId}`);
-    return response.data;
-  },
-
-  // Lấy kết quả cho khách hàng
-  getCustomerResult: async (resultId: number) => {
-    const response = await api.get(`/api/TestResult/customer/${resultId}`);
-    return response.data;
-  },
-
 
   // Xem PDF kết quả theo requestId
   viewPdf: async (requestId: number) => {
@@ -842,6 +831,12 @@ export const testRequestAPI = {
   // Lấy yêu cầu theo user ID
   getByUserId: async (userId: number) => {
     const response = await api.get(`/api/TestRequest/user/${userId}`);
+    return response.data;
+  },
+
+  // Lấy kết quả isMatch theo requestId
+  getResult: async (requestId: number) => {
+    const response = await api.get(`/api/TestRequest/${requestId}/result`);
     return response.data;
   },
 
