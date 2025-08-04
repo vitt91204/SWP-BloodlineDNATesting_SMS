@@ -96,7 +96,7 @@
               "RelativeDocumentMoniker": "Services\\EmailService.cs",
               "ToolTip": "C:\\Users\\Nguyen Ba Tuan Anh\\Documents\\GitHub\\SWP-DNAProjects\\BE\\DNAServicesSystem\\Services\\EmailService.cs",
               "RelativeToolTip": "Services\\EmailService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAA+AAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAA3AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-08-04T13:07:46.07Z",
               "EditorCaption": ""
@@ -111,8 +111,7 @@
               "RelativeToolTip": "DNAServicesSystemAPI\\Controllers\\SampleController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-04T13:07:35.03Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-04T13:07:35.03Z"
             },
             {
               "$type": "Document",
@@ -124,8 +123,7 @@
               "RelativeToolTip": "DNAServicesSystemAPI\\Controllers\\PaymentController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-04T13:07:34.171Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-04T13:07:34.171Z"
             },
             {
               "$type": "Document",
@@ -137,8 +135,7 @@
               "RelativeToolTip": "DNAServicesSystemAPI\\Controllers\\AuthController.cs",
               "ViewState": "AgIAABAAAAAAAAAAAAAQwBUAAAAtAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-04T13:07:27.352Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-04T13:07:27.352Z"
             },
             {
               "$type": "Document",
@@ -150,8 +147,7 @@
               "RelativeToolTip": "DNAServicesSystemAPI\\Controllers\\AddressController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-04T13:07:26.719Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-04T13:07:26.719Z"
             },
             {
               "$type": "Document",
@@ -163,8 +159,7 @@
               "RelativeToolTip": "Services\\SampleDTO\\SampleDetailsDto.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABsAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-02T09:05:54.017Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-02T09:05:54.017Z"
             },
             {
               "$type": "Document",
