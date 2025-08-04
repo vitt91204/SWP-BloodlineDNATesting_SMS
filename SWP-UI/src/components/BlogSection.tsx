@@ -16,34 +16,23 @@ export const BlogSection = () => {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Hàm lấy ảnh cho từng blog
-  const fetchBlogImages = async (blogList) => {
-    const blogsWithImages = await Promise.all(
-      blogList.map(async (post) => {
-        const blogId = post.postId || post.id || post.blogPostId;
-        try {
-          const blob = await blogAPI.getImage(blogId);
-          const imgUrl = URL.createObjectURL(blob);
-          return { ...post, imgUrl };
-        } catch {
-          return { ...post, imgUrl: null };
-        }
-      })
-    );
-    setBlogs(blogsWithImages);
+  const fetchBlogs = async () => {
+    setLoading(true);
+    try {
+      const data = await blogAPI.getAll();
+      console.log('📋 BlogSection data:', data);
+      console.log('📋 BlogSection count:', data?.length || 0);
+      console.log('📋 First blog:', data?.[0]);
+      setBlogs(data);
+    } catch (error) {
+      console.error('❌ BlogSection error:', error);
+      toast({ title: "Lỗi khi lấy blog!", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    const fetchBlogs = async () => {
-      try {
-        const data = await blogAPI.getAll();
-        await fetchBlogImages(data);
-      } catch (error) {
-        toast({ title: "Lỗi khi lấy blog!", variant: "destructive" });
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchBlogs();
   }, []);
 
@@ -63,6 +52,10 @@ export const BlogSection = () => {
             Cập nhật những kiến thức mới nhất về xét nghiệm ADN, hướng dẫn thực hiện 
             và các thông tin hữu ích khác từ đội ngũ chuyên gia.
           </p>
+          {/* Debug button */}
+          <Button onClick={fetchBlogs} className="mt-4" variant="outline">
+            🔄 Refresh Blogs ({blogs.length})
+          </Button>
         </div>
 
         {/* Blog Cards */}
@@ -70,16 +63,17 @@ export const BlogSection = () => {
           <div className="text-center py-10 text-gray-500">Đang tải blog...</div>
         ) : (
           <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8">
-            {blogs.map((post) => {
+            {blogs.map((post, index) => {
               const blogId = post.postId || post.id || post.blogPostId;
+              console.log(`🔍 Blog ${index}:`, { blogId, title: post.title, hasImage: !!post.postImage, post });
               return (
                 <Card
                   key={blogId || Math.random()}
                   className="bg-white border-gray-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
                 >
                   <CardHeader className="pb-4">
-                    {post.imgUrl && (
-                      <img src={post.imgUrl} alt="blog" className="w-full h-48 object-cover rounded mb-2" />
+                    {post.postImage && (
+                      <img src={post.postImage} alt="blog" className="w-full h-48 object-cover rounded mb-2" />
                     )}
                     <CardTitle className="text-xl text-gray-900 line-clamp-2 hover:text-blue-600 transition-colors">
                       {post.title || "Không có tiêu đề"}

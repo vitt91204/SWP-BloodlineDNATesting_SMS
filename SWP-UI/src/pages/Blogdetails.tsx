@@ -16,22 +16,13 @@ export default function Blogdetails() {
   const [feedback, setFeedback] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const [imgUrl, setImgUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBlog = async () => {
       try {
         const data = await blogAPI.getById(id); 
         setBlog(data);
-        // Lấy ảnh
-        if (id) {
-          try {
-            const blob = await blogAPI.getImage(id);
-            setImgUrl(URL.createObjectURL(blob));
-          } catch {
-            setImgUrl(null);
-          }
-        }
+        console.log("Blog data:", data);
       } catch (err) {
         setError("Không thể tải bài viết.");
         console.error(err);
@@ -97,8 +88,8 @@ export default function Blogdetails() {
                 {(blog.createdAt || "").slice(0, 10)}
               </div>
             </div>
-            {imgUrl && (
-              <img src={imgUrl} alt="blog" className="w-full h-64 object-cover rounded mt-4" />
+            {blog.postImage && (
+              <img src={blog.postImage} alt="blog" className="w-full h-64 object-cover rounded mt-4" />
             )}
           </CardHeader>
           <CardContent>

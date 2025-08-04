@@ -9,35 +9,17 @@ import { Edit, Save, Trash2, Upload, X } from "lucide-react";
 
 export default function BlogManagementStaff() {
   const [posts, setPosts] = useState([]);
-  // Lưu url ảnh minh hoạ cho từng post
-  const [postImages, setPostImages] = useState({});
   const [editingPost, setEditingPost] = useState<any | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [existingImageBlob, setExistingImageBlob] = useState<Blob | null>(null);
 
   const fetchPosts = async () => {
     try {
       const data = await blogAPI.getAll();
       setPosts(data);
-      // Sau khi lấy danh sách, lấy ảnh cho từng post
-      const images = {};
-      await Promise.all(
-        data.map(async (post) => {
-          const postId = post.id || post.blogPostId || post.postId;
-          if (postId) {
-            try {
-              const blob = await blogAPI.getImage(postId);
-              images[postId] = URL.createObjectURL(blob);
-            } catch {
-              images[postId] = null;
-            }
-          }
-        })
-      );
-      setPostImages(images);
+      console.log('📋 Blog posts data:', data);
     } catch (error) {
       console.error("Lỗi khi tải bài viết:", error);
     }
@@ -53,30 +35,17 @@ export default function BlogManagementStaff() {
     setErrorMessage("");
     setSelectedImage(null);
     setImagePreview(null);
-    if (post.id || post.blogPostId || post.postId) {
-      blogAPI.getImage(post.id || post.blogPostId || post.postId)
-        .then(blob => {
-          setExistingImageBlob(blob);
-          setImagePreview(URL.createObjectURL(blob));
-        })
-        .catch((err) => {
-          if (err?.response?.status !== 404) {
-            console.error("Lỗi khi tải ảnh blog:", err);
-          }
-          setExistingImageBlob(null);
-          setImagePreview(null);
-        });
+    
+    // Sử dụng postImage string trực tiếp nếu có
+    if (post.postImage) {
+      setImagePreview(post.postImage);
+    } else {
+      setImagePreview(null);
     }
   };
 
   const handleCreate = () => {
-    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-    const authorId = userData?.id || userData?.userId;
-    if (!authorId) {
-      setErrorMessage("Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.");
-      return;
-    }
-    setEditingPost({ title: "", content: "", authorId });
+    setEditingPost({ title: "", content: "", postImage: "" });
     setIsNew(true);
     setErrorMessage("");
     setSelectedImage(null);
@@ -87,63 +56,82 @@ export default function BlogManagementStaff() {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedImage(file);
-      setImagePreview(URL.createObjectURL(file));
+      
+      // Convert file to base64
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64String = event.target?.result as string;
+        setImagePreview(base64String);
+        // Cập nhật postImage trong editingPost
+        setEditingPost(prev => ({ ...prev, postImage: base64String }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   const removeImage = () => {
     // Xóa ảnh hiện tại
     setSelectedImage(null);
-    setExistingImageBlob(null);
     setImagePreview(null);
+    // Xóa postImage string
+    setEditingPost(prev => ({ ...prev, postImage: "" }));
   };
   const handleSave = async () => {
     if (!editingPost || !editingPost.title || !editingPost.content) {
       setErrorMessage("Vui lòng nhập tiêu đề và nội dung!");
       return;
     }
-    const now = new Date().toISOString();
-    // Determine post ID field (supports id, blogPostId, or postId)
-    const postId = editingPost.id || editingPost.blogPostId || editingPost.postId;
+    
     try {
       if (isNew) {
-        // Tạo mới đa phần dữ liệu trực tiếp
+        // Tạo FormData cho create - đơn giản thôi
         const formData = new FormData();
-        formData.append("authorId", editingPost.authorId);
-        formData.append("title", editingPost.title);
-        formData.append("content", editingPost.content);
-        formData.append("createdAt", editingPost.createdAt || now);
-        formData.append("updatedAt", now);
+        formData.append('Title', editingPost.title);
+        formData.append('Content', editingPost.content);
+        
+        // Nếu có ảnh được upload
         if (selectedImage) {
-          formData.append("imageFile", selectedImage);
+          formData.append('PostImage', selectedImage);
         }
-        await blogAPI.create(formData);
+        
+        // Debug FormData
+        console.log('📤 Creating blog with FormData:', {
+          title: editingPost.title,
+          content: editingPost.content,
+          hasImage: !!selectedImage
+        });
+        
+        // Log FormData entries
+        for (let [key, value] of formData.entries()) {
+          console.log(`📦 FormData ${key}:`, value);
+        }
+        
+        const createResponse = await blogAPI.create(formData);
+        console.log('✅ Create response:', createResponse);
       } else {
-        // Update: build FormData flatten các field giống create để backend [FromForm]
+        // Update - vẫn dùng JSON như cũ
+        const now = new Date().toISOString();
+        const blogData = {
+          title: editingPost.title,
+          content: editingPost.content,
+          createdAt: editingPost.createdAt || now,
+          updatedAt: now,
+          postImage: editingPost.postImage || ""
+        };
+        
         const postId = editingPost.id || editingPost.blogPostId || editingPost.postId;
         if (!postId) {
           setErrorMessage("Không xác định được ID bài viết để cập nhật!");
           return;
         }
-        const formData = new FormData();
-        formData.append("authorId", String(editingPost.authorId));
-        formData.append("title", editingPost.title);
-        formData.append("content", editingPost.content);
-        formData.append("createdAt", editingPost.createdAt || now);
-        formData.append("updatedAt", now);
-        if (selectedImage) {
-          formData.append("imageFile", selectedImage);
-        } else if (existingImageBlob) {
-          formData.append("imageFile", existingImageBlob, "image.jpg");
-        }
-        await blogAPI.update(postId as number, formData);
+        await blogAPI.update(postId as number, blogData);
       }
+      
       // Sau khi create/update, làm mới danh sách và reset form
       await fetchPosts();
       setEditingPost(null);
       setIsNew(false);
       setSelectedImage(null);
-      setExistingImageBlob(null);
       setImagePreview(null);
       setErrorMessage("");
     } catch (error: any) {
@@ -190,13 +178,38 @@ export default function BlogManagementStaff() {
               </div>
               {/* Ảnh minh hoạ */}
               <div>
-                <Label>Ảnh minh hoạ</Label>
+                <Label>Ảnh minh hoạ (URL)</Label>
+                <Input
+                  type="url"
+                  placeholder="https://example.com/image.jpg hoặc base64 string"
+                  value={editingPost.postImage || ""}
+                  onChange={(e) => setEditingPost({ ...editingPost, postImage: e.target.value })}
+                />
+                {editingPost.postImage && (
+                  <div className="mt-2">
+                    <img 
+                      src={editingPost.postImage} 
+                      alt="Preview" 
+                      className="w-24 h-24 object-cover rounded border"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+              
+              {/* Hoặc upload file (sẽ convert thành base64) */}
+              <div>
+                <Label>Hoặc upload file ảnh</Label>
                 <div className="flex items-center gap-4 mt-2">
                   <input type="file" accept="image/*" onChange={handleImageChange} />
-                  {imagePreview && (
+                  {imagePreview && imagePreview !== editingPost.postImage && (
                     <div className="relative">
                       <img src={imagePreview} alt="preview" className="w-24 h-24 object-cover rounded border" />
-                      <button type="button" onClick={removeImage} className="absolute -top-2 -right-2 bg-white rounded-full shadow p-1"><X className="w-4 h-4 text-red-500" /></button>
+                      <button type="button" onClick={removeImage} className="absolute -top-2 -right-2 bg-white rounded-full shadow p-1">
+                        <X className="w-4 h-4 text-red-500" />
+                      </button>
                     </div>
                   )}
                 </div>
@@ -214,11 +227,12 @@ export default function BlogManagementStaff() {
         <div className="space-y-4">
           {posts.map((post, idx) => {
             const postId = post.id || post.blogPostId || post.postId;
+            console.log('🖼️ Post image data:', { postId, postImage: post.postImage, post });
             return (
               <Card key={postId || idx}>
                 <CardContent className="pt-6">
-                  {postId && postImages[postId] && (
-                    <img src={postImages[postId]} alt="Ảnh minh hoạ" className="w-full h-40 object-cover rounded mb-3" />
+                  {post.postImage && (
+                    <img src={post.postImage} alt="Ảnh minh hoạ" className="w-full h-40 object-cover rounded mb-3" />
                   )}
                   <h3 className="text-lg font-semibold mb-2">{post.title}</h3>
                   <p className="text-gray-600 text-sm mb-2">
