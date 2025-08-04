@@ -67,7 +67,7 @@ namespace Services
                 CreatedAt = DateTime.UtcNow,
                 PostImage = dto.PostImage,
             };
-
+            await _repository.CreateAsync(blogPost);
             return blogPost;
         }
     }
