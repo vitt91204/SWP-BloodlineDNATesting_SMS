@@ -26,6 +26,7 @@ import {
 import { testRequestAPI, sampleAPI, subSampleAPI, userAPI } from '@/api/axios';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
+import { translateCollectionType } from '@/lib/utils';
 
 interface TestRequest {
   requestId?: number;
@@ -205,7 +206,14 @@ export default function SampleSubsampleManagement() {
             return processedRequest;
           });
           
-          setTestRequests(validRequests);
+          // Sort by requestId in descending order (highest first)
+          const sortedRequests = validRequests.sort((a, b) => {
+            const aId = a.requestId || 0;
+            const bId = b.requestId || 0;
+            return bId - aId;
+          });
+          
+          setTestRequests(sortedRequests);
         } else {
           setTestRequests([]);
         }
@@ -777,18 +785,7 @@ export default function SampleSubsampleManagement() {
   };
 
   // Helper để chuyển đổi loại thu mẫu sang tiếng Việt
-  const getCollectionTypeVN = (type: string) => {
-    switch ((type || '').toLowerCase()) {
-      case 'at clinic':
-        return 'Tại cơ sở';
-      case 'at home':
-        return 'Thu mẫu tại nhà';
-      case 'self':
-        return 'Tự thu mẫu';
-      default:
-        return type || 'Không xác định';
-    }
-  };
+
 
   // Helper function để kiểm tra xem sample đã có subsample chưa
   const hasSubSample = (sample: Sample) => {
@@ -916,7 +913,7 @@ export default function SampleSubsampleManagement() {
                             </div>
                           </TableCell>
                           <TableCell>{request.serviceName}</TableCell>
-                          <TableCell>{getCollectionTypeVN(request.collectionType)}</TableCell>
+                          <TableCell>{translateCollectionType(request.collectionType)}</TableCell>
                           <TableCell>
                             <div className="text-sm">
                               <div>{request.appointmentDate}</div>
@@ -994,7 +991,7 @@ export default function SampleSubsampleManagement() {
                             </div>
                           </TableCell>
                           <TableCell>{request.serviceName}</TableCell>
-                          <TableCell>{getCollectionTypeVN(request.collectionType)}</TableCell>
+                          <TableCell>{translateCollectionType(request.collectionType)}</TableCell>
                           <TableCell>
                             <div className="text-sm">
                               <div>{request.appointmentDate}</div>
@@ -1072,7 +1069,7 @@ export default function SampleSubsampleManagement() {
                             </div>
                           </TableCell>
                           <TableCell>{request.serviceName}</TableCell>
-                          <TableCell>{getCollectionTypeVN(request.collectionType)}</TableCell>
+                          <TableCell>{translateCollectionType(request.collectionType)}</TableCell>
                           <TableCell>
                             <div className="text-sm">
                               <div>{request.appointmentDate}</div>
@@ -1302,7 +1299,7 @@ export default function SampleSubsampleManagement() {
                   </div>
                   <div>
                     <span className="font-medium">Loại thu mẫu:</span>
-                    <span className="ml-2 text-blue-700">{getCollectionTypeVN(selectedRequest.collectionType)}</span>
+                    <span className="ml-2 text-blue-700">{translateCollectionType(selectedRequest.collectionType)}</span>
                   </div>
                   <div>
                     <span className="font-medium">Ngày hẹn:</span>

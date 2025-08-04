@@ -18,6 +18,7 @@ import {
   Square
 } from 'lucide-react';
 import { testResultAPI, sampleAPI, staffAPI, testRequestAPI, subSampleAPI, userAPI, testServiceAPI } from '@/api/axios';
+import { translateCollectionType } from '@/lib/utils';
 
 interface TestResult {
   id: string;
@@ -747,7 +748,7 @@ export default function ResultsDelivery() {
                         )}
                         {result.collectionType && (
                           <p className="text-sm text-gray-500">
-                            Loại lấy mẫu: {result.collectionType}
+                            Loại lấy mẫu: {translateCollectionType(result.collectionType)}
                           </p>
                         )}
                         {result.deliveryDate && (

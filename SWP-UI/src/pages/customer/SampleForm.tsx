@@ -22,7 +22,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
-import { sampleAPI, subSampleAPI } from "@/api/axios";
+import { sampleAPI, subSampleAPI, userAPI } from "@/api/axios";
 import {
   TestTube,
   User,
@@ -39,9 +39,6 @@ interface SampleFormData {
   sampleType: string;
   fullName: string;
   dateOfBirth: string;
-  gender: string;
-  phone: string;
-  relationship: string;
   notes: string;
 }
 
@@ -49,9 +46,6 @@ interface SubSampleFormData {
   sampleType: string;
   fullName: string;
   dateOfBirth: string;
-  gender: string;
-  phone: string;
-  relationship: string;
   notes: string;
 }
 
@@ -64,22 +58,6 @@ const sampleTypes = [
   { value: "Nước ối", label: "Nước ối" },
 ];
 
-const genderOptions = [
-  { value: "Male", label: "Nam" },
-  { value: "Female", label: "Nữ" },
-  { value: "Other", label: "Khác" },
-];
-
-const relationshipOptions = [
-  { value: "Self", label: "Bản thân" },
-  { value: "Father", label: "Cha" },
-  { value: "Mother", label: "Mẹ" },
-  { value: "Child", label: "Con" },
-  { value: "Sibling", label: "Anh/Chị/Em" },
-  { value: "Spouse", label: "Vợ/Chồng" },
-  { value: "Other", label: "Khác" },
-];
-
 export default function SampleForm() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -89,7 +67,8 @@ export default function SampleForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [requestId, setRequestId] = useState<number | null>(null);
   const [bookingData, setBookingData] = useState<any>(null);
-  const [mainSampleId, setMainSampleId] = useState<number | null>(null); // Lưu ID mẫu chính
+  const [mainSampleId, setMainSampleId] = useState<number | null>(null);
+  const [userData, setUserData] = useState<any>(null);
   
   // Helper function to get current user ID
   const getCurrentUserId = (): number => {
@@ -110,9 +89,6 @@ export default function SampleForm() {
     sampleType: "",
     fullName: "",
     dateOfBirth: "",
-    gender: "",
-    phone: "",
-    relationship: "Self",
     notes: "",
   });
   
@@ -120,33 +96,52 @@ export default function SampleForm() {
     sampleType: "",
     fullName: "",
     dateOfBirth: "",
-    gender: "",
-    phone: "",
-    relationship: "",
     notes: "",
   });
 
-  // Lấy thông tin từ localStorage hoặc URL params
+  // Load user data and booking information
   useEffect(() => {
-    const storedBooking = localStorage.getItem('currentBooking');
-    if (storedBooking) {
+    const loadUserAndBookingData = async () => {
       try {
-        const booking = JSON.parse(storedBooking);
-        setRequestId(booking.id || booking.requestId);
-        setBookingData(booking);
-        
-        // Pre-fill main sample với thông tin user
-        if (booking.userInfo) {
+        // Load user data
+        const userId = getCurrentUserId();
+        if (userId) {
+          const userInfo = await userAPI.getUserInfo(userId.toString());
+          setUserData(userInfo);
+          
+          // Pre-fill main sample with user data
           setMainSample(prev => ({
             ...prev,
-            fullName: booking.userInfo.fullName || "",
-            phone: booking.userInfo.phone || "",
+            fullName: userInfo?.fullName || userInfo?.username || "",
+            dateOfBirth: userInfo?.dateOfBirth || "",
           }));
         }
+        
+        // Load booking data
+        const storedBooking = localStorage.getItem('currentBooking');
+        if (storedBooking) {
+          try {
+            const booking = JSON.parse(storedBooking);
+            setRequestId(booking.id || booking.requestId);
+            setBookingData(booking);
+            
+            // Pre-fill main sample with booking user info if available
+            if (booking.userInfo) {
+              setMainSample(prev => ({
+                ...prev,
+                fullName: booking.userInfo.fullName || prev.fullName,
+              }));
+            }
+          } catch (error) {
+            console.error('Error parsing booking data:', error);
+          }
+        }
       } catch (error) {
-        console.error('Error parsing booking data:', error);
+        console.error('Error loading user data:', error);
       }
-    }
+    };
+    
+    loadUserAndBookingData();
   }, []);
 
   const validateMainSample = () => {
@@ -169,18 +164,10 @@ export default function SampleForm() {
     if (!mainSample.dateOfBirth) {
       toast({
         title: "Lỗi",
-        description: "Vui lòng nhập ngày sinh mẫu chính",
+        description: "Vui lòng cập nhật ngày sinh trong hồ sơ cá nhân",
         variant: "destructive",
       });
-      return false;
-    }
-    if (!mainSample.gender) {
-      toast({
-        title: "Lỗi",
-        description: "Vui lòng chọn giới tính mẫu chính",
-        variant: "destructive",
-      });
-      return false;
+      return;
     }
     
     // Validate date of birth
@@ -387,9 +374,6 @@ export default function SampleForm() {
         description: [
           `Tên: ${subSample.fullName}`,
           `Ngày sinh: ${subSample.dateOfBirth}`,
-          `Giới tính: ${subSample.gender}`,
-          `Số điện thoại: ${subSample.phone}`,
-          `Mối quan hệ: ${subSample.relationship}`,
           subSample.notes
         ].filter(Boolean).join(' | '),
         fullName: subSample.fullName,
@@ -565,7 +549,7 @@ export default function SampleForm() {
               Thông tin mẫu xét nghiệm
             </h1>
             <p className="text-gray-600 mb-4">
-              Vui lòng điền thông tin mẫu chính và mẫu phụ (nếu có)
+              Vui lòng điền thông tin mẫu chính và mẫu phụ (nếu có). Ngày sinh sẽ được lấy từ hồ sơ cá nhân.
             </p>
             
             {/* Booking Info */}
@@ -686,68 +670,37 @@ export default function SampleForm() {
                         id="mainDateOfBirth"
                         type="date"
                         value={mainSample.dateOfBirth}
-                        onChange={(e) => setMainSample({...mainSample, dateOfBirth: e.target.value})}
+                        readOnly
+                        className="bg-gray-50"
+                      />
+                      {!mainSample.dateOfBirth && (
+                        <div className="mt-1">
+                          <p className="text-sm text-red-500 mb-2">
+                            Vui lòng cập nhật ngày sinh trong hồ sơ cá nhân
+                          </p>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate("/customer/profile")}
+                            className="text-xs"
+                          >
+                            Cập nhật hồ sơ
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <Label htmlFor="mainNotes">Ghi chú</Label>
+                      <Textarea
+                        id="mainNotes"
+                        value={mainSample.notes}
+                        onChange={(e) => setMainSample({...mainSample, notes: e.target.value})}
+                        placeholder="Nhập ghi chú (nếu có)"
+                        rows={3}
                       />
                     </div>
-
-                    <div>
-                      <Label htmlFor="mainGender">Giới tính <span className="text-red-500">*</span></Label>
-                      <Select 
-                        value={mainSample.gender} 
-                        onValueChange={(value) => setMainSample({...mainSample, gender: value})}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Chọn giới tính" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {genderOptions.map((gender) => (
-                            <SelectItem key={gender.value} value={gender.value}>
-                              {gender.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="mainPhone">Số điện thoại</Label>
-                      <Input
-                        id="mainPhone"
-                        value={mainSample.phone}
-                        onChange={(e) => setMainSample({...mainSample, phone: e.target.value})}
-                        placeholder="Nhập số điện thoại"
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="mainRelationship">Mối quan hệ</Label>
-                      <Select 
-                        value={mainSample.relationship} 
-                        onValueChange={(value) => setMainSample({...mainSample, relationship: value})}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Chọn mối quan hệ" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {relationshipOptions.map((rel) => (
-                            <SelectItem key={rel.value} value={rel.value}>
-                              {rel.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="mainNotes">Ghi chú</Label>
-                    <Textarea
-                      id="mainNotes"
-                      value={mainSample.notes}
-                      onChange={(e) => setMainSample({...mainSample, notes: e.target.value})}
-                      placeholder="Nhập ghi chú (nếu có)"
-                      rows={3}
-                    />
                   </div>
                 </div>
               ) : (
@@ -793,63 +746,15 @@ export default function SampleForm() {
                     </div>
 
                     <div>
-                      <Label htmlFor="subGender">Giới tính</Label>
-                      <Select 
-                        value={subSample.gender} 
-                        onValueChange={(value) => setSubSample({...subSample, gender: value})}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Chọn giới tính" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {genderOptions.map((gender) => (
-                            <SelectItem key={gender.value} value={gender.value}>
-                              {gender.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="subPhone">Số điện thoại</Label>
-                      <Input
-                        id="subPhone"
-                        value={subSample.phone}
-                        onChange={(e) => setSubSample({...subSample, phone: e.target.value})}
-                        placeholder="Nhập số điện thoại"
+                      <Label htmlFor="subNotes">Ghi chú</Label>
+                      <Textarea
+                        id="subNotes"
+                        value={subSample.notes}
+                        onChange={(e) => setSubSample({...subSample, notes: e.target.value})}
+                        placeholder="Nhập ghi chú (nếu có)"
+                        rows={3}
                       />
                     </div>
-
-                    <div>
-                      <Label htmlFor="subRelationship">Mối quan hệ</Label>
-                      <Select 
-                        value={subSample.relationship} 
-                        onValueChange={(value) => setSubSample({...subSample, relationship: value})}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Chọn mối quan hệ" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {relationshipOptions.filter(rel => rel.value !== 'Self').map((rel) => (
-                            <SelectItem key={rel.value} value={rel.value}>
-                              {rel.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="subNotes">Ghi chú</Label>
-                    <Textarea
-                      id="subNotes"
-                      value={subSample.notes}
-                      onChange={(e) => setSubSample({...subSample, notes: e.target.value})}
-                      placeholder="Nhập ghi chú (nếu có)"
-                      rows={3}
-                    />
                   </div>
                 </div>
               )}
@@ -870,19 +775,6 @@ export default function SampleForm() {
             <div className="flex gap-3">
               {currentStep === 1 && (
                 <>
-                  <Button
-                    variant="outline"
-                    onClick={handleSubmitMainSampleOnly}
-                    disabled={isSubmitting}
-                    className="flex items-center gap-2"
-                  >
-                    {isSubmitting ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <CheckCircle className="w-4 h-4" />
-                    )}
-                    Chỉ lưu mẫu chính
-                  </Button>
                   <Button
                     onClick={handleNextStep}
                     disabled={isSubmitting}
@@ -907,14 +799,6 @@ export default function SampleForm() {
                   >
                     <ArrowLeft className="w-4 h-4" />
                     Quay lại
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={handleSkipSubSample}
-                    disabled={isSubmitting}
-                    className="flex items-center gap-2"
-                  >
-                    Bỏ qua mẫu phụ
                   </Button>
                   <Button
                     onClick={handleSubmit}

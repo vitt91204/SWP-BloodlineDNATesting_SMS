@@ -13,7 +13,7 @@ import Contact from "@/pages/Contact";
 import Results from "@/pages/Results";
 import Booking from "@/pages/Booking";
 import Payment from "@/pages/Payment";
-import PaymentSuccess from "@/pages/PaymentSuccess";
+import PaymentSuccess from "./pages/PaymentSuccess";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import CustomerProfile from "@/pages/customer/Profile";

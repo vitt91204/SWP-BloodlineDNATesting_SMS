@@ -55,9 +55,25 @@ export default function PaymentSuccess() {
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Thanh toán thành công
           </h1>
-          <p className="text-lg text-gray-600 mb-8">
+          <p className="text-lg text-gray-600 mb-4">
             Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi.
           </p>
+          
+          {isSelfCollection && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
+              <div className="flex items-start gap-3">
+                <TestTube className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div className="text-left">
+                  <p className="text-sm font-medium text-blue-800 mb-1">
+                    Lưu ý quan trọng:
+                  </p>
+                  <p className="text-sm text-blue-700">
+                    Vui lòng điền thông tin mẫu xét nghiệm để thuận tiện hơn cho quy trình làm việc.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button

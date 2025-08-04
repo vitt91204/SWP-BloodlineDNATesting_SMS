@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import { testRequestAPI, TestRequestResponse, userAPI, paymentAPI } from "@/api/axios";
 import { useToast } from "@/components/ui/use-toast";
+import { translateCollectionType } from "@/lib/utils";
 
 // Mapping function to convert English status to Vietnamese
 const convertStatusToVietnamese = (status: string): string => {
@@ -390,16 +391,18 @@ export const AppointmentsPage = () => {
 
   const getAppointmentTypeIcon = (type: string) => {
     const typeLower = type?.toLowerCase();
+    const translatedType = translateCollectionType(type);
+    
     if (typeLower?.includes('home')) {
-      return <div className="flex items-center text-green-600"><Home className="w-4 h-4 mr-1" /> Tại nhà</div>;
+      return <div className="flex items-center text-green-600"><Home className="w-4 h-4 mr-1" /> {translatedType}</div>;
     }
     if (typeLower?.includes('clinic')) {
-      return <div className="flex items-center text-blue-600"><MapPin className="w-4 h-4 mr-1" /> Tại cơ sở</div>;
+      return <div className="flex items-center text-blue-600"><MapPin className="w-4 h-4 mr-1" /> {translatedType}</div>;
     }
     if (typeLower?.includes('self')) {
-      return <div className="flex items-center text-purple-600"><Users className="w-4 h-4 mr-1" /> Tự thu mẫu</div>;
+      return <div className="flex items-center text-purple-600"><Users className="w-4 h-4 mr-1" /> {translatedType}</div>;
     }
-    return <div>{type}</div>;
+    return <div>{translatedType}</div>;
   };
 
   const filteredAppointments = appointments.filter(appointment => {

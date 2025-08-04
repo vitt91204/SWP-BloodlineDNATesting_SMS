@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { testRequestAPI, userAPI } from "@/api/axios";
+import { translateCollectionType } from "@/lib/utils";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -147,18 +148,7 @@ export default function ManagerDashboard() {
     return <Badge className={config.className}>{config.text}</Badge>;
   };
 
-  const getCollectionTypeVN = (type: string) => {
-    switch ((type || '').toLowerCase()) {
-      case 'at clinic':
-        return 'Tại cơ sở';
-      case 'at home':
-        return 'Tại nhà';
-      case 'self':
-        return 'Tự thu mẫu';
-      default:
-        return type;
-    }
-  };
+
 
   const getUserName = (userId: number) => {
     const user = users.find(u => u.userId === userId || u.id === userId);
@@ -405,7 +395,7 @@ export default function ManagerDashboard() {
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">
-                        {getCollectionTypeVN(request.collectionType)}
+                        {translateCollectionType(request.collectionType)}
                       </Badge>
                     </TableCell>
                     <TableCell>

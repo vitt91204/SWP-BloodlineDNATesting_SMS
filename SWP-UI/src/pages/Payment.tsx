@@ -15,6 +15,7 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { testRequestAPI, paymentAPI } from "@/api/axios";
+import { translateCollectionType } from "@/lib/utils";
 
 export default function Payment() {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -166,7 +167,7 @@ export default function Payment() {
                     
                     <div>
                       <div className="text-sm text-gray-600">Loại hình</div>
-                      <div className="font-medium">{orderInfo?.collectionType || "Không có thông tin"}</div>
+                      <div className="font-medium">{translateCollectionType(orderInfo?.collectionType) || "Không có thông tin"}</div>
                     </div>
                     
                     <div>

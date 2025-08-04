@@ -9,6 +9,7 @@ import { testResultAPI, testRequestAPI, sampleAPI } from '@/api/axios';
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import Feedback from "./Feedback";
+import { translateCollectionType } from "@/lib/utils";
 
 interface TestHistory {
   id: string;
@@ -233,8 +234,8 @@ export default function TestHistory() {
     }
     
     const className = isMatch 
-      ? "bg-green-100 text-green-800" 
-      : "bg-red-100 text-red-800";
+      ? "bg-green-100 text-green-800 border border-green-300 px-3 py-1 text-sm font-medium" 
+      : "bg-red-100 text-red-800 border border-red-300 px-3 py-1 text-sm font-medium";
     
     const text = isMatch ? "Chung huyết thống" : "Không chung huyết thống";
     
@@ -514,7 +515,7 @@ export default function TestHistory() {
                       <div className="flex-1">
                         <h3 className="font-semibold text-lg">{test.testName}</h3>
                         <p className="text-sm text-gray-600 mt-1">Mã: {test.id}</p>
-                        <p className="text-sm text-gray-500 mt-1">Loại lấy mẫu: {test.collectionType}</p>
+                        <p className="text-sm text-gray-500 mt-1">Loại lấy mẫu: {translateCollectionType(test.collectionType)}</p>
                         {test.sample && (
                           <p className="text-sm text-gray-500 mt-1">
                             Loại mẫu: {test.sample.sampleType} - {test.sample.relationship}
@@ -612,6 +613,16 @@ export default function TestHistory() {
                       </div>
                     )}
                     
+                    {/* Hiển thị badge isMatch trên dòng riêng với kích thước lớn */}
+                    {getIsMatchBadge(test.isMatch, test.status) && (
+                      <div className="flex justify-center my-4">
+                        <div className="text-center">
+                          <p className="text-sm font-medium text-gray-700 mb-2">Kết quả xét nghiệm huyết thống:</p>
+                          {getIsMatchBadge(test.isMatch, test.status)}
+                        </div>
+                      </div>
+                    )}
+                    
                     <div className="flex justify-between items-center">
                       <div className="flex gap-3 flex-wrap">
                         {/* Hiển thị status của test request */}
@@ -620,8 +631,6 @@ export default function TestHistory() {
                           {getStatusBadge(test.status)}
                         </div>
                         {getResultBadge(test.result)}
-                        {/* Hiển thị badge isMatch nếu có dữ liệu */}
-                        {getIsMatchBadge(test.isMatch, test.status)}
                       </div>
                       
                       <div className="flex gap-2">

@@ -19,6 +19,7 @@ import {
   Area
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { 
   TrendingUp, 
   Users, 
@@ -29,6 +30,7 @@ import {
   BarChart3,
   User
 } from 'lucide-react';
+import { translateCollectionType } from '@/lib/utils';
 
 // Chart configuration
 const chartConfig = {
@@ -371,7 +373,7 @@ export const RequestList: React.FC<{ data: any[] }> = ({ data }) => {
                 <div>
                   <div className="font-medium text-gray-900">{request.name}</div>
                   <div className="text-sm text-gray-500">
-                    {request.serviceName} • {request.collectionType}
+                    {request.serviceName} • {translateCollectionType(request.collectionType)}
                   </div>
                 </div>
               </div>

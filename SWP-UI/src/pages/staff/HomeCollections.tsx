@@ -190,7 +190,7 @@ export default function HomeCollections() {
       case "collected":
         return "Đã nhận mẫu";
       case "arrived":
-        return "Đã nhận được";
+        return "Đã đến";
       case "on-going":
         return "Đang tới";
       case "testing":
@@ -208,7 +208,7 @@ export default function HomeCollections() {
       case 'pending':
         return <Badge className="bg-yellow-100 text-yellow-800">Chờ xác nhận</Badge>;
       case 'arrived':
-        return <Badge className="bg-blue-100 text-blue-800">Đã nhận được</Badge>;
+        return <Badge className="bg-blue-100 text-blue-800">Đã đến</Badge>;
       case 'on-going':
         return <Badge className="bg-orange-100 text-orange-800">Đang tới</Badge>;
       case 'sending':
