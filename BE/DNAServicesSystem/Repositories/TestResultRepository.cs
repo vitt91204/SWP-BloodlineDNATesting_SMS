@@ -13,11 +13,15 @@ namespace Repositories
 
         public async Task<TestResult?> GetByIdAsync(int id) => await context.TestResults.FindAsync(id);
 
-        public async Task<List<TestResult>> GetBySampleIdAsync(int sampleId)
+        public async Task<List<TestResult>> GetBySampleIdAsyncToList(int sampleId)
         {
             return await context.TestResults
                 .Where(tr => tr.SampleId == sampleId)
                 .ToListAsync();
+        }
+        public async Task<TestResult?> GetBySampleIdAsync(int sampleId)
+        {
+            return await context.TestResults.FindAsync(sampleId);
         }
     }
 }

@@ -31,6 +31,13 @@ namespace DNAServicesSystemAPI.Controllers
             var id = await _service.CreateAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id }, dto);
         }
+        [HttpPost]
+        [Route("customer")]
+        public async Task<IActionResult> UserCreate([FromBody] SampleDto dto)
+        {
+            var id = await _service.UserSampleCreate(dto);
+            return CreatedAtAction(nameof(GetById), new { id }, dto);
+        }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] SampleDto dto)

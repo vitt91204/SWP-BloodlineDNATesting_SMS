@@ -1,4 +1,5 @@
 ﻿using Org.BouncyCastle.Asn1;
+using Org.BouncyCastle.Crypto.Engines;
 using Repositories;
 using Repositories.Models;
 using Services.Reports;
@@ -19,7 +20,7 @@ namespace Services
         private readonly SubSampleRepository subSampleRepository;
         private readonly TestServiceRepository serviceRepository;
         private readonly PaymentRepository paymentRepository;
-        private readonly TestKitRepository testKitRepository;
+        private readonly TestResultRepository testResultRepository;
 
         public TestRequestService()
         {
@@ -29,7 +30,7 @@ namespace Services
             subSampleRepository = new SubSampleRepository();
             serviceRepository = new TestServiceRepository();
             paymentRepository = new PaymentRepository();
-            testKitRepository = new TestKitRepository();
+            testResultRepository = new TestResultRepository();
         }
 
         public async Task<TestRequest> CreateTestRequestAsync(AppointmentTestRequestDto testRequestDto)
@@ -144,6 +145,8 @@ namespace Services
                 var service = await serviceRepository.GetByIdAsync(request.ServiceId);
                 Sample sample = await sampleRepository.GetSampleByRequestidAsync(request.RequestId);
                 List<SubSample>? subSamples = null;
+
+
                 if (sample != null)
                 {
                     subSamples = await subSampleRepository.GetSubSamplesBySampleIdAsync(sample.SampleId);
@@ -163,7 +166,7 @@ namespace Services
                     StaffId = request.StaffId,
                     Sample = sample ?? null,
                     SubSamples = subSamples ?? null,
-                    Payment = payment ?? null
+                    Payment = payment ?? null,
                 });
             }
             return requestDetails;

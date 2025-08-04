@@ -76,9 +76,32 @@ namespace Services
                 SampleType = dto.SampleType,
             };
 
-            request.Status = "Testing";
+            request.Status = "Collected";
             await _testRequestRepository.UpdateAsync(request);
 
+            return await _repository.CreateAsync(entity);
+        }
+        public async Task<int> UserSampleCreate(SampleDto dto)
+        {
+            var existingSample = await _repository.GetSampleByRequestidAsync(dto.RequestId);
+            if (existingSample != null)
+            {
+                throw new InvalidOperationException($"A sample with RequestId {dto.RequestId} already exists.");
+            }
+
+            TestRequest? request = await _testRequestRepository.GetByIdAsync(dto.RequestId);
+            if (request == null)
+            {
+                throw new KeyNotFoundException($"Test request with ID {dto.RequestId} not found.");
+            }
+
+            var entity = new Sample
+            {
+                RequestId = dto.RequestId,
+                CollectedBy = dto.CollectedBy,
+                ReceivedTime = dto.ReceivedTime,
+                SampleType = dto.SampleType,
+            };
             return await _repository.CreateAsync(entity);
         }
 
